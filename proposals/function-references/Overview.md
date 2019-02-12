@@ -34,7 +34,7 @@ Note: In a Wasm engine, function references (whether first-class or as table ent
 
 * Add an instruction `call_ref` for calling a function through a `ref $t`
 
-* Add an instruction `ref.func $f` for creating a function reference
+* Refine the instruction `ref.func $f` to return a typed function reference
 
 * Optionally add an instruction `func.bind` to create a closure
 
@@ -83,6 +83,27 @@ The following function calls it and then applies the result twice:
 ```
 Note that we could not have used a function-level local for `$f` in this example, since the type `(ref $i32-i32)` is non-nullable and thus does not contain any default value to initialise the local with at the beginning of the function. By using `let` we can define a local that is initialised with values from the operand stack.
 
+It is also possible to create a typed function table:
+```
+(table 0 (ref $i32-i32))
+```
+Such a table can neither contain `null` entries nor functions of another type. Any use of `call_indirect` on this table does hence avoid all runtime checks beyond the basic bounds check. By using multiple tables, each one can be given a homogeneous type. The table can be initialised by growing it (provding an explicit initialiser value. (Open Question: we could also extend table definitions to provide an explicit initialiser.)
+
+Typed references are a subtype of `funcref`, so they can also be used as untyped references. All previous uses of `ref.func` remain valid:
+```
+(func $f (param i32))
+(func $g)
+(func $h (result i64))
+
+(table 10 funcref)
+
+(func $init
+  (table.set (i32.const 0) (ref.func $f))
+  (table.set (i32.const 1) (ref.func $g))
+  (table.set (i32.const 2) (ref.func $h))
+)
+```
+
 
 ## Language
 
@@ -116,6 +137,9 @@ Question: Include optref as well?
 * Function-level locals must have a type that is defaultable.
 
 * Table definitions with non-zero minimum size must have an element type that is defaultable. (Imports are not affected.)
+
+Question:
+- Should we introduce a variant of table definition with explicit default initialiser?
 
 
 ### Instructions
