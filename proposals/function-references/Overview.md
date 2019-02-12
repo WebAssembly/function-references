@@ -41,6 +41,49 @@ Note: In a Wasm engine, function references (whether first-class or as table ent
 * Add a block instruction `let (local t*) ... end` for introducing locals with block scope, in order to handle reference types without default initialisation values
 
 
+### Examples
+
+The function `$hof` takes a function pointer as parameter, and is invoked by `$caller`, passing `$inc` as argument:
+```
+(type $i32-i32 (func (param i32) (result i32)))
+
+(func $hof (param $f (ref $i32-i32)) (result i32)
+  (i32.add (i32.const 10) (call_ref (i32.const 42) (local.get $f)))
+)
+
+(func $inc (param $x i32) (result i32)
+  (i32.add (local.get $i) (i32.const 1))
+)
+
+(func $caller (result i32)
+  (call $hof (ref.func $inc))
+)
+```
+
+The function `$mk-adder` returns a closure of another function:
+```
+(func $add (param i32 i32) (result i32) (i32.add (local.get 0) (local.get 1)))
+
+(func $mk-adder (param $i i32) (result (ref $i32-i32))
+  (func.bind (local.get $i) (ref.func $add))
+)
+```
+
+The following function calls it and then applies the result twice:
+```
+(func $main (result i32)
+  (call $mk-adder (i32.const 7))
+  (let (local $f (ref $i32-i32)) (result i32)  ;; binds $f to top of stack
+    (i32.mul
+      (call_ref (i32.const 10) (local.get $f))
+      (call_ref (i32.const 12) (local.get $f))
+    )
+  )
+)
+```
+Note that we could not have used a function-level local for `$f` in this example, since the type `(ref $i32-i32)` is non-nullable and thus does not contain any default value to initialise the local with at the beginning of the function. By using `let` we can define a local that is initialised with values from the operand stack.
+
+
 ## Language
 
 Based on [reference types proposal](https://github.com/WebAssembly/reference-types/blob/master/proposals/reference-types/Overview.md), which introduces type `anyref` and `funcref`.
@@ -104,6 +147,8 @@ Questions:
   - `let bt (local t)* instr* end : [t* t1*] -> [t2*]`
     - iff `bt = [t1*] -> [t2*]`
     - and `instr* : bt` under a context with `locals` extended by `t*` and `labels` extended by `[t2*]`
+
+Note: The lattter condition implies that inside the body of the `let`, its locals are prepended to the list of locals. Nesting multiple `let` blocks hence addresses them relatively, similar to labels. Function-level local declarations can be viewed as syntactic sugar for a bunch of zero constant instructions and a `let`.
 
 
 ## Binary Format
