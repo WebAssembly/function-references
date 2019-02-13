@@ -34,7 +34,7 @@ Note: In a Wasm engine, function references (whether first-class or as table ent
 
 * Add an instruction `call_ref` for calling a function through a `ref $t`
 
-* Refine the instruction `ref.func $f` to return a typed function reference
+* Refine the instruction `func.ref $f` to return a typed function reference
 
 * Optionally add an instruction `func.bind` to create a closure
 
@@ -56,7 +56,7 @@ The function `$hof` takes a function pointer as parameter, and is invoked by `$c
 )
 
 (func $caller (result i32)
-  (call $hof (ref.func $inc))
+  (call $hof (func.ref $inc))
 )
 ```
 
@@ -65,7 +65,7 @@ The function `$mk-adder` returns a closure of another function:
 (func $add (param i32 i32) (result i32) (i32.add (local.get 0) (local.get 1)))
 
 (func $mk-adder (param $i i32) (result (ref $i32-i32))
-  (func.bind $i32-i32 (local.get $i) (ref.func $add))
+  (func.bind $i32-i32 (local.get $i) (func.ref $add))
 )
 ```
 
@@ -89,7 +89,7 @@ It is also possible to create a typed function table:
 ```
 Such a table can neither contain `null` entries nor functions of another type. Any use of `call_indirect` on this table does hence avoid all runtime checks beyond the basic bounds check. By using multiple tables, each one can be given a homogeneous type. The table can be initialised by growing it (provding an explicit initialiser value. (Open Question: we could also extend table definitions to provide an explicit initialiser.)
 
-Typed references are a subtype of `funcref`, so they can also be used as untyped references. All previous uses of `ref.func` remain valid:
+Typed references are a subtype of `funcref`, so they can also be used as untyped references. All previous uses of `func.ref` remain valid:
 ```
 (func $f (param i32))
 (func $g)
@@ -98,9 +98,9 @@ Typed references are a subtype of `funcref`, so they can also be used as untyped
 (table 10 funcref)
 
 (func $init
-  (table.set (i32.const 0) (ref.func $f))
-  (table.set (i32.const 1) (ref.func $g))
-  (table.set (i32.const 2) (ref.func $h))
+  (table.set (i32.const 0) (func.ref $f))
+  (table.set (i32.const 1) (func.ref $g))
+  (table.set (i32.const 2) (func.ref $h))
 )
 ```
 
@@ -146,8 +146,8 @@ Question:
 
 #### Functions
 
-* `ref.func` creates a function reference from a function index
-  - `ref.func $f : [] -> [(ref $t)]`
+* `func.ref` creates a function reference from a function index
+  - `func.ref $f : [] -> [(ref $t)]`
      - iff `$f : $t`
   - this is a *constant instruction*
 
@@ -161,8 +161,9 @@ Question:
     - and `$t' = [t1'*] -> [t2*]`
 
 Questions:
-- The naming conventions for these instructions seem rather incoherent, are there better ones?
-- The requirement to provide type `$t'` instead of just a number is a hack to side-step the issue of expressing an anonymous function type. Should we try better?
+- Should we rename `ref.null` to `null.ref` for consistency?
+- Should `call_ref` be named `func.call`?
+- The requirement to provide type `$t'` for `func.bind` instead of just a number is a hack to side-step the issue of expressing an anonymous function type. Should we try better?
 
 
 #### Local Bindings
