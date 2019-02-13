@@ -65,7 +65,7 @@ The function `$mk-adder` returns a closure of another function:
 (func $add (param i32 i32) (result i32) (i32.add (local.get 0) (local.get 1)))
 
 (func $mk-adder (param $i i32) (result (ref $i32-i32))
-  (func.bind (local.get $i) (ref.func $add))
+  (func.bind $i32-i32 (local.get $i) (ref.func $add))
 )
 ```
 
