@@ -155,6 +155,11 @@ Question:
   - `call_ref : [t1* (ref $t)] -> [t2*]`
      - iff `$t = [t1*] -> [t2*]`
 
+* With the [tail call proposal](https://github.com/WebAssembly/tail-call/blob/master/proposals/tail-call/Overview.md), there will also be `return_call_ref`:
+  - `return_call_ref : [t1* (ref $t)] -> [t2*]`
+     - iff `$t = [t1*] -> [t2*]`
+     - and `t2* <: C.result`
+
 * Optional extension: `func.bind` creates or extends a closure by binding one or several parameters
   - `func.bind $t : [t1^n (ref $t)] -> [(ref $t')]`
     - iff `$t = [t1^n t1'*] -> [t2*]`
