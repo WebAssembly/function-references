@@ -161,7 +161,7 @@ Question:
      - and `t2* <: C.result`
 
 * Optional extension: `func.bind` creates or extends a closure by binding one or several parameters
-  - `func.bind $t : [t1^n (ref $t)] -> [(ref $t')]`
+  - `func.bind $t' : [t1^n (ref $t)] -> [(ref $t')]`
     - iff `$t = [t1^n t1'*] -> [t2*]`
     - and `$t' = [t1'*] -> [t2*]`
 
