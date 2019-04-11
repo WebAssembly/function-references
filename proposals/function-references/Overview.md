@@ -44,7 +44,7 @@ Note: In a Wasm engine, function references (whether first-class or as table ent
 ### Examples
 
 The function `$hof` takes a function pointer as parameter, and is invoked by `$caller`, passing `$inc` as argument:
-```
+```wasm
 (type $i32-i32 (func (param i32) (result i32)))
 
 (func $hof (param $f (ref $i32-i32)) (result i32)
@@ -61,7 +61,7 @@ The function `$hof` takes a function pointer as parameter, and is invoked by `$c
 ```
 
 The function `$mk-adder` returns a closure of another function:
-```
+```wasm
 (func $add (param i32 i32) (result i32) (i32.add (local.get 0) (local.get 1)))
 
 (func $mk-adder (param $i i32) (result (ref $i32-i32))
@@ -70,7 +70,7 @@ The function `$mk-adder` returns a closure of another function:
 ```
 
 The following function calls it and then applies the result twice:
-```
+```wasm
 (func $main (result i32)
   (call $mk-adder (i32.const 7))
   (let (local $f (ref $i32-i32)) (result i32)  ;; binds $f to top of stack
@@ -84,13 +84,13 @@ The following function calls it and then applies the result twice:
 Note that we could not have used a function-level local for `$f` in this example, since the type `(ref $i32-i32)` is non-nullable and thus does not contain any default value to initialise the local with at the beginning of the function. By using `let` we can define a local that is initialised with values from the operand stack.
 
 It is also possible to create a typed function table:
-```
+```wasm
 (table 0 (ref $i32-i32))
 ```
 Such a table can neither contain `null` entries nor functions of another type. Any use of `call_indirect` on this table does hence avoid all runtime checks beyond the basic bounds check. By using multiple tables, each one can be given a homogeneous type. The table can be initialised by growing it (provding an explicit initialiser value. (Open Question: we could also extend table definitions to provide an explicit initialiser.)
 
 Typed references are a subtype of `funcref`, so they can also be used as untyped references. All previous uses of `func.ref` remain valid:
-```
+```wasm
 (func $f (param i32))
 (func $g)
 (func $h (result i64))
