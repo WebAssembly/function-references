@@ -161,8 +161,12 @@ rule token = parse
     { error_nest (Lexing.lexeme_end_p lexbuf) lexbuf "illegal escape" }
 
   | "anyref" { ANYREF }
-  | "funcref" { FUNCREF }
   | "nullref" { NULLREF }
+  | "funcref" { FUNCREF }
+  | "ref" { REF }
+  | "any" { ANY }
+  | "null" { NULL }
+  | "opt" { OPT }
   | (nxx as t) { NUM_TYPE (num_type t) }
   | "mut" { MUT }
 

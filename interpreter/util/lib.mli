@@ -79,3 +79,13 @@ sig
   val breakup : string -> int -> string list
   val find_from_opt : (char -> bool) -> string -> int -> int option
 end
+
+module Promise :
+sig
+  type 'a t
+  exception Promise
+  val make : unit -> 'a t
+  val fulfill : 'a t -> 'a -> unit
+  val value : 'a t -> 'a
+  val value_opt : 'a t -> 'a option
+end

@@ -79,9 +79,10 @@ let (-->...) ts1 ts2 = {ins = Ellipses, ts1; outs = Ellipses, ts2}
 
 let check_stack ts1 ts2 at =
   require
-    (List.length ts1 = List.length ts2 && List.for_all2 match_value_type ts1 ts2) at
-    ("type mismatch: operator requires " ^ string_of_stack_type ts2 ^
-     " but stack has " ^ string_of_stack_type ts1)
+    (List.length ts1 = List.length ts2 &&
+      List.for_all2 (match_value_type []) ts1 ts2) at
+    ("type mismatch: operator requires " ^ string_of_value_types ts2 ^
+     " but stack has " ^ string_of_value_types ts1)
 
 let pop (ell1, ts1) (ell2, ts2) at =
   let n1 = List.length ts1 in
@@ -244,7 +245,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   | CallIndirect (x, y) ->
     let TableType (lim, t) = table c x in
     let FuncType (ins, out) = type_ c y in
-    require (match_ref_type t FuncRefType) x.at
+    require (match_ref_type [] t FuncRefType) x.at
       ("type mismatch: instruction requires table of functions" ^
        " but table has " ^ string_of_ref_type t);
     (ins @ [NumType I32Type]) --> out
@@ -290,7 +291,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   | TableCopy (x, y) ->
     let TableType (_lim1, t1) = table c x in
     let TableType (_lim2, t2) = table c y in
-    require (match_ref_type t2 t1) x.at
+    require (match_ref_type [] t2 t1) x.at
       ("type mismatch: source element type " ^ string_of_ref_type t1 ^
        " does not match destination element type " ^ string_of_ref_type t2);
     [NumType I32Type; NumType I32Type; NumType I32Type] --> []
@@ -298,7 +299,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   | TableInit (x, y) ->
     let TableType (_lim1, t1) = table c x in
     let t2 = elem c y in
-    require (match_ref_type t2 t1) x.at
+    require (match_ref_type [] t2 t1) x.at
       ("type mismatch: source element type " ^ string_of_ref_type t1 ^
        " does not match destination element type " ^ string_of_ref_type t2);
     [NumType I32Type; NumType I32Type; NumType I32Type] --> []
@@ -392,8 +393,8 @@ and check_block (c : context) (es : instr list) (ts : stack_type) at =
   let s = check_seq c es in
   let s' = pop (stack ts) s at in
   require (snd s' = []) at
-    ("type mismatch: operator requires " ^ string_of_stack_type ts ^
-     " but stack has " ^ string_of_stack_type (snd s))
+    ("type mismatch: operator requires " ^ string_of_value_types ts ^
+     " but stack has " ^ string_of_value_types (snd s))
 
 
 (* Types *)
@@ -493,7 +494,7 @@ let check_elem_mode (c : context) (t : ref_type) (mode : segment_mode) =
   | Passive -> ()
   | Active {index; offset} ->
     let TableType (_, et) = table c index in
-    require (match_ref_type t et) mode.at
+    require (match_ref_type [] t et) mode.at
       "type mismatch in active element segment";
     check_const c offset (NumType I32Type)
   | Declarative -> ()

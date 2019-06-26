@@ -164,7 +164,7 @@ let inline_type_explicit (c : context) x ft at =
 
 %token LPAR RPAR
 %token NAT INT FLOAT STRING VAR
-%token ANYREF NULLREF FUNCREF NUM_TYPE MUT
+%token ANYREF NULLREF FUNCREF REF ANY NULL OPT NUM_TYPE MUT
 %token UNREACHABLE NOP DROP SELECT
 %token BLOCK END IF THEN ELSE LOOP BR BR_IF BR_TABLE
 %token CALL CALL_INDIRECT RETURN
@@ -226,43 +226,51 @@ string_list :
 
 /* Types */
 
+opt :
+  | /* empty */ { NonNullable }
+  | OPT { Nullable }
+
 ref_type :
-  | ANYREF { AnyRefType }
-  | FUNCREF { FuncRefType }
-  | NULLREF { NullRefType }
+  | LPAR REF opt var RPAR { fun c -> DefRefType ($3, ($4 c type_).it) }
+  | LPAR REF ANY RPAR { fun c -> AnyRefType }
+  | LPAR REF NULL RPAR { fun c -> NullRefType }
+  | LPAR REF FUNC RPAR { fun c -> FuncRefType }
+  | ANYREF { fun c -> AnyRefType }  /* Sugar */
+  | NULLREF { fun c -> NullRefType }  /* Sugar */
+  | FUNCREF { fun c -> FuncRefType }  /* Sugar */
 
 value_type :
-  | NUM_TYPE { NumType $1 }
-  | ref_type { RefType $1 }
+  | NUM_TYPE { fun c -> NumType $1 }
+  | ref_type { fun c -> RefType ($1 c) }
 
 value_type_list :
-  | /* empty */ { [] }
-  | value_type value_type_list { $1 :: $2 }
+  | /* empty */ { fun c -> [] }
+  | value_type value_type_list { fun c -> $1 c :: $2 c }
 
 global_type :
-  | value_type { GlobalType ($1, Immutable) }
-  | LPAR MUT value_type RPAR { GlobalType ($3, Mutable) }
+  | value_type { fun c -> GlobalType ($1 c, Immutable) }
+  | LPAR MUT value_type RPAR { fun c -> GlobalType ($3 c, Mutable) }
 
 def_type :
-  | LPAR FUNC func_type RPAR { $3 }
+  | LPAR FUNC func_type RPAR { fun c -> $3 c }
 
 func_type :
   | /* empty */
-    { FuncType ([], []) }
+    { fun c -> FuncType ([], []) }
   | LPAR RESULT value_type_list RPAR func_type
-    { let FuncType (ins, out) = $5 in
+    { fun c -> let FuncType (ins, out) = $5 c in
       if ins <> [] then error (at ()) "result before parameter";
-      FuncType (ins, $3 @ out) }
+      FuncType (ins, $3 c @ out) }
   | LPAR PARAM value_type_list RPAR func_type
-    { let FuncType (ins, out) = $5 in FuncType ($3 @ ins, out) }
+    { fun c -> let FuncType (ins, out) = $5 c in FuncType ($3 c @ ins, out) }
   | LPAR PARAM bind_var value_type RPAR func_type  /* Sugar */
-    { let FuncType (ins, out) = $6 in FuncType ($4 :: ins, out) }
+    { fun c -> let FuncType (ins, out) = $6 c in FuncType ($4 c :: ins, out) }
 
 table_type :
-  | limits ref_type { TableType ($1, $2) }
+  | limits ref_type { fun c -> TableType ($1, $2 c) }
 
 memory_type :
-  | limits { MemoryType $1 }
+  | limits { fun c -> MemoryType $1 }
 
 limits :
   | NAT { {min = nat32 $1 (ati 1); max = None} }
@@ -385,14 +393,14 @@ plain_instr :
 
 select_instr :
   | SELECT select_instr_results
-    { let at = at () in fun c -> let b, ts = $2 in
+    { let at = at () in fun c -> let b, ts = $2 c in
       select (if b then (Some ts) else None) @@ at }
 
 select_instr_results :
   | LPAR RESULT value_type_list RPAR select_instr_results
-    { let _, ts = $5 in true, $3 @ ts }
+    { fun c -> let _, ts = $5 c in true, $3 c @ ts }
   | /* empty */
-    { false, [] }
+    { fun c -> false, [] }
 
 select_instr_instr :
   | SELECT select_instr_results_instr
@@ -402,7 +410,7 @@ select_instr_instr :
 
 select_instr_results_instr :
   | LPAR RESULT value_type_list RPAR select_instr_results_instr
-    { fun c -> let _, ts, es = $5 c in true, $3 @ ts, es }
+    { fun c -> let _, ts, es = $5 c in true, $3 c @ ts, es }
   | instr
     { fun c -> false, [], $1 c }
 
@@ -425,13 +433,13 @@ call_instr_type :
 
 call_instr_params :
   | LPAR PARAM value_type_list RPAR call_instr_params
-    { fun c -> let FuncType (ts1, ts2) = $5 c in FuncType ($3 @ ts1, ts2) }
+    { fun c -> let FuncType (ts1, ts2) = $5 c in FuncType ($3 c @ ts1, ts2) }
   | call_instr_results
     { fun c -> FuncType ([], $1 c) }
 
 call_instr_results :
   | LPAR RESULT value_type_list RPAR call_instr_results
-    { fun c -> $3 @ $5 c }
+    { fun c -> $3 c @ $5 c }
   | /* empty */
     { fun c -> [] }
 
@@ -458,13 +466,13 @@ call_instr_type_instr :
 call_instr_params_instr :
   | LPAR PARAM value_type_list RPAR call_instr_params_instr
     { fun c ->
-      let FuncType (ts1, ts2), es = $5 c in FuncType ($3 @ ts1, ts2), es }
+      let FuncType (ts1, ts2), es = $5 c in FuncType ($3 c @ ts1, ts2), es }
   | call_instr_results_instr
     { fun c -> let ts, es = $1 c in FuncType ([], ts), es }
 
 call_instr_results_instr :
   | LPAR RESULT value_type_list RPAR call_instr_results_instr
-    { fun c -> let ts, es = $5 c in $3 @ ts, es }
+    { fun c -> let ts, es = $5 c in $3 c @ ts, es }
   | instr
     { fun c -> [], $1 c }
 
@@ -481,11 +489,11 @@ block_instr :
       let ts, es1 = $3 c' in if_ ts es1 ($6 c') }
 
 block_type :
-  | LPAR RESULT value_type RPAR { [$3] }
+  | LPAR RESULT value_type RPAR { fun c -> [$3 c] }
 
 block :
   | block_type instr_list
-    { fun c -> $1, $2 c }
+    { fun c -> $1 c, $2 c }
   | instr_list { fun c -> [], $1 c }
 
 expr :  /* Sugar */
@@ -511,7 +519,7 @@ expr1 :  /* Sugar */
 
 select_expr_results :
   | LPAR RESULT value_type_list RPAR select_expr_results
-    { fun c -> let _, ts, es = $5 c in true, $3 @ ts, es }
+    { fun c -> let _, ts, es = $5 c in true, $3 c @ ts, es }
   | expr_list
     { fun c -> false, [], $1 c }
 
@@ -529,19 +537,19 @@ call_expr_type :
 call_expr_params :
   | LPAR PARAM value_type_list RPAR call_expr_params
     { fun c ->
-      let FuncType (ts1, ts2), es = $5 c in FuncType ($3 @ ts1, ts2), es }
+      let FuncType (ts1, ts2), es = $5 c in FuncType ($3 c @ ts1, ts2), es }
   | call_expr_results
     { fun c -> let ts, es = $1 c in FuncType ([], ts), es }
 
 call_expr_results :
   | LPAR RESULT value_type_list RPAR call_expr_results
-    { fun c -> let ts, es = $5 c in $3 @ ts, es }
+    { fun c -> let ts, es = $5 c in $3 c @ ts, es }
   | expr_list
     { fun c -> [], $1 c }
 
 
 if_block :
-  | block_type if_block { fun c c' -> let ts, ess = $2 c c' in $1 @ ts, ess }
+  | block_type if_block { fun c c' -> let ts, ess = $2 c c' in $1 c @ ts, ess }
   | if_ { fun c c' -> [], $1 c c' }
 
 if_ :
@@ -577,21 +585,23 @@ func :
 func_fields :
   | type_use func_fields_body
     { fun c x at ->
-      let t = inline_type_explicit c ($1 c type_) (fst $2) at in
-      [{(snd $2 (enter_func c)) with ftype = t} @@ at], [], [] }
+      let ft, f = $2 (enter_func c) in
+      let t = inline_type_explicit c ($1 c type_) ft at in
+      [{f with ftype = t} @@ at], [], [] }
   | func_fields_body  /* Sugar */
     { fun c x at ->
-      let t = inline_type c (fst $1) at in
-      [{(snd $1 (enter_func c)) with ftype = t} @@ at], [], [] }
+      let ft, f = $1 (enter_func c) in
+      let t = inline_type c ft at in
+      [{f with ftype = t} @@ at], [], [] }
   | inline_import type_use func_fields_import  /* Sugar */
     { fun c x at ->
-      let t = inline_type_explicit c ($2 c type_) $3 at in
+      let t = inline_type_explicit c ($2 c type_) ($3 c) at in
       [],
       [{ module_name = fst $1; item_name = snd $1;
          idesc = FuncImport t @@ at } @@ at ], [] }
   | inline_import func_fields_import  /* Sugar */
     { fun c x at ->
-      let t = inline_type c $2 at in
+      let t = inline_type c ($2 c) at in
       [],
       [{ module_name = fst $1; item_name = snd $1;
          idesc = FuncImport t @@ at } @@ at ], [] }
@@ -602,42 +612,54 @@ func_fields :
 func_fields_import :  /* Sugar */
   | func_fields_import_result { $1 }
   | LPAR PARAM value_type_list RPAR func_fields_import
-    { let FuncType (ins, out) = $5 in FuncType ($3 @ ins, out) }
+    { fun c -> let FuncType (ins, out) = $5 c in FuncType ($3 c @ ins, out) }
   | LPAR PARAM bind_var value_type RPAR func_fields_import  /* Sugar */
-    { let FuncType (ins, out) = $6 in FuncType ($4 :: ins, out) }
+    { fun c -> let FuncType (ins, out) = $6 c in FuncType ($4 c :: ins, out) }
 
 func_fields_import_result :  /* Sugar */
-  | /* empty */ { FuncType ([], []) }
+  | /* empty */ { fun c -> FuncType ([], []) }
   | LPAR RESULT value_type_list RPAR func_fields_import_result
-    { let FuncType (ins, out) = $5 in FuncType (ins, $3 @ out) }
+    { fun c -> let FuncType (ins, out) = $5 c in FuncType (ins, $3 c @ out) }
 
 func_fields_body :
   | func_result_body { $1 }
   | LPAR PARAM value_type_list RPAR func_fields_body
-    { let FuncType (ins, out) = fst $5 in
-      FuncType ($3 @ ins, out),
-      fun c -> ignore (anon_locals c $3); snd $5 c }
+    { fun c ->
+      let ts = $3 c in
+      ignore (anon_locals c ts);
+      let ft, f = $5 c in
+      let FuncType (ins, out) = ft in
+      FuncType (ts @ ins, out), f }
   | LPAR PARAM bind_var value_type RPAR func_fields_body  /* Sugar */
-    { let FuncType (ins, out) = fst $6 in
-      FuncType ($4 :: ins, out),
-      fun c -> ignore (bind_local c $3); snd $6 c }
+    { fun c ->
+      ignore (bind_local c $3);
+      let ft, f = $6 c in
+      let FuncType (ins, out) = ft in
+      FuncType ($4 c :: ins, out), f }
 
 func_result_body :
-  | func_body { FuncType ([], []), $1 }
+  | func_body { fun c -> FuncType ([], []), $1 c }
   | LPAR RESULT value_type_list RPAR func_result_body
-    { let FuncType (ins, out) = fst $5 in
-      FuncType (ins, $3 @ out), snd $5 }
+    { fun c ->
+      let ft, f = $5 c in
+      let FuncType (ins, out) = ft in
+      FuncType (ins, $3 c @ out), f }
 
 func_body :
   | instr_list
     { fun c -> let c' = anon_label c in
       {ftype = -1l @@ at(); locals = []; body = $1 c'} }
   | LPAR LOCAL value_type_list RPAR func_body
-    { fun c -> ignore (anon_locals c $3); let f = $5 c in
-      {f with locals = $3 @ f.locals} }
+    { fun c ->
+      let ts = $3 c in
+      ignore (anon_locals c ts);
+      let f = $5 c in
+      {f with locals = ts @ f.locals} }
   | LPAR LOCAL bind_var value_type RPAR func_body  /* Sugar */
-    { fun c -> ignore (bind_local c $3); let f = $6 c in
-      {f with locals = $4 :: f.locals} }
+    { fun c ->
+      ignore (bind_local c $3);
+      let f = $6 c in
+      {f with locals = $4 c :: f.locals} }
 
 
 /* Tables, Memories & Globals */
@@ -670,33 +692,33 @@ elem_var_list :
 
 elem_list :
   | elem_kind elem_var_list
-    { ($1, fun c -> $2 c func) }
+    { fun c -> $1, $2 c func }
   | ref_type elem_expr_list
-    { ($1, fun c -> $2 c) }
+    { fun c -> $1 c, $2 c }
 
 
 elem :
   | LPAR ELEM bind_var_opt elem_list RPAR
     { let at = at () in
       fun c -> ignore ($3 c anon_elem bind_elem);
-      fun () ->
-      { etype = (fst $4); einit = (snd $4) c; emode = Passive @@ at } @@ at }
+      fun () -> let etype, einit = $4 c in
+      { etype; einit; emode = Passive @@ at } @@ at }
   | LPAR ELEM bind_var_opt table_use offset elem_list RPAR
     { let at = at () in
       fun c -> ignore ($3 c anon_elem bind_elem);
-      fun () ->
-      { etype = (fst $6); einit = (snd $6) c;
+      fun () -> let etype, einit = $6 c in
+      { etype; einit;
         emode = Active {index = $4 c table; offset = $5 c} @@ at } @@ at }
   | LPAR ELEM bind_var_opt DECLARE elem_list RPAR
     { let at = at () in
       fun c -> ignore ($3 c anon_elem bind_elem);
-      fun () ->
-      { etype = (fst $5); einit = (snd $5) c; emode = Declarative @@ at } @@ at }
+      fun () -> let etype, einit = $5 c in
+      { etype; einit; emode = Declarative @@ at } @@ at }
   | LPAR ELEM bind_var_opt offset elem_list RPAR  /* Sugar */
     { let at = at () in
       fun c -> ignore ($3 c anon_elem bind_elem);
-      fun () ->
-      { etype = (fst $5); einit = (snd $5) c;
+      fun () -> let etype, einit = $5 c in
+      { etype; einit;
         emode = Active {index = 0l @@ at; offset = $4 c} @@ at } @@ at }
   | LPAR ELEM bind_var_opt offset elem_var_list RPAR  /* Sugar */
     { let at = at () in
@@ -713,12 +735,12 @@ table :
 
 table_fields :
   | table_type
-    { fun c x at -> [{ttype = $1} @@ at], [], [], [] }
+    { fun c x at -> [{ttype = $1 c} @@ at], [], [], [] }
   | inline_import table_type  /* Sugar */
     { fun c x at ->
       [], [],
       [{ module_name = fst $1; item_name = snd $1;
-        idesc = TableImport $2 @@ at } @@ at], [] }
+        idesc = TableImport ($2 c) @@ at } @@ at], [] }
   | inline_export table_fields  /* Sugar */
     { fun c x at -> let tabs, elems, ims, exs = $2 c x at in
       tabs, elems, ims, $1 (TableExport x) c :: exs }
@@ -728,7 +750,7 @@ table_fields :
       let einit = $4 c func in
       let size = Lib.List32.length einit in
       let emode = Active {index = x; offset} @@ at in
-      [{ttype = TableType ({min = size; max = Some size}, $1)} @@ at],
+      [{ttype = TableType ({min = size; max = Some size}, $1 c)} @@ at],
       [{etype = FuncRefType; einit; emode} @@ at],
       [], [] }
   | ref_type LPAR ELEM elem_expr elem_expr_list RPAR  /* Sugar */
@@ -737,7 +759,7 @@ table_fields :
       let einit = (fun c -> $4 c :: $5 c) c in
       let size = Lib.List32.length einit in
       let emode = Active {index = x; offset} @@ at in
-      [{ttype = TableType ({min = size; max = Some size}, $1)} @@ at],
+      [{ttype = TableType ({min = size; max = Some size}, $1 c)} @@ at],
       [{etype = FuncRefType; einit; emode} @@ at],
       [], [] }
 
@@ -765,12 +787,12 @@ memory :
 
 memory_fields :
   | memory_type
-    { fun c x at -> [{mtype = $1} @@ at], [], [], [] }
+    { fun c x at -> [{mtype = $1 c} @@ at], [], [], [] }
   | inline_import memory_type  /* Sugar */
     { fun c x at ->
       [], [],
       [{ module_name = fst $1; item_name = snd $1;
-         idesc = MemoryImport $2 @@ at } @@ at], [] }
+         idesc = MemoryImport ($2 c) @@ at } @@ at], [] }
   | inline_export memory_fields  /* Sugar */
     { fun c x at -> let mems, data, ims, exs = $2 c x at in
       mems, data, ims, $1 (MemoryExport x) c :: exs }
@@ -790,12 +812,12 @@ global :
 
 global_fields :
   | global_type const_expr
-    { fun c x at -> [{gtype = $1; ginit = $2 c} @@ at], [], [] }
+    { fun c x at -> [{gtype = $1 c; ginit = $2 c} @@ at], [], [] }
   | inline_import global_type  /* Sugar */
     { fun c x at ->
       [],
       [{ module_name = fst $1; item_name = snd $1;
-         idesc = GlobalImport $2 @@ at } @@ at], [] }
+         idesc = GlobalImport ($2 c) @@ at } @@ at], [] }
   | inline_export global_fields  /* Sugar */
     { fun c x at -> let globs, ims, exs = $2 c x at in
       globs, ims, $1 (GlobalExport x) c :: exs }
@@ -810,16 +832,16 @@ import_desc :
   | LPAR FUNC bind_var_opt func_type RPAR  /* Sugar */
     { let at4 = ati 4 in
       fun c -> ignore ($3 c anon_func bind_func);
-      fun () -> FuncImport (inline_type c $4 at4) }
+      fun () -> FuncImport (inline_type c ($4 c) at4) }
   | LPAR TABLE bind_var_opt table_type RPAR
     { fun c -> ignore ($3 c anon_table bind_table);
-      fun () -> TableImport $4 }
+      fun () -> TableImport ($4 c) }
   | LPAR MEMORY bind_var_opt memory_type RPAR
     { fun c -> ignore ($3 c anon_memory bind_memory);
-      fun () -> MemoryImport $4 }
+      fun () -> MemoryImport ($4 c) }
   | LPAR GLOBAL bind_var_opt global_type RPAR
     { fun c -> ignore ($3 c anon_global bind_global);
-      fun () -> GlobalImport $4 }
+      fun () -> GlobalImport ($4 c) }
 
 import :
   | LPAR IMPORT name name import_desc RPAR
@@ -849,13 +871,13 @@ inline_export :
 /* Modules */
 
 type_ :
-  | def_type { $1 @@ at () }
+  | def_type { fun c -> $1 c @@ at () }
 
 type_def :
   | LPAR TYPE type_ RPAR
-    { fun c -> anon_type c $3 }
+    { fun c -> anon_type c ($3 c) }
   | LPAR TYPE bind_var type_ RPAR  /* Sugar */
-    { fun c -> bind_type c $3 $4 }
+    { fun c -> bind_type c $3 ($4 c) }
 
 start :
   | LPAR START var RPAR

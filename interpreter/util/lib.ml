@@ -203,3 +203,15 @@ struct
     | Some x -> f x
     | None -> ()
 end
+
+module Promise =
+struct
+  type 'a t = 'a option ref
+
+  exception Promise
+
+  let make () = ref None
+  let fulfill p x = if !p = None then p := Some x else raise Promise
+  let value_opt p = !p
+  let value p = match !p with Some x -> x | None -> raise Promise
+end

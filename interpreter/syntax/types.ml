@@ -1,10 +1,13 @@
 (* Types *)
 
+type nullability = NonNullable | Nullable
 type num_type = I32Type | I64Type | F32Type | F64Type
-type ref_type = NullRefType | AnyRefType | FuncRefType
+type ref_type = NullRefType | AnyRefType | FuncRefType | DefRefType of nullability * Int32.t
+
 type value_type = NumType of num_type | RefType of ref_type | BotType
 type stack_type = value_type list
 type func_type = FuncType of stack_type * stack_type
+type def_type = func_type
 
 type 'a limits = {min : 'a; max : 'a option}
 type mutability = Immutable | Mutable
@@ -24,53 +27,6 @@ let size = function
   | I32Type | F32Type -> 4
   | I64Type | F64Type -> 8
 
-
-(* Subtyping *)
-
-let match_num_type t1 t2 =
-  t1 = t2
-
-let match_ref_type t1 t2 =
-  match t1, t2 with
-  | _, AnyRefType -> true
-  | NullRefType, _ -> true
-  | _, _ -> t1 = t2
-
-let match_value_type t1 t2 =
-  match t1, t2 with
-  | NumType t1', NumType t2' -> match_num_type t1' t2'
-  | RefType t1', RefType t2' -> match_ref_type t1' t2'
-  | BotType, _ -> true
-  | _, _ -> false
-
-let match_limits lim1 lim2 =
-  I32.ge_u lim1.min lim2.min &&
-  match lim1.max, lim2.max with
-  | _, None -> true
-  | None, Some _ -> false
-  | Some i, Some j -> I32.le_u i j
-
-let match_func_type ft1 ft2 =
-  ft1 = ft2
-
-let match_table_type (TableType (lim1, et1)) (TableType (lim2, et2)) =
-  et1 = et2 && match_limits lim1 lim2
-
-let match_memory_type (MemoryType lim1) (MemoryType lim2) =
-  match_limits lim1 lim2
-
-let match_global_type (GlobalType (t1, mut1)) (GlobalType (t2, mut2)) =
-  mut1 = mut2 &&
-  (t1 = t2 || mut2 = Immutable && match_value_type t1 t2)
-
-let match_extern_type et1 et2 =
-  match et1, et2 with
-  | ExternFuncType ft1, ExternFuncType ft2 -> match_func_type ft1 ft2
-  | ExternTableType tt1, ExternTableType tt2 -> match_table_type tt1 tt2
-  | ExternMemoryType mt1, ExternMemoryType mt2 -> match_memory_type mt1 mt2
-  | ExternGlobalType gt1, ExternGlobalType gt2 -> match_global_type gt1 gt2
-  | _, _ -> false
-
 let is_num_type = function
   | NumType _ | BotType -> true
   | RefType _ -> false
@@ -78,6 +34,124 @@ let is_num_type = function
 let is_ref_type = function
   | NumType _ -> false
   | RefType _ | BotType -> true
+
+let defaultable_num_type = function
+  | _ -> true
+
+let defaultable_ref_type = function
+  | AnyRefType | NullRefType | FuncRefType | DefRefType (Nullable, _) -> true
+  | DefRefType (NonNullable, _) -> false
+
+let defaultable_val_type = function
+  | NumType t -> defaultable_num_type t
+  | RefType t -> defaultable_ref_type t
+  | BotType -> false
+
+
+(* Equivalence *)
+
+let eq_nullability c nul1 nul2 =
+  nul1 = nul2
+
+let eq_num_type c t1 t2 =
+  t1 = t2
+
+let eq_ref_type c t1 t2 =
+  match t1, t2 with
+  | DefRefType (nul1, x1), DefRefType (nul2, x2) ->
+    eq_nullability c nul1 nul2 && x1 = x2 (* TODO *)
+  | _, _ -> t1 = t2
+
+let eq_value_type c t1 t2 =
+  match t1, t2 with
+  | NumType t1', NumType t2' -> eq_num_type c t1' t2'
+  | RefType t1', RefType t2' -> eq_ref_type c t1' t2'
+  | BotType, BotType -> true
+  | _, _ -> false
+
+let eq_limits c lim1 lim2 =
+  lim1.min = lim2.min && lim1.max = lim2.max
+
+let eq_func_type c (FuncType (ts11, ts12)) (FuncType (ts21, ts22)) =
+  List.length ts11 = List.length ts21 &&
+  List.length ts12 = List.length ts22 &&
+  List.for_all2 (eq_value_type c) ts11 ts21 &&
+  List.for_all2 (eq_value_type c) ts12 ts22
+
+let eq_table_type c (TableType (lim1, t1)) (TableType (lim2, t2)) =
+  eq_limits c lim1 lim2 && eq_ref_type c t1 t2
+
+let eq_memory_type c (MemoryType lim1) (MemoryType lim2) =
+  eq_limits c lim1 lim2
+
+let eq_global_type c (GlobalType (t1, mut1)) (GlobalType (t2, mut2)) =
+  mut1 = mut2 && eq_value_type c t1 t2
+
+let eq_extern_type c et1 et2 =
+  match et1, et2 with
+  | ExternFuncType ft1, ExternFuncType ft2 -> eq_func_type c ft1 ft2
+  | ExternTableType tt1, ExternTableType tt2 -> eq_table_type c tt1 tt2
+  | ExternMemoryType mt1, ExternMemoryType mt2 -> eq_memory_type c mt1 mt2
+  | ExternGlobalType gt1, ExternGlobalType gt2 -> eq_global_type c gt1 gt2
+  | _, _ -> false
+
+
+(* Subtyping *)
+
+let match_nullability c nul1 nul2 =
+  match nul1, nul2 with
+  | NonNullable, Nullable -> true
+  | _, _ -> nul1 = nul2
+
+let match_num_type c t1 t2 =
+  t1 = t2
+
+let match_ref_type c t1 t2 =
+  match t1, t2 with
+  | _, AnyRefType -> true
+  | NullRefType, DefRefType (nul, _) -> nul = Nullable
+  | NullRefType, FuncRefType -> true
+  | DefRefType (_, x1), FuncRefType -> true
+  | DefRefType (nul1, x1), DefRefType (nul2, x2) ->
+    match_nullability c nul1 nul2 && x1 = x2 (* TODO *)
+  | _, _ -> eq_ref_type c t1 t2
+
+let match_value_type c t1 t2 =
+  match t1, t2 with
+  | NumType t1', NumType t2' -> match_num_type c t1' t2'
+  | RefType t1', RefType t2' -> match_ref_type c t1' t2'
+  | BotType, _ -> true
+  | _, _ -> false
+
+let match_limits c lim1 lim2 =
+  I32.ge_u lim1.min lim2.min &&
+  match lim1.max, lim2.max with
+  | _, None -> true
+  | None, Some _ -> false
+  | Some i, Some j -> I32.le_u i j
+
+let match_func_type c ft1 ft2 =
+  eq_func_type c ft1 ft2
+
+let match_table_type c (TableType (lim1, t1)) (TableType (lim2, t2)) =
+  match_limits c lim1 lim2 && eq_ref_type c t1 t2
+
+let match_memory_type c (MemoryType lim1) (MemoryType lim2) =
+  match_limits c lim1 lim2
+
+let match_global_type c (GlobalType (t1, mut1)) (GlobalType (t2, mut2)) =
+  mut1 = mut2 &&
+  match mut2 with
+  | Immutable -> match_value_type c t1 t2
+  | Mutable -> eq_value_type c t1 t2
+
+let match_extern_type c et1 et2 =
+  match et1, et2 with
+  | ExternFuncType ft1, ExternFuncType ft2 -> match_func_type c ft1 ft2
+  | ExternTableType tt1, ExternTableType tt2 -> match_table_type c tt1 tt2
+  | ExternMemoryType mt1, ExternMemoryType mt2 -> match_memory_type c mt1 mt2
+  | ExternGlobalType gt1, ExternGlobalType gt2 -> match_global_type c gt1 gt2
+  | _, _ -> false
 
 
 (* Filters *)
@@ -94,6 +168,10 @@ let globals =
 
 (* String conversion *)
 
+let string_of_nullability = function
+  | NonNullable -> ""
+  | Nullable -> " opt"
+
 let string_of_num_type = function
   | I32Type -> "i32"
   | I64Type -> "i64"
@@ -104,6 +182,8 @@ let string_of_ref_type = function
   | NullRefType -> "nullref"
   | AnyRefType -> "anyref"
   | FuncRefType -> "funcref"
+  | DefRefType (nul, x) ->
+    "(ref" ^ string_of_nullability nul ^ Int32.to_string x ^ ")"
 
 let string_of_value_type = function
   | NumType t -> string_of_num_type t
@@ -129,11 +209,8 @@ let string_of_global_type = function
   | GlobalType (t, Immutable) -> string_of_value_type t
   | GlobalType (t, Mutable) -> "(mut " ^ string_of_value_type t ^ ")"
 
-let string_of_stack_type ts =
-  "[" ^ String.concat " " (List.map string_of_value_type ts) ^ "]"
-
 let string_of_func_type (FuncType (ins, out)) =
-  string_of_stack_type ins ^ " -> " ^ string_of_stack_type out
+  string_of_value_types ins ^ " -> " ^ string_of_value_types out
 
 let string_of_extern_type = function
   | ExternFuncType ft -> "func " ^ string_of_func_type ft

@@ -534,7 +534,7 @@ let invoke (func : func_inst) (vs : value list) : value list =
   let FuncType (ins, out) = Func.type_of func in
   if List.length vs <> List.length ins then
     Crash.error at "wrong number of arguments";
-  if not (List.for_all2 (fun v -> match_value_type (type_of_value v)) vs ins) then
+  if not (List.for_all2 (fun v -> match_value_type [] (type_of_value v)) vs ins) then
     Crash.error at "wrong types of arguments";
   let c = config empty_module_inst (List.rev vs) [Invoke func @@ at] in
   try List.rev (eval c) with Stack_overflow ->
@@ -586,7 +586,7 @@ let create_data (inst : module_inst) (seg : data_segment) : data_inst =
 
 let add_import (m : module_) (ext : extern) (im : import) (inst : module_inst)
   : module_inst =
-  if not (match_extern_type (extern_type_of ext) (import_type m im)) then
+  if not (match_extern_type [] (extern_type_of ext) (import_type m im)) then
     Link.error im.at "incompatible import type";
   match ext with
   | ExternFunc func -> {inst with funcs = func :: inst.funcs}

@@ -258,6 +258,11 @@ TODO: This assumes that let-bound locals are mutable. Should they be?
   - `(table <tabletype>)` is shorthand for `(table <tabletype> (ref.null))`
 
 
+### Tables
+
+TODO: how to initialise tables of non-opt element type (init value? init segment?).
+
+
 ## Binary Format
 
 TODO.

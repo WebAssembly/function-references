@@ -142,10 +142,12 @@ let num_type s =
   | _ -> error s (pos s - 1) "invalid number type"
 
 let ref_type s =
-  match vs7 s with
-  | -0x10 -> FuncRefType
-  | -0x11 -> AnyRefType
-  | -0x12 -> NullRefType
+  match vs32 s with
+  | -0x10l -> FuncRefType
+  | -0x11l -> AnyRefType
+  | -0x12l -> NullRefType
+  | -0x14l -> DefRefType (Nullable, vu32 s)
+  | i when i >= 0l -> DefRefType (NonNullable, i)
   | _ -> error s (pos s - 1) "invalid reference type"
 
 let value_type s =
