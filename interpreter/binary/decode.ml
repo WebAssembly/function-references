@@ -194,6 +194,9 @@ let global_type s =
   let mut = mutability s in
   GlobalType (t, mut)
 
+let def_type s =
+  FuncDefType (func_type s)
+
 
 (* Decode instructions *)
 
@@ -259,7 +262,12 @@ let rec instr s =
     let x = at var s in
     call_indirect x y
 
-  | 0x12 | 0x13 | 0x14 | 0x15 | 0x16 | 0x17 | 0x18 | 0x19 as b -> illegal s pos b
+  | 0x12 | 0x13 as b -> illegal s pos b  (* return_call, return_call_indirect *)
+
+  | 0x14 -> call_ref
+  | 0x15 -> return_call_ref
+
+  | 0x16 | 0x17 | 0x18 | 0x19 as b -> illegal s pos b
 
   | 0x1a -> drop
   | 0x1b -> select None
@@ -528,7 +536,7 @@ let section tag f default s =
 
 (* Type section *)
 
-let type_ s = at func_type s
+let type_ s = at def_type s
 
 let type_section s =
   section `TypeSection (vec type_) [] s
@@ -620,7 +628,7 @@ let start_section s =
 
 let local s =
   let n = vu32 s in
-  let t = value_type s in
+  let t = at value_type s in
   n, t
 
 let code _ s =
