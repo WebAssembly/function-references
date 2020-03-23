@@ -1,5 +1,6 @@
 open Source
 open Ast
+open Types
 
 module Set = Set.Make(Int32)
 
@@ -52,6 +53,7 @@ let datas s = {empty with datas = s}
 let locals s = {empty with locals = s}
 let labels s = {empty with labels = s}
 
+let idx' x' = Set.singleton x'
 let idx x = Set.singleton x.it
 let zero = Set.singleton 0l
 let shift s = Set.map (Int32.add (-1l)) (Set.remove 0l s)
@@ -59,14 +61,36 @@ let shift s = Set.map (Int32.add (-1l)) (Set.remove 0l s)
 let (++) = union
 let list free xs = List.fold_left union empty (List.map free xs)
 
+let num_type = function
+  | I32Type | I64Type | F32Type | F64Type -> empty
+
+let ref_type = function
+  | AnyRefType | FuncRefType | NullRefType -> empty
+  | DefRefType (_, x) -> types (idx' x)
+
+let value_type = function
+  | NumType t -> num_type t
+  | RefType t -> ref_type t
+  | BotType -> empty
+
+let func_type (FuncType (ins, out)) =
+  list value_type ins ++ list value_type out
+let global_type (GlobalType (t, _mut)) = value_type t
+let table_type (TableType (_lim, t)) = ref_type t
+let memory_type (MemoryType (_lim)) = empty
+
+let def_type = function
+  | FuncDefType ft -> func_type ft
+
 let rec instr (e : instr) =
   match e.it with
-  | Unreachable | Nop | Drop | Select _ -> empty
+  | Unreachable | Nop | Drop -> empty
+  | Select tso -> list value_type (Lib.Option.get tso [])
   | RefNull | RefIsNull -> empty
   | RefFunc x -> funcs (idx x)
   | Const _ | Test _ | Compare _ | Unary _ | Binary _ | Convert _ -> empty
-  | Block (_, es) | Loop (_, es) -> block es
-  | If (_, es1, es2) -> block es1 ++ block es2
+  | Block (ts, es) | Loop (ts, es) -> list value_type ts ++ block es
+  | If (ts, es1, es2) -> list value_type ts ++ block es1 ++ block es2
   | Br x | BrIf x -> labels (idx x)
   | BrTable (xs, x) -> list (fun x -> labels (idx x)) (x::xs)
   | Return | CallRef | ReturnCallRef -> empty
@@ -89,10 +113,11 @@ and block (es : instr list) =
 
 let const (c : const) = block c.it
 
-let global (g : global) = const g.it.ginit
-let func (f : func) = {(block f.it.body) with locals = Set.empty}
-let table (t : table) = empty
-let memory (m : memory) = empty
+let global (g : global) = global_type g.it.gtype ++ const g.it.ginit
+let func (f : func) =
+  {(types (idx f.it.ftype) ++ block f.it.body) with locals = Set.empty}
+let table (t : table) = table_type t.it.ttype
+let memory (m : memory) = memory_type m.it.mtype
 
 let segment_mode f (m : segment_mode) =
   match m.it with
@@ -105,7 +130,7 @@ let elem (s : elem_segment) =
 let data (s : data_segment) =
   segment_mode memories s.it.dmode
 
-let type_ (t : type_) = empty
+let type_ (t : type_) = def_type t.it
 
 let export_desc (d : export_desc) =
   match d.it with
@@ -117,9 +142,9 @@ let export_desc (d : export_desc) =
 let import_desc (d : import_desc) =
   match d.it with
   | FuncImport x -> types (idx x)
-  | TableImport tt -> empty
-  | MemoryImport mt -> empty
-  | GlobalImport gt -> empty
+  | TableImport tt -> table_type tt
+  | MemoryImport mt -> memory_type mt
+  | GlobalImport gt -> global_type gt
 
 let export (e : export) = export_desc e.it.edesc
 let import (i : import) = import_desc i.it.idesc
