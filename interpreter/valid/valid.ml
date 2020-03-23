@@ -268,7 +268,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
     | RefType (DefRefType (nul, x)) ->
       let FuncType (ins, out) = func_type c (x @@ e.at) in
       require (out = c.results) e.at "type mismatch in function result";
-      (ins @ [RefType (DefRefType (nul, x))]) --> []
+      (ins @ [RefType (DefRefType (nul, x))]) -->... []
     | _ ->
       [BotType] -->... []
     )
