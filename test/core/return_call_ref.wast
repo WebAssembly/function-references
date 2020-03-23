@@ -197,3 +197,20 @@
 (assert_return (invoke "odd" (i64.const 77)) (i64.const 44))
 (assert_return (invoke "odd" (i64.const 1_000_000)) (i64.const 99))
 (assert_return (invoke "odd" (i64.const 999_999)) (i64.const 44))
+
+
+;; Unreachable typing.
+
+(module
+  (type $t (func (param i32) (result i32)))
+  (elem func $f)
+  (func $f (param i32) (result i32) (local.get 0))
+  (global $f (ref $t) (ref.func $f))
+
+  (func (export "unreachable") (result i32)
+    (unreachable)
+    (return_call_ref)
+  )
+)
+
+(assert_trap (invoke "unreachable") "unreachable")
