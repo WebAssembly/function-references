@@ -62,6 +62,60 @@ let refer category (s : Free.Set.t) x =
 let refer_func (c : context) x = refer "function" c.refs.Free.funcs x
 
 
+(* Types *)
+
+let check_arity n at =
+  require (n <= 1) at "invalid result arity, larger than 1 is not (yet) allowed"
+
+let check_limits {min; max} range at msg =
+  require (I64.le_u (Int64.of_int32 min) range) at msg;
+  match max with
+  | None -> ()
+  | Some max ->
+    require (I64.le_u (Int64.of_int32 max) range) at msg;
+    require (I32.le_u min max) at
+      "size minimum must not be greater than maximum"
+
+let check_num_type (c : context) (t : num_type) at =
+  ()
+
+let check_ref_type (c : context) (t : ref_type) at =
+  match t with
+  | AnyRefType | NullRefType | FuncRefType -> ()
+  | DefRefType (_nul, x) -> ignore (func_type c (x @@ at))
+
+let check_value_type (c : context) (t : value_type) at =
+  match t with
+  | NumType t' -> check_num_type c t' at
+  | RefType t' -> check_ref_type c t' at
+  | BotType -> ()
+
+let check_func_type (c : context) (ft : func_type) at =
+  let FuncType (ins, out) = ft in
+  List.iter (fun t -> check_value_type c t at) ins;
+  List.iter (fun t -> check_value_type c t at) out;
+  check_arity (List.length out) at
+
+let check_table_type (c : context) (tt : table_type) at =
+  let TableType (lim, t) = tt in
+  check_limits lim 0x1_0000_0000L at "table size must be at most 2^32";
+  check_ref_type c t at;
+  require (defaultable_ref_type t) at "non-defaultable element type"
+
+let check_memory_type (c : context) (mt : memory_type) at =
+  let MemoryType lim = mt in
+  check_limits lim 0x1_0000L at
+    "memory size must be at most 65536 pages (4GiB)"
+
+let check_global_type (c : context) (gt : global_type) at =
+  let GlobalType (t, mut) = gt in
+  check_value_type c t at
+
+let check_def_type (c : context) (dt : def_type) at =
+  match dt with
+  | FuncDefType ft -> check_func_type c ft at
+
+
 (* Stack typing *)
 
 (*
@@ -163,9 +217,6 @@ let check_memop (c : context) (memop : 'a memop) get_sz at =
   require (1 lsl memop.align <= size) at
     "alignment must not be larger than natural"
 
-let check_arity n at =
-  require (n <= 1) at "invalid result arity, larger than 1 is not (yet) allowed"
-
 
 (*
  * Conventions:
@@ -206,21 +257,25 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
     [t; t; NumType I32Type] --> [t]
 
   | Select (Some ts) ->
+    List.iter (fun t -> check_value_type c t e.at) ts;
     check_arity (List.length ts) e.at;
     require (List.length ts <> 0) e.at "invalid result arity, 0 is not (yet) allowed";
     (ts @ ts @ [NumType I32Type]) --> ts
 
   | Block (ts, es) ->
+    List.iter (fun t -> check_value_type c t e.at) ts;
     check_arity (List.length ts) e.at;
     check_block {c with labels = ts :: c.labels} es ts e.at;
     [] --> ts
 
   | Loop (ts, es) ->
+    List.iter (fun t -> check_value_type c t e.at) ts;
     check_arity (List.length ts) e.at;
     check_block {c with labels = [] :: c.labels} es ts e.at;
     [] --> ts
 
   | If (ts, es1, es2) ->
+    List.iter (fun t -> check_value_type c t e.at) ts;
     check_arity (List.length ts) e.at;
     check_block {c with labels = ts :: c.labels} es1 ts e.at;
     check_block {c with labels = ts :: c.labels} es2 ts e.at;
@@ -422,57 +477,6 @@ and check_block (c : context) (es : instr list) (ts : stack_type) at =
      " but stack has " ^ string_of_value_types (snd s))
 
 
-(* Types *)
-
-let check_limits {min; max} range at msg =
-  require (I64.le_u (Int64.of_int32 min) range) at msg;
-  match max with
-  | None -> ()
-  | Some max ->
-    require (I64.le_u (Int64.of_int32 max) range) at msg;
-    require (I32.le_u min max) at
-      "size minimum must not be greater than maximum"
-
-let check_num_type (c : context) (t : num_type) at =
-  ()
-
-let check_ref_type (c : context) (t : ref_type) at =
-  match t with
-  | AnyRefType | NullRefType | FuncRefType -> ()
-  | DefRefType (_nul, x) -> ignore (func_type c (x @@ at))
-
-let check_value_type (c : context) (t : value_type) at =
-  match t with
-  | NumType t' -> check_num_type c t' at
-  | RefType t' -> check_ref_type c t' at
-  | BotType -> ()
-
-let check_func_type (c : context) (ft : func_type) at =
-  let FuncType (ins, out) = ft in
-  List.iter (fun t -> check_value_type c t at) ins;
-  List.iter (fun t -> check_value_type c t at) out;
-  check_arity (List.length out) at
-
-let check_table_type (c : context) (tt : table_type) at =
-  let TableType (lim, t) = tt in
-  check_limits lim 0x1_0000_0000L at "table size must be at most 2^32";
-  check_ref_type c t at;
-  require (defaultable_ref_type t) at "non-defaultable element type"
-
-let check_memory_type (c : context) (mt : memory_type) at =
-  let MemoryType lim = mt in
-  check_limits lim 0x1_0000L at
-    "memory size must be at most 65536 pages (4GiB)"
-
-let check_global_type (c : context) (gt : global_type) at =
-  let GlobalType (t, mut) = gt in
-  check_value_type c t at
-
-let check_def_type (c : context) (dt : def_type) at =
-  match dt with
-  | FuncDefType ft -> check_func_type c ft at
-
-
 (* Functions & Constants *)
 
 (*
@@ -543,6 +547,7 @@ let check_elem_mode (c : context) (t : ref_type) (mode : segment_mode) =
 
 let check_elem (c : context) (seg : elem_segment) =
   let {etype; einit; emode} = seg.it in
+  check_ref_type c etype seg.at;
   List.iter (fun const -> check_const c const (RefType etype)) einit;
   check_elem_mode c etype emode
 
@@ -560,6 +565,7 @@ let check_data (c : context) (seg : data_segment) =
 
 let check_global (c : context) (glob : global) =
   let {gtype; ginit} = glob.it in
+  check_global_type c gtype glob.at;
   let GlobalType (t, mut) = gtype in
   check_const c ginit t
 
