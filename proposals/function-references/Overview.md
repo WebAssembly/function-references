@@ -130,8 +130,8 @@ A *constructed type* denotes a user-defined or pre-defined data type that is not
   - Note: `null` is only on internal type
 
 * In the binary encoding,
-  - the non-nulable `<typeidx>` type is encoded as a (positive) signed LEB
-  - `(null <typidx>)` given a new (negative) type opcode, follosed by the unsigned LEB
+  - the non-nullable `<typeidx>` type is encoded as a (positive) signed LEB
+  - `(null <typidx>)` given a new (negative) type opcode, wed by the unsigned LEB
   - the others use the same (negative) opcodes as the existing `anyref`, `funcref`, respectively
 
 
