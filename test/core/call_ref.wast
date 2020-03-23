@@ -11,8 +11,8 @@
   (elem func $f $g)
 
   (func (export "run") (param $x i32) (result i32)
-    (local $rf (ref opt $ii))
-    (local $rg (ref opt $ii))
+    (local $rf (ref null $ii))
+    (local $rg (ref null $ii))
     (local.set $rf (ref.func $f))
     (local.set $rg (ref.func $g))
     (call_ref (call_ref (local.get $x) (local.get $rf)) (local.get $rg))

@@ -166,7 +166,6 @@ rule token = parse
   | "ref" { REF }
   | "any" { ANY }
   | "null" { NULL }
-  | "opt" { OPT }
   | (nxx as t) { NUM_TYPE (num_type t) }
   | "mut" { MUT }
 

@@ -13,8 +13,8 @@
       (ref null)
       (ref 0)
       (ref $t)
-      (ref opt 0)
-      (ref opt $t)
+      (ref null 0)
+      (ref null $t)
     )
   )
 )
@@ -32,12 +32,12 @@
 )
 
 (assert_invalid
-  (module (global $global-invalid (ref opt 1) (ref.null)))
+  (module (global $global-invalid (ref null 1) (ref.null)))
   "unknown type"
 )
 
 (assert_invalid
-  (module (table $table-invalid 10 (ref opt 1)))
+  (module (table $table-invalid 10 (ref null 1)))
   "unknown type"
 )
 
@@ -55,7 +55,7 @@
   "unknown type"
 )
 (assert_invalid
-  (module (func $func-local-invalid (local (ref opt 1))))
+  (module (func $func-local-invalid (local (ref null 1))))
   "unknown type"
 )
 

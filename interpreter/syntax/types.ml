@@ -77,7 +77,7 @@ let globals =
 
 let string_of_nullability = function
   | NonNullable -> ""
-  | Nullable -> "opt "
+  | Nullable -> "null "
 
 let string_of_num_type = function
   | I32Type -> "i32"

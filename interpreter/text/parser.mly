@@ -230,12 +230,12 @@ string_list :
 
 /* Types */
 
-opt_opt :
+null_opt :
   | /* empty */ { NonNullable }
-  | OPT { Nullable }
+  | NULL { Nullable }
 
 ref_type :
-  | LPAR REF opt_opt var RPAR { fun c -> DefRefType ($3, ($4 c type_).it) }
+  | LPAR REF null_opt var RPAR { fun c -> DefRefType ($3, ($4 c type_).it) }
   | LPAR REF ANY RPAR { fun c -> AnyRefType }
   | LPAR REF NULL RPAR { fun c -> NullRefType }
   | LPAR REF FUNC RPAR { fun c -> FuncRefType }
