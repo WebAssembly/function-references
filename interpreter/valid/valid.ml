@@ -528,10 +528,6 @@ and check_block (c : context) (es : instr list) (ts : stack_type) at =
 let check_type (c : context) (t : type_) =
   check_def_type c t.it t.at
 
-let check_local (c : context) (t : local) =
-  check_value_type c t.it t.at;
-  require (defaultable_value_type t.it) t.at "non-defaultable local type"
-
 let check_func (c : context) (f : func) =
   let {ftype; locals; body} = f.it in
   let FuncType (ins, out) = func_type c ftype in
