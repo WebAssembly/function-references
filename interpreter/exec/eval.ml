@@ -59,13 +59,13 @@ and admin_instr' =
   | Plain of instr'
   | Refer of ref_
   | Invoke of func_inst
+  | Label of int * instr list * code
+  | Local of int * value list * code
+  | Frame of int * module_inst * code
   | Trapping of string
   | Returning of value stack
   | ReturningInvoke of value stack * func_inst
   | Breaking of int32 * value stack
-  | Label of int * instr list * code
-  | Local of int * value list * code
-  | Frame of int * module_inst * code
 
 type config =
 {
@@ -79,7 +79,7 @@ let config inst vs es = {frame = frame inst []; code = vs, es; budget = 300}
 
 let plain e = Plain e.it @@ e.at
 
-let _is_jumping e =
+let is_jumping e =
   match e.it with
   | Trapping _ | Returning _ | ReturningInvoke _ | Breaking _ -> true
   | _ -> false
@@ -510,20 +510,14 @@ let rec step (c : config) : config =
     | Label (n, es0, (vs', [])), vs ->
       vs' @ vs, []
 
-    | Label (n, es0, (vs', {it = Trapping msg; at} :: es')), vs ->
-      vs, [Trapping msg @@ at]
-
-    | Label (n, es0, (vs', {it = Returning vs0; at} :: es')), vs ->
-      vs, [Returning vs0 @@ at]
-
-    | Label (n, es0, (vs', {it = ReturningInvoke (vs0, f); at} :: es')), vs ->
-      vs, [ReturningInvoke (vs0, f) @@ at]
-
     | Label (n, es0, (vs', {it = Breaking (0l, vs0); at} :: es')), vs ->
       take n vs0 e.at @ vs, List.map plain es0
 
     | Label (n, es0, (vs', {it = Breaking (k, vs0); at} :: es')), vs ->
       vs, [Breaking (Int32.sub k 1l, vs0) @@ at]
+
+    | Label (n, es0, (vs', e' :: es')), vs when is_jumping e' ->
+      vs, [e']
 
     | Label (n, es0, code'), vs ->
       let c' = step {c with code = code'} in
@@ -532,17 +526,8 @@ let rec step (c : config) : config =
     | Local (n, vs0, (vs', [])), vs ->
       vs' @ vs, []
 
-    | Local (n, vs0, (vs', {it = Trapping msg; at} :: es')), vs ->
-      vs, [Trapping msg @@ at]
-
-    | Local (n, vs0, (vs', {it = Returning vs1; at} :: es')), vs ->
-      vs, [Returning vs1 @@ at]
-
-    | Local (n, vs0, (vs', {it = ReturningInvoke (vs1, f); at} :: es')), vs ->
-      vs, [ReturningInvoke (vs1, f) @@ at]
-
-    | Local (n, vs0, (vs', {it = Breaking (k, vs1); at} :: es')), vs ->
-      vs, [Breaking (k, vs1) @@ at]
+    | Local (n, vs0, (vs', e' :: es')), vs when is_jumping e' ->
+      vs, [e']
 
     | Local (n, vs0, code'), vs ->
       let frame' = {c.frame with locals = List.map ref vs0 @ c.frame.locals} in
