@@ -225,6 +225,16 @@ let rec step (c : config) : config =
         | _ -> assert false
         )
 
+      | FuncBind x, Ref (FuncRef f) :: vs ->
+        let FuncType (ins, out) = Func.type_of f in
+        let FuncType (ins', out') = func_type frame.inst x in
+        let args, vs' =
+          try split (List.length ins - List.length ins') vs e.at
+          with Failure _ -> Crash.error e.at "type mismatch at function bind"
+        in
+        let f' = Func.alloc_closure f (List.rev args) in
+        Ref (FuncRef f') :: vs', []
+
       | Drop, v :: vs' ->
         vs', []
 
@@ -553,24 +563,29 @@ let rec step (c : config) : config =
       let c' = step {frame = frame'; code = code'; budget = c.budget - 1} in
       vs, [Frame (n, inst, c'.code) @@ e.at]
 
-    | Invoke func, vs when c.budget = 0 ->
+    | Invoke f, vs when c.budget = 0 ->
       Exhaustion.error e.at "call stack exhausted"
 
-    | Invoke func, vs ->
-      let FuncType (ins, out) = Func.type_of func in
+    | Invoke f, vs ->
+      let FuncType (ins, out) = Func.type_of f in
       let args, vs' = split (List.length ins) vs e.at in
-      (match func with
-      | Func.AstFunc (t, inst', f) ->
-        let ts = List.map Source.it f.it.locals in
-        let locals' = List.map (fun t -> t @@ f.at) ins @ f.it.locals in
-        let vs0 = List.rev args @ List.map default_value ts in
-        let es0 = [Plain (Let (out, locals', f.it.body)) @@ f.at] in
-        vs', [Frame (List.length out, !inst', (List.rev vs0, es0)) @@ e.at]
+      let rec enter args = function
+        | Func.AstFunc (ft, inst', func) ->
+          let {ftype; locals; body} = func.it in
+          let FuncType (ins', _) = ft in
+          let ts = List.map Source.it locals in
+          let locals' = List.map (fun t -> t @@ func.at) ins' @ locals in
+          let vs0 = args @ List.map default_value ts in
+          let es0 = [Plain (Let (out, locals', body)) @@ func.at] in
+          vs', [Frame (List.length out, !inst', (List.rev vs0, es0)) @@ e.at]
 
-      | Func.HostFunc (t, f) ->
-        try List.rev (f (List.rev args)) @ vs', []
-        with Crash (_, msg) -> Crash.error e.at msg
-      )
+        | Func.HostFunc (_ft, f) ->
+          (try List.rev (f args) @ vs', []
+          with Crash (_, msg) -> Crash.error e.at msg)
+
+        | Func.ClosureFunc (f', args') ->
+          enter (args' @ args) f'
+      in enter (List.rev args) f
   in {c with code = vs', es' @ List.tl es}
 
 
@@ -588,8 +603,13 @@ let rec eval (c : config) : value stack =
 
 (* Functions & Constants *)
 
+let rec at_func = function
+ | Func.AstFunc (_, _, f) -> f.at
+ | Func.HostFunc _ -> no_region
+ | Func.ClosureFunc (func, _) -> at_func func
+
 let invoke (func : func_inst) (vs : value list) : value list =
-  let at = match func with Func.AstFunc (_, _, f) -> f.at | _ -> no_region in
+  let at = at_func func in
   let FuncType (ins, out) = Func.type_of func in
   if List.length vs <> List.length ins then
     Crash.error at "wrong number of arguments";

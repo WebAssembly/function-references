@@ -211,9 +211,11 @@ The following rules, now defined in terms of constructed types, replace and exte
      - and `t2* <: C.result`
 
 * Optional extension: `func.bind` creates or extends a closure by binding one or several parameters
-  - `func.bind $t' : [t1^n (ref $t)] -> [(ref $t')]`
-    - iff `$t = [t1^n t1'*] -> [t2*]`
-    - and `$t' = [t1'*] -> [t2*]`
+  - `func.bind $t' : [t0* (ref $t)] -> [(ref $t')]`
+    - iff `$t = [t0* t1*] -> [t2*]`
+    - and `$t' = [t1'*] -> [t2'*]`
+    - and `t1'* <: t1*`
+    - and `t2* <: t2'*`
 
 
 #### Optional References
