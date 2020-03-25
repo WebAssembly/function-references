@@ -14,6 +14,9 @@
     (let (local))
     (let $l (local))
 
+    (let (result) (local))
+    (let $l (result) (local))
+
     (let (call $dummy) (call $consume (local.get $x1)))
     (let $l (call $dummy) (call $consume (local.get $y2)))
     (let (local) (call $dummy) (call $consume (local.get $y2)))
@@ -147,3 +150,115 @@
 
 (assert_return (invoke "semantics-idx" (i64.const 2) (i64.const 3)) (i64.const 841_765))
 (assert_return (invoke "semantics-sym" (i64.const 2) (i64.const 3)) (i64.const 841_765))
+
+
+;; Shadowing.
+
+;; Shadowing is fine across nested let blocks (analogous to labels).
+(module
+  (func (export "f1") (param $x i32) (result i32)
+    (i32.const 1)
+    (let (local $x i32) (return (local.get $x)))
+    (unreachable)
+  )
+  (func (export "f2") (result i32)
+    (local $x i32)
+    (i32.const 1)
+    (let (local $x i32) (return (local.get $x)))
+    (unreachable)
+  )
+  (func (export "f3") (result i32)
+    (i32.const 0)
+    (let (local $x i32)
+      (i32.const 1)
+      (let (local $x i32) (return (local.get $x)))
+    )
+    (unreachable)
+  )
+  (func (export "f4") (result i32)
+    (local $x i32)
+    (i32.const 1)
+    (let (local $x i32)
+      (i32.const 2)
+      (let (local $x i32) (return (local.get $x)))
+    )
+    (unreachable)
+  )
+)
+
+(assert_return (invoke "f1" (i32.const 0)) (i32.const 1))
+(assert_return (invoke "f2") (i32.const 1))
+(assert_return (invoke "f3") (i32.const 1))
+(assert_return (invoke "f4") (i32.const 2))
+
+;; Duplicate labels within a single let block are still disallowed.
+(assert_malformed
+  (module quote "(func (let (local $x i32) (local $x i64)))")
+  "duplicate local"
+)
+
+
+;; Syntax
+
+(assert_malformed
+  (module quote "(func (let (local) (param)))")
+  "unexpected token"
+)
+(assert_malformed
+  (module quote
+    "(func"
+    "  (i32.const 0) (i32.const 0)"
+    "  (let (local i32) (param i32) (drop))"
+    ")"
+  )
+  "unexpected token"
+)
+
+(assert_malformed
+  (module quote "(func (let (local) (result)))")
+  "unexpected token"
+)
+(assert_malformed
+  (module quote
+    "(func (result i32)"
+    "  (i32.const 0)"
+    "  (let (local i32) (result i32) (local.get 0))"
+    ")"
+  )
+  "unexpected token"
+)
+(assert_malformed
+  (module quote
+    "(func (result i32)"
+    "  (let (local $x i32) (result i32) (local.get 0))"
+    ")"
+  )
+  "unexpected token"
+)
+
+(assert_malformed
+  (module quote "(func (let (result) (param)))")
+  "unexpected token"
+)
+(assert_malformed
+  (module quote
+    "(func (result i32)"
+    "  (i32.const 0)"
+    "  (let (result i32) (param i32))"
+    ")"
+  )
+  "unexpected token"
+)
+
+(assert_malformed
+  (module quote "(func (let (param) $l))")
+  "unexpected token"
+)
+(assert_malformed
+  (module quote "(func (let (result) $l))")
+  "unexpected token"
+)
+(assert_malformed
+  (module quote "(func (let (local) $l))")
+  "unexpected token"
+)

@@ -516,7 +516,7 @@ block_instr :
       let ts, ls, es = $3 c c' in let_ ts ls es }
 
 block_type :
-  | LPAR RESULT value_type RPAR { fun c -> [$3 c] }
+  | LPAR RESULT value_type_list RPAR { fun c -> snd $3 c }
 
 block :
   | block_type instr_list
