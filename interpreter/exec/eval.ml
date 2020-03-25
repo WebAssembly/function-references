@@ -232,7 +232,7 @@ let rec step (c : config) : config =
           try split (List.length ins - List.length ins') vs e.at
           with Failure _ -> Crash.error e.at "type mismatch at function bind"
         in
-        let f' = Func.alloc_closure f (List.rev args) in
+        let f' = Func.alloc_closure f args in
         Ref (FuncRef f') :: vs', []
 
       | Drop, v :: vs' ->
@@ -569,23 +569,22 @@ let rec step (c : config) : config =
     | Invoke f, vs ->
       let FuncType (ins, out) = Func.type_of f in
       let args, vs' = split (List.length ins) vs e.at in
-      let rec enter args = function
-        | Func.AstFunc (ft, inst', func) ->
-          let {ftype; locals; body} = func.it in
-          let FuncType (ins', _) = ft in
-          let ts = List.map Source.it locals in
-          let locals' = List.map (fun t -> t @@ func.at) ins' @ locals in
-          let vs0 = args @ List.map default_value ts in
-          let es0 = [Plain (Let (out, locals', body)) @@ func.at] in
-          vs', [Frame (List.length out, !inst', (List.rev vs0, es0)) @@ e.at]
+      (match f with
+      | Func.AstFunc (ft, inst', func) ->
+        let {locals; body; _} = func.it in
+        let ts = List.map Source.it locals in
+        let locals' = List.map (fun t -> t @@ func.at) ins @ locals in
+        let vs0 = List.rev args @ List.map default_value ts in
+        let es0 = [Plain (Let (out, locals', body)) @@ func.at] in
+        vs', [Frame (List.length out, !inst', (List.rev vs0, es0)) @@ e.at]
 
-        | Func.HostFunc (_ft, f) ->
-          (try List.rev (f args) @ vs', []
-          with Crash (_, msg) -> Crash.error e.at msg)
+      | Func.HostFunc (_ft, f) ->
+        (try List.rev (f (List.rev args)) @ vs', []
+        with Crash (_, msg) -> Crash.error e.at msg)
 
-        | Func.ClosureFunc (f', args') ->
-          enter (args' @ args) f'
-      in enter (List.rev args) f
+      | Func.ClosureFunc (f', args') ->
+        args @ args' @ vs', [Invoke f' @@ e.at]
+      )
   in {c with code = vs', es' @ List.tl es}
 
 
