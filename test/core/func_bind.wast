@@ -271,3 +271,36 @@
 (assert_return (invoke "call-f3" (i32.const 32) (f64.const 2) (f64.const 3) (f64.const 4)) (f64.const 1234))
 (assert_return (invoke "call-f4" (i32.const 40) (f64.const 1) (f64.const 2) (f64.const 3) (f64.const 4)) (f64.const 1234))
 (assert_return (invoke "call-f4" (i32.const 41) (f64.const 1) (f64.const 2) (f64.const 3) (f64.const 4)) (f64.const 1234))
+
+
+;; The runtime type of a closure is its internal one,
+;; not the static bind annotation.
+(module
+  (type $ii (func (param i32) (result i32)))
+  (type $fl (func (param i32 anyref) (result (ref null $ii))))
+  (type $fu (func (param i32 (ref $ii)) (result anyref)))
+  (type $fl' (func (param anyref) (result (ref null $ii))))
+  (type $fu' (func (param (ref $ii)) (result anyref)))
+
+  (elem declare func $sqr $f)
+  (func $sqr (param i32) (result i32) (i32.mul (local.get 0) (local.get 0)))
+  (func $f (type $fl) (ref.func $sqr))
+
+  (table $t 10 funcref)
+
+  (func (export "run") (result i32)
+    (table.set $t (i32.const 0) (func.bind (type $fu) (ref.func $f)))
+    (table.set $t (i32.const 1) (func.bind (type $fu') (i32.const 0) (ref.func $f)))
+
+    (i32.add
+      (call_ref (i32.const 2)
+        (call_indirect $t (type $fl) (i32.const 0) (ref.null) (i32.const 0))
+      )
+      (call_ref (i32.const 3)
+        (call_indirect $t (type $fl') (ref.null) (i32.const 1))
+      )
+    )
+  )
+)
+
+(assert_return (invoke "run") (i32.const 13))
