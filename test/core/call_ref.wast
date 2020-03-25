@@ -8,7 +8,7 @@
   (func $f (type $ii) (i32.mul (local.get 0) (local.get 0)))
   (func $g (type $ii) (i32.sub (i32.const 0) (local.get 0)))
 
-  (elem func $f $g)
+  (elem declare func $f $g)
 
   (func (export "run") (param $x i32) (result i32)
     (local $rf (ref null $ii))
@@ -27,7 +27,7 @@
   (type $ll (func (param i64) (result i64)))
   (type $lll (func (param i64 i64) (result i64)))
 
-  (elem func $fac)
+  (elem declare func $fac)
   (global $fac (ref $ll) (ref.func $fac))
 
   (func $fac (export "fac") (type $ll)
@@ -42,7 +42,7 @@
     )
   )
 
-  (elem func $fac-acc)
+  (elem declare func $fac-acc)
   (global $fac-acc (ref $lll) (ref.func $fac-acc))
 
   (func $fac-acc (export "fac-acc") (type $lll)
@@ -58,7 +58,7 @@
     )
   )
 
-  (elem func $fib)
+  (elem declare func $fib)
   (global $fib (ref $ll) (ref.func $fib))
 
   (func $fib (export "fib") (type $ll)
@@ -73,7 +73,7 @@
     )
   )
 
-  (elem func $even $odd)
+  (elem declare func $even $odd)
   (global $even (ref $ll) (ref.func $even))
   (global $odd (ref $ll) (ref.func $odd))
 
