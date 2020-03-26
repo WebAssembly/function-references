@@ -81,7 +81,7 @@ The following function calls it and then applies the result twice:
 ```wasm
 (func $main (result i32)
   (call $mk-adder (i32.const 7))
-  (let (local $f (ref $i32-i32)) (result i32)  ;; binds $f to top of stack
+  (let (result i32) (local $f (ref $i32-i32))  ;; binds $f to top of stack
     (i32.mul
       (call_ref (i32.const 10) (local.get $f))
       (call_ref (i32.const 12) (local.get $f))

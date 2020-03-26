@@ -238,9 +238,10 @@ let check_memop (c : context) (memop : 'a memop) get_sz at =
  * declarative typing rules.
  *)
 
-let check_local (c : context) (t : local) =
+let check_local (c : context) (defaults : bool) (t : local) =
   check_value_type c t.it t.at;
-  require (defaultable_value_type t.it) t.at "non-defaultable local type"
+  require (not defaults || defaultable_value_type t.it) t.at
+    "non-defaultable local type"
 
 let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   match e.it with
@@ -288,7 +289,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   | Let (ts, locals, es) ->
     List.iter (fun t -> check_value_type c t e.at) ts;
     check_arity (List.length ts) e.at;
-    List.iter (check_local c) locals;
+    List.iter (check_local c false) locals;
     let c' =
       { c with
         labels = ts :: c.labels;
@@ -548,7 +549,7 @@ let check_type (c : context) (t : type_) =
 let check_func (c : context) (f : func) =
   let {ftype; locals; body} = f.it in
   let FuncType (ins, out) = func_type c ftype in
-  List.iter (check_local c) locals;
+  List.iter (check_local c true) locals;
   let c' =
     { c with
       locals = ins @ List.map Source.it locals;

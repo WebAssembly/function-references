@@ -18,6 +18,16 @@
     (call_ref (local.get $j) (global.get $f))
   )
 
+  (func (export "call2") (param $i i32) (param $j i32) (param $k i32) (result i32)
+    (call $mk-adder (local.get $k))
+    (let (result i32) (local $f (ref $unop))  ;; binds $f to top of stack
+      (i32.mul
+        (call_ref (local.get $i) (local.get $f))
+        (call_ref (local.get $j) (local.get $f))
+      )
+    )
+  )
+
   (func (export "null") (result i32)
     (func.bind (type $unop) (i32.const 1) (ref.null))
     (drop)
@@ -35,6 +45,10 @@
 
 (assert_return (invoke "make" (i32.const -3)))
 (assert_return (invoke "call" (i32.const 10)) (i32.const 7))
+
+(assert_return (invoke "call2" (i32.const 2) (i32.const 3) (i32.const 0)) (i32.const 6))
+(assert_return (invoke "call2" (i32.const 2) (i32.const 5) (i32.const 1)) (i32.const 18))
+(assert_return (invoke "call2" (i32.const 2) (i32.const 5) (i32.const 7)) (i32.const 108))
 
 (assert_trap (invoke "null") "null function")
 
