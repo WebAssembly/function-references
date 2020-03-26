@@ -122,3 +122,100 @@
 (assert_return (invoke "odd" (i64.const 1)) (i64.const 44))
 (assert_return (invoke "odd" (i64.const 200)) (i64.const 99))
 (assert_return (invoke "odd" (i64.const 77)) (i64.const 44))
+
+
+;; Null and unreachable typing.
+
+(module
+  (func (export "null") (result i32)
+    (ref.null)
+    (return_call_ref)
+  )
+)
+(assert_trap (invoke "null") "null function")
+
+(module
+  (func (export "null") (result i32)
+    (i64.const 0)
+    (ref.null)
+    (return_call_ref)
+  )
+)
+(assert_trap (invoke "null") "null function")
+
+(module
+  (func (export "null") (result i32)
+    (i64.const 0)
+    (ref.null)
+    (return_call_ref)
+    (i32.const 0)
+  )
+)
+(assert_trap (invoke "null") "null function")
+
+
+(module
+  (func (export "unreachable") (result i32)
+    (unreachable)
+    (call_ref)
+  )
+)
+(assert_trap (invoke "unreachable") "unreachable")
+
+(module
+  (elem declare func $f)
+  (func $f (param i32) (result i32) (local.get 0))
+
+  (func (export "unreachable") (result i32)
+    (unreachable)
+    (ref.func $f)
+    (call_ref)
+  )
+)
+(assert_trap (invoke "unreachable") "unreachable")
+
+(module
+  (elem declare func $f)
+  (func $f (param i32) (result i32) (local.get 0))
+
+  (func (export "unreachable") (result i32)
+    (unreachable)
+    (i32.const 0)
+    (ref.func $f)
+    (call_ref)
+    (drop)
+    (i32.const 0)
+  )
+)
+(assert_trap (invoke "unreachable") "unreachable")
+
+(assert_invalid
+  (module
+    (elem declare func $f)
+    (func $f (param i32) (result i32) (local.get 0))
+
+    (func (export "unreachable") (result i32)
+      (unreachable)
+      (i64.const 0)
+      (ref.func $f)
+      (call_ref)
+    )
+  )
+  "type mismatch"
+)
+
+(assert_invalid
+  (module
+    (elem declare func $f)
+    (func $f (param i32) (result i32) (local.get 0))
+
+    (func (export "unreachable") (result i32)
+      (unreachable)
+      (ref.func $f)
+      (call_ref)
+      (drop)
+      (i64.const 0)
+    )
+  )
+  "type mismatch"
+)

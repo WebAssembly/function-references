@@ -218,12 +218,18 @@ let rec step (c : config) : config =
         else
           vs, [Trapping "indirect call type mismatch" @@ e.at]
 
+      | ReturnCallRef, Ref NullRef :: vs ->
+        vs, [Trapping "null function reference" @@ e.at]
+
       | ReturnCallRef, vs ->
         (match (step {c with code = (vs, [Plain CallRef @@ e.at])}).code with
         | vs', [{it = Invoke a; at}] -> vs', [ReturningInvoke (vs', a) @@ at]
         | vs', [{it = Trapping s; at}] -> vs', [Trapping s @@ at]
         | _ -> assert false
         )
+
+      | FuncBind x, Ref NullRef :: vs ->
+        vs, [Trapping "null function reference" @@ e.at]
 
       | FuncBind x, Ref (FuncRef f) :: vs ->
         let FuncType (ins, out) = Func.type_of f in

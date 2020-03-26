@@ -331,8 +331,8 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
     | RefType (DefRefType (nul, x)) ->
       let FuncType (ins, out) = func_type c (x @@ e.at) in
       (ins @ [RefType (DefRefType (nul, x))]) --> out
-    | t ->
-      [t] -->... []
+    | BotType -> [] -->... []
+    | _ -> [RefType NullRefType] -->... []
     )
 
   | CallIndirect (x, y) ->
@@ -351,25 +351,24 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
         "type mismatch in function result";
       (ins @ [RefType (DefRefType (nul, x))]) -->... []
     | BotType -> [] -->... []
-    | _ -> [BotType] --> []
+    | _ -> [RefType NullRefType] -->... []
     )
 
   | FuncBind x ->
     (match peek 0 s with
     | RefType (DefRefType (nul, y)) ->
       let FuncType (ins, out) = func_type c (y @@ e.at) in
-      let FuncType (ins', out') = func_type c x in
+      let FuncType (ins', _) as ft' = func_type c x in
       require (List.length ins >= List.length ins') x.at
         "type mismatch in function arguments";
       let ts1, ts2 = Lib.List.split (List.length ins - List.length ins') ins in
-      require (Match.match_stack_type c.types [] ins' ts2) x.at
-        "type mismatch in function arguments";
-      require (Match.match_stack_type c.types [] out out') e.at
-        "type mismatch in function result";
+      (* TODO: not necessary if we can insert the new semantic FuncType below *)
+      require (Match.match_func_type c.types [] (FuncType (ts2, out)) ft') e.at
+        "type mismatch in function type";
       (ts1 @ [RefType (DefRefType (nul, y))]) -->
       [RefType (DefRefType (NonNullable, x.it))]
-    | BotType -> [] -->... []
-    | _ -> [BotType] --> []
+    | BotType -> [] -->... [RefType (DefRefType (NonNullable, x.it))]
+    | _ -> [RefType NullRefType] -->... [RefType (DefRefType (NonNullable, x.it))]
     )
 
   | LocalGet x ->
