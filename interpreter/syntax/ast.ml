@@ -18,7 +18,7 @@
 
 (* Types *)
 
-open Types
+open Types.Syn
 
 
 (* Operators *)
@@ -66,7 +66,7 @@ type storeop = Memory.pack_size memop
 
 type idx = int32 Source.phrase
 type num = Value.num Source.phrase
-type name = Types.name
+type name = Types.Syn.name
 
 type local = local' Source.phrase
 and local' = value_type

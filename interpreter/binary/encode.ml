@@ -89,7 +89,7 @@ let encode m =
 
     (* Types *)
 
-    open Types
+    open Types.Syn
 
     let num_type = function
       | I32Type -> vs7 (-0x01)
@@ -101,9 +101,8 @@ let encode m =
       | FuncRefType -> vs32 (-0x10l)
       | AnyRefType -> vs32 (-0x11l)
       | NullRefType -> vs32 (-0x12l)
-      | DefRefType (NonNullable, SynVar x) -> vs33 x
-      | DefRefType (Nullable, SynVar x) -> vs33 (-0x14l); vu32 x
-      | DefRefType (_, SemVar _) -> assert false
+      | DefRefType (NonNullable, x) -> vs33 x
+      | DefRefType (Nullable, x) -> vs33 (-0x14l); vu32 x
 
     let value_type = function
       | NumType t -> num_type t

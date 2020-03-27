@@ -1,6 +1,6 @@
 open Source
 open Ast
-open Types
+open Types.Syn
 
 module Set = Set.Make(Int32)
 
@@ -61,16 +61,12 @@ let shift s = Set.map (Int32.add (-1l)) (Set.remove 0l s)
 let (++) = union
 let list free xs = List.fold_left union empty (List.map free xs)
 
-let var_type = function
-  | SynVar x -> types (idx' x)
-  | SemVar _ -> assert false
-
 let num_type = function
   | I32Type | I64Type | F32Type | F64Type -> empty
 
 let ref_type = function
   | AnyRefType | FuncRefType | NullRefType -> empty
-  | DefRefType (_, x) -> var_type x
+  | DefRefType (_, x) -> types (idx' x)
 
 let value_type = function
   | NumType t -> num_type t

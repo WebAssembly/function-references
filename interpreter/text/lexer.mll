@@ -46,10 +46,10 @@ let string s =
   Buffer.contents b
 
 let num_type = function
-  | "i32" -> Types.I32Type
-  | "i64" -> Types.I64Type
-  | "f32" -> Types.F32Type
-  | "f64" -> Types.F64Type
+  | "i32" -> Types.Syn.I32Type
+  | "i64" -> Types.Syn.I64Type
+  | "f32" -> Types.Syn.F32Type
+  | "f64" -> Types.Syn.F64Type
   | _ -> assert false
 
 let intop t i32 i64 =

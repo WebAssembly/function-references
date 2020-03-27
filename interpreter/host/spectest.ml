@@ -2,7 +2,7 @@
  * Simple collection of functions useful for writing test cases.
  *)
 
-open Types
+open Types.Sem
 open Value
 open Instance
 
@@ -21,7 +21,7 @@ let global (GlobalType (t, _) as gt) =
 let table =
   Table.alloc (TableType ({min = 10l; max = Some 20l}, FuncRefType)) NullRef
 let memory = Memory.alloc (MemoryType {min = 1l; max = Some 2l})
-let func f ft = Func.alloc_host (Types.alloc (FuncDefType ft)) (f ft)
+let func f ft = Func.alloc_host (Types.Sem.alloc (FuncDefType ft)) (f ft)
 
 let print_value v =
   Printf.printf "%s : %s\n"

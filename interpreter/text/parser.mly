@@ -1,6 +1,6 @@
 %{
 open Source
-open Types
+open Types.Syn
 open Ast
 open Operators
 open Script
@@ -207,7 +207,7 @@ let inline_func_type_explicit (c : context) x ft at =
 %token<string> FLOAT
 %token<string> STRING
 %token<string> VAR
-%token<Types.num_type> NUM_TYPE
+%token<Types.Syn.num_type> NUM_TYPE
 %token<string Source.phrase -> Ast.instr' * Value.num> CONST
 %token<Ast.instr'> UNARY
 %token<Ast.instr'> BINARY
@@ -249,7 +249,7 @@ null_opt :
 
 ref_type :
   | LPAR REF null_opt var RPAR
-    { fun c -> DefRefType ($3, SynVar ($4 c type_).it) }
+    { fun c -> DefRefType ($3, ($4 c type_).it) }
   | LPAR REF ANY RPAR { fun c -> AnyRefType }
   | LPAR REF NULL RPAR { fun c -> NullRefType }
   | LPAR REF FUNC RPAR { fun c -> FuncRefType }
