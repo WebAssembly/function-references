@@ -17,7 +17,7 @@ let require b at s = if not b then error at s
 type context =
 {
   types : def_type list;
-  funcs : func_type list;
+  funcs : var list;
   tables : table_type list;
   memories : memory_type list;
   globals : global_type list;
@@ -41,7 +41,7 @@ let lookup category list x =
     error x.at ("unknown " ^ category ^ " " ^ Int32.to_string x.it)
 
 let type_ (c : context) x = lookup "type" c.types x
-let func (c : context) x = lookup "function" c.funcs x
+let func_var (c : context) x = lookup "function" c.funcs x
 let table (c : context) x = lookup "table" c.tables x
 let memory (c : context) x = lookup "memory" c.memories x
 let global (c : context) x = lookup "global" c.globals x
@@ -53,6 +53,8 @@ let label (c : context) x = lookup "label" c.labels x
 let func_type (c : context) x =
   match type_ c x with
   | FuncDefType ft -> ft
+
+let func (c : context) x = func_type c (func_var c x @@ x.at)
 
 let refer category (s : Free.Set.t) x =
   if not (Free.Set.mem x.it s) then
@@ -161,11 +163,11 @@ let peek i (ell, ts) =
 
 (* Type Synthesis *)
 
-let type_num = Values.type_of_num
-let type_unop = Values.type_of_num
-let type_binop = Values.type_of_num
-let type_testop = Values.type_of_num
-let type_relop = Values.type_of_num
+let type_num = Values.stat_type_of_num
+let type_unop = Values.stat_type_of_num
+let type_binop = Values.stat_type_of_num
+let type_testop = Values.stat_type_of_num
+let type_relop = Values.stat_type_of_num
 
 let type_cvtop at = function
   | Values.I32 cvtop ->
@@ -363,7 +365,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
       require (List.length ins >= List.length ins') x.at
         "type mismatch in function arguments";
       let ts1, ts2 = Lib.List.split (List.length ins - List.length ins') ins in
-      (* TODO: not necessary if we can insert the new semantic FuncType below *)
+      (* TODO: not necessary if we could insert the new semantic FuncType below *)
       require (Match.match_func_type c.types [] (FuncType (ts2, out)) ft') e.at
         "type mismatch in function type";
       (ts1 @ [RefType (DefRefType (nul, y))]) -->
@@ -480,11 +482,9 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
     )
 
   | RefFunc x ->
-    let ft = func c x in
+    let y = func_var c x in
     refer_func c x;
-    (* TODO *)
-    let y = Lib.Option.force (Lib.List.index_where (Match.eq_def_type c.types [] (FuncDefType ft)) c.types) in
-    [] --> [RefType (DefRefType (NonNullable, Int32.of_int y))]
+    [] --> [RefType (DefRefType (NonNullable, y))]
 
   | Const v ->
     let t = NumType (type_num v.it) in
@@ -630,7 +630,8 @@ let check_import (im : import) (c : context) : context =
   let {module_name = _; item_name = _; idesc} = im.it in
   match idesc.it with
   | FuncImport x ->
-    {c with funcs = func_type c x :: c.funcs}
+    ignore (func_type c x);
+    {c with funcs = x.it :: c.funcs}
   | TableImport tt ->
     check_table_type c tt idesc.at;
     {c with tables = tt :: c.tables}
@@ -654,6 +655,7 @@ let check_export (c : context) (set : NameSet.t) (ex : export) : NameSet.t =
   require (not (NameSet.mem name set)) ex.at "duplicate export name";
   NameSet.add name set
 
+
 let check_module (m : module_) =
   let
     { types; imports; tables; memories; globals; funcs; start; elems; datas;
@@ -668,7 +670,7 @@ let check_module (m : module_) =
   in
   let c1 =
     { c0 with
-      funcs = c0.funcs @ List.map (fun f -> func_type c0 f.it.ftype) funcs;
+      funcs = c0.funcs @ List.map (fun f -> ignore (func_type c0 f.it.ftype); f.it.ftype.it) funcs;
       tables = c0.tables @ List.map (fun tab -> tab.it.ttype) tables;
       memories = c0.memories @ List.map (fun mem -> mem.it.mtype) memories;
       elems = List.map (fun elem -> elem.it.etype) elems;

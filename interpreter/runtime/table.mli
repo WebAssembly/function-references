@@ -1,4 +1,4 @@
-open Types
+open Semtypes
 open Values
 
 type table

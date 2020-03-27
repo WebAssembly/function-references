@@ -1,13 +1,15 @@
-open Types
+open Semtypes
 open Values
 
 type 'inst t = 'inst func
 and 'inst func =
-  | AstFunc of func_type * 'inst * Ast.func
-  | HostFunc of func_type * (value list -> value list)
-  | ClosureFunc of 'inst func * value list
+  | AstFunc of var * 'inst * Ast.func
+  | HostFunc of var * (value list -> value list)
+  | ClosureFunc of var * 'inst func * value list
 
-val alloc : func_type -> 'inst -> Ast.func -> 'inst func
-val alloc_host : func_type -> (value list -> value list) -> 'inst func
-val alloc_closure : 'inst func -> value list -> 'inst func
+val alloc : var -> 'inst -> Ast.func -> 'inst func
+val alloc_host : var -> (value list -> value list) -> 'inst func
+val alloc_closure : var -> 'inst func -> value list -> 'inst func
+
 val type_of : 'inst func -> func_type
+val type_var_of : 'inst func -> var

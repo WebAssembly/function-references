@@ -1,8 +1,8 @@
-open Types
+open Semtypes
 
 type module_inst =
 {
-  types : def_type list;
+  types : type_inst list;
   funcs : func_inst list;
   tables : table_inst list;
   memories : memory_inst list;
@@ -12,6 +12,7 @@ type module_inst =
   datas : data_inst list;
 }
 
+and type_inst = Semtypes.var
 and func_inst = module_inst ref Func.t
 and table_inst = Table.t
 and memory_inst = Memory.t
@@ -34,14 +35,8 @@ type Values.ref_ += FuncRef of func_inst
 let () =
   let type_of_ref' = !Values.type_of_ref' in
   Values.type_of_ref' := function
-    | FuncRef func ->
-      (* TODO *)
-      let x =
-        match func with
-        | Func.AstFunc (_, _, f) -> f.Source.it.Ast.ftype.Source.it
-        | _ -> 0l  (* HACK! *)
-      in
-      DefRefType (NonNullable, x)
+    | FuncRef f ->
+      DefRefType (NonNullable, Func.type_var_of f)
     | r -> type_of_ref' r
 
 let () =
@@ -57,7 +52,7 @@ let empty_module_inst =
   { types = []; funcs = []; tables = []; memories = []; globals = [];
     exports = []; elems = []; datas = [] }
 
-let extern_type_of = function
+let extern_type_of c = function
   | ExternFunc func -> ExternFuncType (Func.type_of func)
   | ExternTable tab -> ExternTableType (Table.type_of tab)
   | ExternMemory mem -> ExternMemoryType (Memory.type_of mem)

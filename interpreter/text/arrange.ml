@@ -175,13 +175,11 @@ struct
 end
 
 let oper (intop, floatop) op =
-  num_type (type_of_num op) ^ "." ^
-  (match op with
-  | I32 o -> intop "32" o
-  | I64 o -> intop "64" o
-  | F32 o -> floatop "32" o
-  | F64 o -> floatop "64" o
-  )
+  match op with
+  | I32 o -> "i32." ^ intop "32" o
+  | I64 o -> "i64." ^ intop "64" o
+  | F32 o -> "f32." ^ floatop "32" o
+  | F64 o -> "f64." ^ floatop "64" o
 
 let unop = oper (IntOp.unop, FloatOp.unop)
 let binop = oper (IntOp.binop, FloatOp.binop)
@@ -219,7 +217,7 @@ let storeop op =
 
 let var x = nat32 x.it
 let num v = string_of_num v.it
-let constop v = num_type (type_of_num v.it) ^ ".const"
+let constop v = num_type (stat_type_of_num v.it) ^ ".const"
 
 let rec instr e =
   let head, inner =

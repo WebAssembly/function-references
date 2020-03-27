@@ -180,9 +180,9 @@ type exports = extern_type NameMap.t
 type modules = {mutable env : exports Map.t; mutable current : int}
 
 let exports m : exports =
-  List.fold_left
-    (fun map exp -> NameMap.add exp.it.name (export_type m exp) map)
-    NameMap.empty m.it.exports
+  let ets = List.map (export_type_of m) m.it.exports in
+  List.fold_left (fun map (ExportType (et, name)) -> NameMap.add name et map)
+    NameMap.empty ets
 
 let modules () : modules = {env = Map.empty; current = 0}
 
@@ -263,7 +263,7 @@ let assert_return ress ts at =
   let test res =
     match res.it with
     | LitResult {it = Values.Num num; at = at'} ->
-      let t', reinterpret = reinterpret_of (Values.type_of_num num) in
+      let t', reinterpret = reinterpret_of (Values.stat_type_of_num num) in
       [ reinterpret @@ at;
         Const (num @@ at')  @@ at;
         reinterpret @@ at;
@@ -293,7 +293,7 @@ let assert_return ress ts at =
         | CanonicalNan -> abs_mask_of (* must only differ from the canonical NaN in its sign bit *)
         | ArithmeticNan -> canonical_nan_of (* can be any NaN that's one everywhere the canonical NaN is one *)
       in
-      let t = Values.type_of_num nanop.it in
+      let t = Values.stat_type_of_num nanop.it in
       let t', reinterpret = reinterpret_of t in
       [ reinterpret @@ at;
         Const (nan_bitmask_of t' @@ at) @@ at;

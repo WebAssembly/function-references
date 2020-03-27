@@ -1,4 +1,4 @@
-open Types
+open Semtypes
 
 
 (* Values and operators *)
@@ -14,22 +14,6 @@ type ref_ += NullRef
 type value = Num of num | Ref of ref_
 
 
-(* Typing *)
-
-let type_of_num = function
-  | I32 _ -> I32Type
-  | I64 _ -> I64Type
-  | F32 _ -> F32Type
-  | F64 _ -> F64Type
-
-let type_of_ref' = ref (function NullRef -> NullRefType | _ -> AnyRefType)
-let type_of_ref r = !type_of_ref' r
-
-let type_of_value = function
-  | Num n -> NumType (type_of_num n)
-  | Ref r -> RefType (type_of_ref r)
-
-
 (* Projections *)
 
 let as_num = function
@@ -39,6 +23,24 @@ let as_num = function
 let as_ref = function
   | Num _ -> failwith "as_ref"
   | Ref r -> r
+
+
+(* Typing *)
+
+let stat_type_of_num = function
+  | I32 _ -> Types.I32Type
+  | I64 _ -> Types.I64Type
+  | F32 _ -> Types.F32Type
+  | F64 _ -> Types.F64Type
+
+let type_of_num n = alloc_num_type (stat_type_of_num n)
+
+let type_of_ref' = ref (function NullRef -> NullRefType | _ -> AnyRefType)
+let type_of_ref r = !type_of_ref' r
+
+let type_of_value = function
+  | Num n -> NumType (type_of_num n)
+  | Ref r -> RefType (type_of_ref r)
 
 
 (* Defaults *)
