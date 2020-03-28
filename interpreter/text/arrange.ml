@@ -1,7 +1,7 @@
 open Source
 open Ast
 open Script
-open Values
+open Value
 open Types
 open Sexpr
 
@@ -435,10 +435,10 @@ let module_ = module_with_var_opt None
 
 let value v =
   match v.it with
-  | Num (Values.I32 i) -> Node ("i32.const " ^ I32.to_string_s i, [])
-  | Num (Values.I64 i) -> Node ("i64.const " ^ I64.to_string_s i, [])
-  | Num (Values.F32 z) -> Node ("f32.const " ^ F32.to_string z, [])
-  | Num (Values.F64 z) -> Node ("f64.const " ^ F64.to_string z, [])
+  | Num (I32 i) -> Node ("i32.const " ^ I32.to_string_s i, [])
+  | Num (I64 i) -> Node ("i64.const " ^ I64.to_string_s i, [])
+  | Num (F32 z) -> Node ("f32.const " ^ F32.to_string z, [])
+  | Num (F64 z) -> Node ("f64.const " ^ F64.to_string z, [])
   | Ref NullRef -> Node ("ref.null", [])
   | Ref (HostRef n) -> Node ("ref.host " ^ Int32.to_string n, [])
   | _ -> assert false
@@ -487,9 +487,9 @@ let result res =
   | LitResult lit -> value lit
   | NanResult nanop ->
     (match nanop.it with
-    | Values.I32 _ | Values.I64 _ -> assert false
-    | Values.F32 n -> Node ("f32.const " ^ nan n, [])
-    | Values.F64 n -> Node ("f64.const " ^ nan n, [])
+    | I32 _ | I64 _ -> assert false
+    | F32 n -> Node ("f32.const " ^ nan n, [])
+    | F64 n -> Node ("f64.const " ^ nan n, [])
     )
   | RefResult -> Node ("ref", [])
   | FuncResult -> Node ("ref.func", [])

@@ -163,14 +163,14 @@ let peek i (ell, ts) =
 
 (* Type Synthesis *)
 
-let type_num = Values.stat_type_of_num
-let type_unop = Values.stat_type_of_num
-let type_binop = Values.stat_type_of_num
-let type_testop = Values.stat_type_of_num
-let type_relop = Values.stat_type_of_num
+let type_num = Value.stat_type_of_num
+let type_unop = Value.stat_type_of_num
+let type_binop = Value.stat_type_of_num
+let type_testop = Value.stat_type_of_num
+let type_relop = Value.stat_type_of_num
 
 let type_cvtop at = function
-  | Values.I32 cvtop ->
+  | Value.I32 cvtop ->
     let open I32Op in
     (match cvtop with
     | ExtendSI32 | ExtendUI32 -> error at "invalid conversion"
@@ -178,7 +178,7 @@ let type_cvtop at = function
     | TruncSF32 | TruncUF32 | ReinterpretFloat -> F32Type
     | TruncSF64 | TruncUF64 -> F64Type
     ), I32Type
-  | Values.I64 cvtop ->
+  | Value.I64 cvtop ->
     let open I64Op in
     (match cvtop with
     | ExtendSI32 | ExtendUI32 -> I32Type
@@ -186,7 +186,7 @@ let type_cvtop at = function
     | TruncSF32 | TruncUF32 -> F32Type
     | TruncSF64 | TruncUF64 | ReinterpretFloat -> F64Type
     ), I64Type
-  | Values.F32 cvtop ->
+  | Value.F32 cvtop ->
     let open F32Op in
     (match cvtop with
     | ConvertSI32 | ConvertUI32 | ReinterpretInt -> I32Type
@@ -194,7 +194,7 @@ let type_cvtop at = function
     | PromoteF32 -> error at "invalid conversion"
     | DemoteF64 -> F64Type
     ), F32Type
-  | Values.F64 cvtop ->
+  | Value.F64 cvtop ->
     let open F64Op in
     (match cvtop with
     | ConvertSI32 | ConvertUI32 -> I32Type

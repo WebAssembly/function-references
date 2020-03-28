@@ -18,7 +18,7 @@ and table_inst = Table.t
 and memory_inst = Memory.t
 and global_inst = Global.t
 and export_inst = Ast.name * extern
-and elem_inst = Values.ref_ list ref
+and elem_inst = Value.ref_ list ref
 and data_inst = string ref
 
 and extern =
@@ -30,18 +30,18 @@ and extern =
 
 (* Reference types *)
 
-type Values.ref_ += FuncRef of func_inst
+type Value.ref_ += FuncRef of func_inst
 
 let () =
-  let type_of_ref' = !Values.type_of_ref' in
-  Values.type_of_ref' := function
+  let type_of_ref' = !Value.type_of_ref' in
+  Value.type_of_ref' := function
     | FuncRef f ->
       DefRefType (NonNullable, Func.type_var_of f)
     | r -> type_of_ref' r
 
 let () =
-  let string_of_ref' = !Values.string_of_ref' in
-  Values.string_of_ref' := function
+  let string_of_ref' = !Value.string_of_ref' in
+  Value.string_of_ref' := function
     | FuncRef _ -> "func"
     | r -> string_of_ref' r
 

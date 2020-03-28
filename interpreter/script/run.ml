@@ -218,9 +218,9 @@ let print_module x_opt m =
     (indent (Types.string_of_module_type (Ast.module_type_of m)))
 
 let print_values vs =
-  let ts = List.map Values.type_of_value vs in
+  let ts = List.map Value.type_of_value vs in
   Printf.printf "%s : %s\n%!"
-    (Values.string_of_values vs) (Semtypes.string_of_stack_type ts)
+    (Value.string_of_values vs) (Semtypes.string_of_stack_type ts)
 
 let string_of_nan = function
   | CanonicalNan -> "nan:canonical"
@@ -228,18 +228,18 @@ let string_of_nan = function
 
 let type_of_result r =
   match r with
-  | LitResult v -> Values.type_of_value v.it
-  | NanResult n -> Semtypes.NumType (Values.type_of_num n.it)
+  | LitResult v -> Value.type_of_value v.it
+  | NanResult n -> Semtypes.NumType (Value.type_of_num n.it)
   | RefResult -> Semtypes.RefType Semtypes.AnyRefType
   | FuncResult -> Semtypes.RefType Semtypes.FuncRefType
 
 let string_of_result r =
   match r with
-  | LitResult v -> Values.string_of_value v.it
+  | LitResult v -> Value.string_of_value v.it
   | NanResult nanop ->
     (match nanop.it with
-    | Values.I32 _ | Values.I64 _ -> assert false
-    | Values.F32 n | Values.F64 n -> string_of_nan n
+    | Value.I32 _ | Value.I64 _ -> assert false
+    | Value.F32 n | Value.F64 n -> string_of_nan n
     )
   | RefResult -> "ref"
   | FuncResult -> "func"
@@ -301,7 +301,7 @@ let rec run_definition def : Ast.module_ =
     let def' = Parse.string_to_module s in
     run_definition def'
 
-let run_action act : Values.value list =
+let run_action act : Value.t list =
   match act.it with
   | Invoke (x_opt, name, vs) ->
     trace ("Invoking function \"" ^ Types.string_of_name name ^ "\"...");
@@ -312,7 +312,7 @@ let run_action act : Values.value list =
       if List.length vs <> List.length ins then
         Script.error act.at "wrong number of arguments";
       List.iter2 (fun v t ->
-        if not (Semtypes.Match.match_value_type () [] (Values.type_of_value v.it) t) then
+        if not (Semtypes.Match.match_value_type () [] (Value.type_of_value v.it) t) then
           Script.error v.at "wrong type of argument"
       ) vs ins;
       Eval.invoke f (List.map (fun v -> v.it) vs)
@@ -330,7 +330,7 @@ let run_action act : Values.value list =
     )
 
 let assert_result at got expect =
-  let open Values in
+  let open Value in
   if
     List.length got <> List.length expect ||
     List.exists2 (fun v r ->

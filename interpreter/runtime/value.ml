@@ -12,6 +12,7 @@ type ref_ = ..
 type ref_ += NullRef
 
 type value = Num of num | Ref of ref_
+type t = value
 
 
 (* Projections *)

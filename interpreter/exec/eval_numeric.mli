@@ -1,4 +1,4 @@
-open Values
+open Value
 
 exception TypeError of int * num * Semtypes.num_type
 

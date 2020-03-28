@@ -1,5 +1,5 @@
 open Semtypes
-open Values
+open Value
 
 type 'inst t = 'inst func
 and 'inst func =

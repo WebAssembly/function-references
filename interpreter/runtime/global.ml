@@ -1,5 +1,5 @@
 open Semtypes
-open Values
+open Value
 
 type global = {ty : global_type; mutable content : value}
 type t = global

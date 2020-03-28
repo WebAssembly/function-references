@@ -1,5 +1,5 @@
 open Semtypes
-open Values
+open Value
 
 type table
 type t = table

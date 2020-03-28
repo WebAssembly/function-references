@@ -143,7 +143,7 @@ let encode m =
 
     open Source
     open Ast
-    open Values
+    open Value
     open Memory
 
     let op n = u8 n

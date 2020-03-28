@@ -1,5 +1,5 @@
 open Semtypes
-open Values
+open Value
 
 
 (* Injection & projection *)
