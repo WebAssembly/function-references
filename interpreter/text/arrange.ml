@@ -2,7 +2,7 @@ open Source
 open Ast
 open Script
 open Value
-open Types
+open Types.Syn
 open Sexpr
 
 
@@ -217,7 +217,7 @@ let storeop op =
 
 let var x = nat32 x.it
 let num v = string_of_num v.it
-let constop v = num_type (stat_type_of_num v.it) ^ ".const"
+let constop v = num_type (syn_type_of_num v.it) ^ ".const"
 
 let rec instr e =
   let head, inner =

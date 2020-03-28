@@ -1,4 +1,4 @@
-open Types
+open Types.Syn
 open Ast
 open Value
 open Script
@@ -264,7 +264,7 @@ let assert_return ress ts at =
   let test res =
     match res.it with
     | LitResult {it = Num num; at = at'} ->
-      let t', reinterpret = reinterpret_of (stat_type_of_num num) in
+      let t', reinterpret = reinterpret_of (syn_type_of_num num) in
       [ reinterpret @@ at;
         Const (num @@ at')  @@ at;
         reinterpret @@ at;
@@ -294,7 +294,7 @@ let assert_return ress ts at =
         | CanonicalNan -> abs_mask_of (* must only differ from the canonical NaN in its sign bit *)
         | ArithmeticNan -> canonical_nan_of (* can be any NaN that's one everywhere the canonical NaN is one *)
       in
-      let t = stat_type_of_num nanop.it in
+      let t = syn_type_of_num nanop.it in
       let t', reinterpret = reinterpret_of t in
       [ reinterpret @@ at;
         Const (nan_bitmask_of t' @@ at) @@ at;

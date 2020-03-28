@@ -1,8 +1,10 @@
-open Semtypes
+open Types.Sem
 open Value
 open Instance
 open Ast
 open Source
+
+module T = Types.Syn
 
 
 (* Errors *)
@@ -215,7 +217,7 @@ let rec step (c : config) : config =
       | CallIndirect (x, y), Num (I32 i) :: vs ->
         let f = func_ref frame.inst x i e.at in
         if
-          Match.eq_func_type () [] (func_type frame.inst y) (Func.type_of f)
+          Match.Sem.eq_func_type () [] (func_type frame.inst y) (Func.type_of f)
         then
           vs, [Invoke f @@ e.at]
         else
@@ -361,7 +363,7 @@ let rec step (c : config) : config =
       | Load {offset; ty; sz; _}, Num (I32 i) :: vs' ->
         let mem = memory frame.inst (0l @@ e.at) in
         let a = I64_convert.extend_i32_u i in
-        let t = alloc_num_type ty in
+        let t = Types.sem_num_type ty in
         (try
           let n =
             match sz with
@@ -402,7 +404,7 @@ let rec step (c : config) : config =
             Plain (Const (I32 i @@ e.at));
             Plain (Const (k @@ e.at));
             Plain (Store
-              {ty = Types.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
+              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
             Plain (Const (I32 (I32.add i 1l) @@ e.at));
             Plain (Const (k @@ e.at));
             Plain (Const (I32 (I32.sub n 1l) @@ e.at));
@@ -419,9 +421,9 @@ let rec step (c : config) : config =
             Plain (Const (I32 d @@ e.at));
             Plain (Const (I32 s @@ e.at));
             Plain (Load
-              {ty = Types.I32Type; align = 0; offset = 0l; sz = Some Memory.(Pack8, ZX)});
+              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.(Pack8, ZX)});
             Plain (Store
-              {ty = Types.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
+              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
             Plain (Const (I32 (I32.add d 1l) @@ e.at));
             Plain (Const (I32 (I32.add s 1l) @@ e.at));
             Plain (Const (I32 (I32.sub n 1l) @@ e.at));
@@ -436,9 +438,9 @@ let rec step (c : config) : config =
             Plain (Const (I32 d @@ e.at));
             Plain (Const (I32 s @@ e.at));
             Plain (Load
-              {ty = Types.I32Type; align = 0; offset = 0l; sz = Some Memory.(Pack8, ZX)});
+              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.(Pack8, ZX)});
             Plain (Store
-              {ty = Types.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
+              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
           ]
 
       | MemoryInit x, Num (I32 n) :: Num (I32 s) :: Num (I32 d) :: vs' ->
@@ -453,7 +455,7 @@ let rec step (c : config) : config =
             Plain (Const (I32 d @@ e.at));
             Plain (Const (I32 b @@ e.at));
             Plain (Store
-              {ty = Types.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
+              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
             Plain (Const (I32 (I32.add d 1l) @@ e.at));
             Plain (Const (I32 (I32.add s 1l) @@ e.at));
             Plain (Const (I32 (I32.sub n 1l) @@ e.at));
@@ -582,7 +584,7 @@ let rec step (c : config) : config =
       (match f with
       | Func.AstFunc (ft, inst', func) ->
         let {locals; body; _} = func.it in
-        let ts = List.map (fun t -> alloc_value_type (!inst').types t.it) locals in
+        let ts = List.map (fun t -> Types.sem_value_type (!inst').types t.it) locals in
         let vs0 = List.rev args @ List.map default_value ts in
 (*
         let locals' = List.map (fun t -> t @@ func.at) ins' @ locals in
@@ -628,7 +630,7 @@ let invoke (func : func_inst) (vs : value list) : value list =
   let FuncType (ins, out) = Func.type_of func in
   if List.length vs <> List.length ins then
     Crash.error at "wrong number of arguments";
-  if not (List.for_all2 (fun v -> Match.match_value_type () [] (type_of_value v)) vs ins) then
+  if not (List.for_all2 (fun v -> Match.Sem.match_value_type () [] (type_of_value v)) vs ins) then
     Crash.error at "wrong types of arguments";
   let c = config empty_module_inst (List.rev vs) [Invoke func @@ at] in
   try List.rev (eval c) with Stack_overflow ->
@@ -644,23 +646,23 @@ let eval_const (inst : module_inst) (const : const) : value =
 (* Modules *)
 
 let create_type (_ : type_) : type_inst =
-  Semtypes.alloc (FuncDefType (Semtypes.FuncType ([], [])))
+  Types.alloc (FuncDefType (FuncType ([], [])))
 
 let create_func (inst : module_inst) (f : func) : func_inst =
   Func.alloc (type_ inst f.it.ftype) (ref inst) f
 
 let create_table (inst : module_inst) (tab : table) : table_inst =
   let {ttype} = tab.it in
-  Table.alloc (alloc_table_type inst.types ttype) NullRef
+  Table.alloc (Types.sem_table_type inst.types ttype) NullRef
 
 let create_memory (inst : module_inst) (mem : memory) : memory_inst =
   let {mtype} = mem.it in
-  Memory.alloc (alloc_memory_type inst.types mtype)
+  Memory.alloc (Types.sem_memory_type inst.types mtype)
 
 let create_global (inst : module_inst) (glob : global) : global_inst =
   let {gtype; ginit} = glob.it in
   let v = eval_const inst ginit in
-  Global.alloc (alloc_global_type inst.types gtype) v
+  Global.alloc (Types.sem_global_type inst.types gtype) v
 
 let create_export (inst : module_inst) (ex : export) : export_inst =
   let {name; edesc} = ex.it in
@@ -683,10 +685,10 @@ let create_data (inst : module_inst) (seg : data_segment) : data_inst =
 
 let add_import (m : module_) (ext : extern) (im : import) (inst : module_inst)
   : module_inst =
-  let it = Types.extern_type_of_import_type (import_type_of m im) in
-  let et = alloc_extern_type inst.types it in
+  let it = T.extern_type_of_import_type (import_type_of m im) in
+  let et = Types.sem_extern_type inst.types it in
   let et' = extern_type_of inst.types ext in
-  if not (Match.match_extern_type () [] et' et) then
+  if not (Match.Sem.match_extern_type () [] et' et) then
     Link.error im.at "incompatible import type";
   match ext with
   | ExternFunc func -> {inst with funcs = func :: inst.funcs}
@@ -696,7 +698,7 @@ let add_import (m : module_) (ext : extern) (im : import) (inst : module_inst)
 
 
 let init_type (inst : module_inst) (type_ : type_) (x : type_inst) =
-  x := Def (alloc_def_type inst.types type_.it)
+  x := Def (Types.sem_def_type inst.types type_.it)
 
 let init_func (inst : module_inst) (func : func_inst) =
   match func with

@@ -1,6 +1,6 @@
 %{
 open Source
-open Types
+open Types.Syn
 open Ast
 open Operators
 open Script
@@ -207,7 +207,7 @@ let inline_func_type_explicit (c : context) x ft at =
 %token<string> FLOAT
 %token<string> STRING
 %token<string> VAR
-%token<Types.num_type> NUM_TYPE
+%token<Types.Syn.num_type> NUM_TYPE
 %token<string Source.phrase -> Ast.instr' * Value.num> CONST
 %token<Ast.instr'> UNARY
 %token<Ast.instr'> BINARY

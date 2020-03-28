@@ -177,5 +177,115 @@ struct
     )
 end
 
-module Var = Int32
-include Make (Var)
+(* Syntactic Types *)
+
+module Syn =
+struct
+  module Var = Int32
+
+  include Make (Var)
+end
+
+
+(* Semantic Types *)
+
+module Sem =
+struct
+  module Var =
+  struct
+    type def = ..
+    type t = def ref
+    let to_string' = ref (fun (x : t) -> (failwith "dummy" : string))
+    let to_string x = !to_string' x
+  end
+
+  include Make (Var)
+
+  type Var.def += Def of def_type
+
+  let def_of x =
+    match !x with
+    | Def dt -> dt
+    | _ -> assert false
+
+  let _ = Var.to_string' :=
+    fun x -> "(" ^ string_of_def_type (def_of x) ^ ")"
+end
+
+
+(* Allocation *)
+
+let alloc dt = ref (Sem.Def dt)
+
+
+(* Conversion *)
+
+let sem_nullability = function
+  | Syn.NonNullable -> Sem.NonNullable
+  | Syn.Nullable -> Sem.Nullable
+
+let sem_mutability = function
+  | Syn.Immutable -> Sem.Immutable
+  | Syn.Mutable -> Sem.Mutable
+
+
+let sem_num_type = function
+  | Syn.I32Type -> Sem.I32Type
+  | Syn.I64Type -> Sem.I64Type
+  | Syn.F32Type -> Sem.F32Type
+  | Syn.F64Type -> Sem.F64Type
+
+let sem_ref_type c = function
+  | Syn.NullRefType -> Sem.NullRefType
+  | Syn.AnyRefType -> Sem.AnyRefType
+  | Syn.FuncRefType -> Sem.FuncRefType
+  | Syn.DefRefType (nul, x) ->
+    Sem.DefRefType (sem_nullability nul, Lib.List32.nth c x)
+
+let sem_value_type c = function
+  | Syn.NumType t -> Sem.NumType (sem_num_type t)
+  | Syn.RefType t -> Sem.RefType (sem_ref_type c t)
+  | Syn.BotType -> Sem.BotType
+
+let sem_stack_type c ts =
+ List.map (sem_value_type c) ts
+
+
+let sem_limits {Syn.min; max} = {Sem.min; max}
+
+let sem_memory_type c (Syn.MemoryType lim) =
+  Sem.MemoryType (sem_limits lim)
+
+let sem_table_type c (Syn.TableType (lim, t)) =
+  Sem.TableType (sem_limits lim, sem_ref_type c t)
+
+let sem_global_type c (Syn.GlobalType (t, mut)) =
+  Sem.GlobalType (sem_value_type c t, sem_mutability mut)
+
+let sem_func_type c (Syn.FuncType (ins, out)) =
+  Sem.FuncType (sem_stack_type c ins, sem_stack_type c out)
+
+let sem_extern_type c = function
+  | Syn.ExternFuncType ft -> Sem.ExternFuncType (sem_func_type c ft)
+  | Syn.ExternTableType tt -> Sem.ExternTableType (sem_table_type c tt)
+  | Syn.ExternMemoryType mt -> Sem.ExternMemoryType (sem_memory_type c mt)
+  | Syn.ExternGlobalType gt -> Sem.ExternGlobalType (sem_global_type c gt)
+
+
+let sem_def_type c = function
+  | Syn.FuncDefType ft -> Sem.FuncDefType (sem_func_type c ft)
+
+
+let sem_export_type c (Syn.ExportType (et, name)) =
+  Sem.ExportType (sem_extern_type c et, name)
+
+let sem_import_type c (Syn.ImportType (et, module_name, name)) =
+  Sem.ImportType (sem_extern_type c et, module_name, name)
+
+let sem_module_type (Syn.ModuleType (dts, its, ets)) =
+  let dummy_type = Sem.FuncDefType (Sem.FuncType ([], [])) in
+  let c = List.map (fun _ -> alloc dummy_type) dts in
+  List.iter2 (fun x dt -> x := Sem.Def (sem_def_type c dt)) c dts;
+  let its = List.map (sem_import_type c) its in
+  let ets = List.map (sem_export_type c) ets in
+  Sem.ModuleType ([], its, ets)

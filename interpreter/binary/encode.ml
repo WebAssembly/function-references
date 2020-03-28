@@ -88,7 +88,7 @@ let encode m =
 
     (* Types *)
 
-    open Types
+    open Types.Syn
 
     let num_type = function
       | I32Type -> vs7 (-0x01)

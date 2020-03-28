@@ -1,4 +1,4 @@
-open Semtypes
+open Types.Sem
 open Value
 
 type global

@@ -1,6 +1,6 @@
 open Source
 open Ast
-open Types
+open Types.Syn
 
 module Set = Set.Make(Int32)
 

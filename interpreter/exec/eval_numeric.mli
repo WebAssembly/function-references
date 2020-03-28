@@ -1,6 +1,6 @@
 open Value
 
-exception TypeError of int * num * Semtypes.num_type
+exception TypeError of int * num * Types.Sem.num_type
 
 val eval_unop : Ast.unop -> num -> num
 val eval_binop : Ast.binop -> num -> num -> num

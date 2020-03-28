@@ -1,4 +1,4 @@
-open Semtypes
+open Types.Sem
 open Value
 open Bigarray
 open Lib.Bigarray
@@ -111,7 +111,7 @@ let storen mem a o n x =
   in loop (effective_address a o) n x
 
 let load_num mem a o t =
-  let n = loadn mem a o (Semtypes.size t) in
+  let n = loadn mem a o (Types.Sem.size t) in
   match t with
   | I32Type -> I32 (Int64.to_int32 n)
   | I64Type -> I64 n
@@ -125,14 +125,14 @@ let store_num mem a o n =
     | I64 x -> x
     | F32 x -> Int64.of_int32 (F32.to_bits x)
     | F64 x -> F64.to_bits x
-  in storen mem a o (Semtypes.size (Value.type_of_num n)) x
+  in storen mem a o (Types.Sem.size (Value.type_of_num n)) x
 
 let extend x n = function
   | ZX -> x
   | SX -> let sh = 64 - 8 * n in Int64.(shift_right (shift_left x sh) sh)
 
 let load_packed sz ext mem a o t =
-  assert (packed_size sz <= Semtypes.size t);
+  assert (packed_size sz <= Types.Sem.size t);
   let w = packed_size sz in
   let x = extend (loadn mem a o w) w ext in
   match t with
@@ -141,7 +141,7 @@ let load_packed sz ext mem a o t =
   | _ -> raise Type
 
 let store_packed sz mem a o n =
-  assert (packed_size sz <= Semtypes.size (Value.type_of_num n));
+  assert (packed_size sz <= Types.Sem.size (Value.type_of_num n));
   let w = packed_size sz in
   let x =
     match n with

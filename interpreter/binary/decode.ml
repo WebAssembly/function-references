@@ -131,7 +131,7 @@ let sized f s =
 
 (* Types *)
 
-open Types
+open Types.Syn
 
 let num_type s =
   match vs7 s with

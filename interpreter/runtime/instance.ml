@@ -1,4 +1,4 @@
-open Semtypes
+open Types.Sem
 
 type module_inst =
 {
@@ -12,7 +12,7 @@ type module_inst =
   datas : data_inst list;
 }
 
-and type_inst = Semtypes.var
+and type_inst = Types.Sem.var
 and func_inst = module_inst ref Func.t
 and table_inst = Table.t
 and memory_inst = Memory.t

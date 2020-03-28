@@ -7,7 +7,6 @@ struct
   end
 end
 
-
 module Make (Var : Types.VAR) (Context : CONTEXT(Var).S) =
 struct
   open Types.Make (Var)
@@ -146,10 +145,29 @@ struct
 end
 
 
-module Context =
+(* Syntactic Types *)
+
+module Syn =
 struct
-  type t = Types.def_type list
-  let lookup = Lib.List32.nth
+  module Context =
+  struct
+    type t = Types.Syn.def_type list
+    let lookup = Lib.List32.nth
+  end
+
+  include Make (Types.Syn.Var) (Context)
 end
 
-include Make (Types.Var) (Context)
+
+(* Semantic Types *)
+
+module Sem =
+struct
+  module Context =
+  struct
+    type t = unit
+    let lookup c = Types.Sem.def_of
+  end
+
+  include Make (Types.Sem.Var) (Context)
+end

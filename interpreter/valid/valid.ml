@@ -1,6 +1,7 @@
 open Ast
 open Source
-open Types
+open Types.Syn
+open Match.Syn
 
 
 (* Errors *)
@@ -140,7 +141,7 @@ let (-->...) ts1 ts2 = {ins = Ellipses, ts1; outs = Ellipses, ts2}
 let check_stack (c : context) ts1 ts2 at =
   require
     (List.length ts1 = List.length ts2 &&
-      List.for_all2 (Match.match_value_type c.types []) ts1 ts2) at
+      List.for_all2 (match_value_type c.types []) ts1 ts2) at
     ("type mismatch: operator requires " ^ string_of_stack_type ts2 ^
      " but stack has " ^ string_of_stack_type ts1)
 
@@ -163,11 +164,11 @@ let peek i (ell, ts) =
 
 (* Type Synthesis *)
 
-let type_num = Value.stat_type_of_num
-let type_unop = Value.stat_type_of_num
-let type_binop = Value.stat_type_of_num
-let type_testop = Value.stat_type_of_num
-let type_relop = Value.stat_type_of_num
+let type_num = Value.syn_type_of_num
+let type_unop = Value.syn_type_of_num
+let type_binop = Value.syn_type_of_num
+let type_testop = Value.syn_type_of_num
+let type_relop = Value.syn_type_of_num
 
 let type_cvtop at = function
   | Value.I32 cvtop ->
@@ -341,7 +342,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   | CallIndirect (x, y) ->
     let TableType (lim, t) = table c x in
     let FuncType (ins, out) = func_type c y in
-    require (Match.match_ref_type c.types [] t FuncRefType) x.at
+    require (match_ref_type c.types [] t FuncRefType) x.at
       ("type mismatch: instruction requires table of functions" ^
        " but table has " ^ string_of_ref_type t);
     (ins @ [NumType I32Type]) --> out
@@ -350,7 +351,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
     (match peek 0 s with
     | RefType (DefRefType (nul, x)) ->
       let FuncType (ins, out) = func_type c (x @@ e.at) in
-      require (Match.match_stack_type c.types [] out c.results) e.at
+      require (match_stack_type c.types [] out c.results) e.at
         "type mismatch in function result";
       (ins @ [RefType (DefRefType (nul, x))]) -->... []
     | BotType -> [] -->... []
@@ -366,7 +367,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
         "type mismatch in function arguments";
       let ts1, ts2 = Lib.List.split (List.length ins - List.length ins') ins in
       (* TODO: not necessary if we could insert the new semantic FuncType below *)
-      require (Match.match_func_type c.types [] (FuncType (ts2, out)) ft') e.at
+      require (match_func_type c.types [] (FuncType (ts2, out)) ft') e.at
         "type mismatch in function type";
       (ts1 @ [RefType (DefRefType (nul, y))]) -->
       [RefType (DefRefType (NonNullable, x.it))]
@@ -415,7 +416,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   | TableCopy (x, y) ->
     let TableType (_lim1, t1) = table c x in
     let TableType (_lim2, t2) = table c y in
-    require (Match.match_ref_type c.types [] t2 t1) x.at
+    require (match_ref_type c.types [] t2 t1) x.at
       ("type mismatch: source element type " ^ string_of_ref_type t1 ^
        " does not match destination element type " ^ string_of_ref_type t2);
     [NumType I32Type; NumType I32Type; NumType I32Type] --> []
@@ -423,7 +424,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   | TableInit (x, y) ->
     let TableType (_lim1, t1) = table c x in
     let t2 = elem c y in
-    require (Match.match_ref_type c.types [] t2 t1) x.at
+    require (match_ref_type c.types [] t2 t1) x.at
       ("type mismatch: source element type " ^ string_of_ref_type t1 ^
        " does not match destination element type " ^ string_of_ref_type t2);
     [NumType I32Type; NumType I32Type; NumType I32Type] --> []
@@ -588,7 +589,7 @@ let check_elem_mode (c : context) (t : ref_type) (mode : segment_mode) =
   | Passive -> ()
   | Active {index; offset} ->
     let TableType (_, et) = table c index in
-    require (Match.match_ref_type c.types [] t et) mode.at
+    require (match_ref_type c.types [] t et) mode.at
       "type mismatch in active element segment";
     check_const c offset (NumType I32Type)
   | Declarative -> ()

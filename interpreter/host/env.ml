@@ -4,7 +4,7 @@
  * we have agreement on what libc should look like.
  *)
 
-open Semtypes
+open Types.Sem
 open Value
 open Instance
 
@@ -42,7 +42,7 @@ let exit vs =
 let lookup name et =
   match Utf8.encode name, et with
   | "abort", ExternFuncType ft ->
-    ExternFunc (Func.alloc_host (Semtypes.alloc (FuncDefType ft)) abort)
+    ExternFunc (Func.alloc_host (Types.alloc (FuncDefType ft)) abort)
   | "exit", ExternFuncType ft ->
-    ExternFunc (Func.alloc_host (Semtypes.alloc (FuncDefType ft)) exit)
+    ExternFunc (Func.alloc_host (Types.alloc (FuncDefType ft)) exit)
   | _ -> raise Not_found
