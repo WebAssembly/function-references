@@ -1,4 +1,4 @@
-open Types.Sem
+open Types
 
 type module_inst =
 {
@@ -12,7 +12,7 @@ type module_inst =
   datas : data_inst list;
 }
 
-and type_inst = Types.Sem.var
+and type_inst = Types.sem_var
 and func_inst = module_inst ref Func.t
 and table_inst = Table.t
 and memory_inst = Memory.t
@@ -35,8 +35,7 @@ type Value.ref_ += FuncRef of func_inst
 let () =
   let type_of_ref' = !Value.type_of_ref' in
   Value.type_of_ref' := function
-    | FuncRef f ->
-      DefRefType (NonNullable, Func.type_var_of f)
+    | FuncRef f -> DefRefType (NonNullable, SemVar (Func.type_inst_of f))
     | r -> type_of_ref' r
 
 let () =

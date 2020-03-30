@@ -1,4 +1,4 @@
-open Types.Sem
+open Types
 
 
 (* Values and operators *)
@@ -28,13 +28,11 @@ let as_ref = function
 
 (* Typing *)
 
-let syn_type_of_num = function
-  | I32 _ -> Types.Syn.I32Type
-  | I64 _ -> Types.Syn.I64Type
-  | F32 _ -> Types.Syn.F32Type
-  | F64 _ -> Types.Syn.F64Type
-
-let type_of_num n = Types.sem_num_type (syn_type_of_num n)
+let type_of_num = function
+  | I32 _ -> I32Type
+  | I64 _ -> I64Type
+  | F32 _ -> F32Type
+  | F64 _ -> F64Type
 
 let type_of_ref' = ref (function NullRef -> NullRefType | _ -> AnyRefType)
 let type_of_ref r = !type_of_ref' r

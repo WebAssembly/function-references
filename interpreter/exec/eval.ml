@@ -1,10 +1,8 @@
-open Types.Sem
+open Types
 open Value
 open Instance
 open Ast
 open Source
-
-module T = Types.Syn
 
 
 (* Errors *)
@@ -99,8 +97,7 @@ let elem (inst : module_inst) x = lookup "element segment" inst.elems x
 let data (inst : module_inst) x = lookup "data segment" inst.datas x
 let local (frame : frame) x = lookup "local" frame.locals x
 
-let func_type (inst : module_inst) x =
-  as_func_def_type (def_of (type_ inst x))
+let func_type (inst : module_inst) x = as_func_def_type !(type_ inst x)
 
 let any_ref inst x i at =
   try Table.load (table inst x) i with Table.Bounds ->
@@ -217,7 +214,7 @@ let rec step (c : config) : config =
       | CallIndirect (x, y), Num (I32 i) :: vs ->
         let f = func_ref frame.inst x i e.at in
         if
-          Match.Sem.eq_func_type () [] (func_type frame.inst y) (Func.type_of f)
+          Match.eq_func_type [] [] (func_type frame.inst y) (Func.type_of f)
         then
           vs, [Invoke f @@ e.at]
         else
@@ -363,12 +360,11 @@ let rec step (c : config) : config =
       | Load {offset; ty; sz; _}, Num (I32 i) :: vs' ->
         let mem = memory frame.inst (0l @@ e.at) in
         let a = I64_convert.extend_i32_u i in
-        let t = Types.sem_num_type ty in
         (try
           let n =
             match sz with
-            | None -> Memory.load_num mem a offset t
-            | Some (sz, ext) -> Memory.load_packed sz ext mem a offset t
+            | None -> Memory.load_num mem a offset ty
+            | Some (sz, ext) -> Memory.load_packed sz ext mem a offset ty
           in Num n :: vs', []
         with exn -> vs', [Trapping (memory_error e.at exn) @@ e.at])
 
@@ -404,7 +400,7 @@ let rec step (c : config) : config =
             Plain (Const (I32 i @@ e.at));
             Plain (Const (k @@ e.at));
             Plain (Store
-              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
+              {ty = I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
             Plain (Const (I32 (I32.add i 1l) @@ e.at));
             Plain (Const (k @@ e.at));
             Plain (Const (I32 (I32.sub n 1l) @@ e.at));
@@ -421,9 +417,9 @@ let rec step (c : config) : config =
             Plain (Const (I32 d @@ e.at));
             Plain (Const (I32 s @@ e.at));
             Plain (Load
-              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.(Pack8, ZX)});
+              {ty = I32Type; align = 0; offset = 0l; sz = Some Memory.(Pack8, ZX)});
             Plain (Store
-              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
+              {ty = I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
             Plain (Const (I32 (I32.add d 1l) @@ e.at));
             Plain (Const (I32 (I32.add s 1l) @@ e.at));
             Plain (Const (I32 (I32.sub n 1l) @@ e.at));
@@ -438,9 +434,9 @@ let rec step (c : config) : config =
             Plain (Const (I32 d @@ e.at));
             Plain (Const (I32 s @@ e.at));
             Plain (Load
-              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.(Pack8, ZX)});
+              {ty = I32Type; align = 0; offset = 0l; sz = Some Memory.(Pack8, ZX)});
             Plain (Store
-              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
+              {ty = I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
           ]
 
       | MemoryInit x, Num (I32 n) :: Num (I32 s) :: Num (I32 d) :: vs' ->
@@ -455,7 +451,7 @@ let rec step (c : config) : config =
             Plain (Const (I32 d @@ e.at));
             Plain (Const (I32 b @@ e.at));
             Plain (Store
-              {ty = T.I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
+              {ty = I32Type; align = 0; offset = 0l; sz = Some Memory.Pack8});
             Plain (Const (I32 (I32.add d 1l) @@ e.at));
             Plain (Const (I32 (I32.add s 1l) @@ e.at));
             Plain (Const (I32 (I32.sub n 1l) @@ e.at));
@@ -582,25 +578,19 @@ let rec step (c : config) : config =
       let FuncType (ins, out) = Func.type_of f in
       let args, vs' = split (List.length ins) vs e.at in
       (match f with
-      | Func.AstFunc (ft, inst', func) ->
+      | Func.AstFunc (_, inst', func) ->
         let {locals; body; _} = func.it in
         let ts = List.map (fun t -> Types.sem_value_type (!inst').types t.it) locals in
         let vs0 = List.rev args @ List.map default_value ts in
-(*
-        let locals' = List.map (fun t -> t @@ func.at) ins' @ locals in
+        let locals' = List.map (fun t -> t @@ func.at) ins @ locals in
         let es0 = [Plain (Let (out, locals', body)) @@ func.at] in
         vs', [Frame (List.length out, !inst', (List.rev vs0, es0)) @@ e.at]
-*)
-        let n = List.length out in
-        let es0 = [Local (n, vs0,
-          ([], [Label (n, [], ([], List.map plain body)) @@ func.at])) @@ func.at] in
-        vs', [Frame (n, !inst', ([], es0)) @@ e.at]
 
-      | Func.HostFunc (_ft, f) ->
+      | Func.HostFunc (_, f) ->
         (try List.rev (f (List.rev args)) @ vs', []
         with Crash (_, msg) -> Crash.error e.at msg)
 
-      | Func.ClosureFunc (_ft, f', args') ->
+      | Func.ClosureFunc (_, f', args') ->
         args @ args' @ vs', [Invoke f' @@ e.at]
       )
   in {c with code = vs', es' @ List.tl es}
@@ -630,7 +620,7 @@ let invoke (func : func_inst) (vs : value list) : value list =
   let FuncType (ins, out) = Func.type_of func in
   if List.length vs <> List.length ins then
     Crash.error at "wrong number of arguments";
-  if not (List.for_all2 (fun v -> Match.Sem.match_value_type () [] (type_of_value v)) vs ins) then
+  if not (List.for_all2 (fun v -> Match.match_value_type [] [] (type_of_value v)) vs ins) then
     Crash.error at "wrong types of arguments";
   let c = config empty_module_inst (List.rev vs) [Invoke func @@ at] in
   try List.rev (eval c) with Stack_overflow ->
@@ -685,10 +675,10 @@ let create_data (inst : module_inst) (seg : data_segment) : data_inst =
 
 let add_import (m : module_) (ext : extern) (im : import) (inst : module_inst)
   : module_inst =
-  let it = T.extern_type_of_import_type (import_type_of m im) in
+  let it = extern_type_of_import_type (import_type_of m im) in
   let et = Types.sem_extern_type inst.types it in
   let et' = extern_type_of inst.types ext in
-  if not (Match.Sem.match_extern_type () [] et' et) then
+  if not (Match.match_extern_type [] [] et' et) then
     Link.error im.at "incompatible import type";
   match ext with
   | ExternFunc func -> {inst with funcs = func :: inst.funcs}
@@ -698,7 +688,7 @@ let add_import (m : module_) (ext : extern) (im : import) (inst : module_inst)
 
 
 let init_type (inst : module_inst) (type_ : type_) (x : type_inst) =
-  x := Def (Types.sem_def_type inst.types type_.it)
+  x := Types.sem_def_type inst.types type_.it
 
 let init_func (inst : module_inst) (func : func_inst) =
   match func with

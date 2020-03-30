@@ -1,6 +1,6 @@
 open Source
 open Ast
-open Types.Sem
+open Types
 
 module Unknown = Error.Make ()
 exception Unknown = Unknown.Error  (* indicates unknown import name *)

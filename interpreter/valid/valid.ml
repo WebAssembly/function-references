@@ -1,7 +1,7 @@
 open Ast
 open Source
-open Types.Syn
-open Match.Syn
+open Types
+open Match
 
 
 (* Errors *)
@@ -18,7 +18,7 @@ let require b at s = if not b then error at s
 type context =
 {
   types : def_type list;
-  funcs : var list;
+  funcs : syn_var list;
   tables : table_type list;
   memories : memory_type list;
   globals : global_type list;
@@ -85,7 +85,8 @@ let check_num_type (c : context) (t : num_type) at =
 let check_ref_type (c : context) (t : ref_type) at =
   match t with
   | AnyRefType | NullRefType | FuncRefType -> ()
-  | DefRefType (_nul, x) -> ignore (func_type c (x @@ at))
+  | DefRefType (_nul, SynVar x) -> ignore (func_type c (x @@ at))
+  | DefRefType (_nul, SemVar _) -> assert false
 
 let check_value_type (c : context) (t : value_type) at =
   match t with
@@ -164,11 +165,11 @@ let peek i (ell, ts) =
 
 (* Type Synthesis *)
 
-let type_num = Value.syn_type_of_num
-let type_unop = Value.syn_type_of_num
-let type_binop = Value.syn_type_of_num
-let type_testop = Value.syn_type_of_num
-let type_relop = Value.syn_type_of_num
+let type_num = Value.type_of_num
+let type_unop = Value.type_of_num
+let type_binop = Value.type_of_num
+let type_testop = Value.type_of_num
+let type_relop = Value.type_of_num
 
 let type_cvtop at = function
   | Value.I32 cvtop ->
@@ -332,9 +333,9 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
 
   | CallRef ->
     (match peek 0 s with
-    | RefType (DefRefType (nul, x)) ->
+    | RefType (DefRefType (nul, SynVar x)) ->
       let FuncType (ins, out) = func_type c (x @@ e.at) in
-      (ins @ [RefType (DefRefType (nul, x))]) --> out
+      (ins @ [RefType (DefRefType (nul, SynVar x))]) --> out
     | BotType -> [] -->... []
     | _ -> [RefType NullRefType] -->... []
     )
@@ -349,18 +350,18 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
 
   | ReturnCallRef ->
     (match peek 0 s with
-    | RefType (DefRefType (nul, x)) ->
+    | RefType (DefRefType (nul, SynVar x)) ->
       let FuncType (ins, out) = func_type c (x @@ e.at) in
       require (match_stack_type c.types [] out c.results) e.at
         "type mismatch in function result";
-      (ins @ [RefType (DefRefType (nul, x))]) -->... []
+      (ins @ [RefType (DefRefType (nul, SynVar x))]) -->... []
     | BotType -> [] -->... []
     | _ -> [RefType NullRefType] -->... []
     )
 
   | FuncBind x ->
     (match peek 0 s with
-    | RefType (DefRefType (nul, y)) ->
+    | RefType (DefRefType (nul, SynVar y)) ->
       let FuncType (ins, out) = func_type c (y @@ e.at) in
       let FuncType (ins', _) as ft' = func_type c x in
       require (List.length ins >= List.length ins') x.at
@@ -369,10 +370,12 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
       (* TODO: not necessary if we could insert the new semantic FuncType below *)
       require (match_func_type c.types [] (FuncType (ts2, out)) ft') e.at
         "type mismatch in function type";
-      (ts1 @ [RefType (DefRefType (nul, y))]) -->
-      [RefType (DefRefType (NonNullable, x.it))]
-    | BotType -> [] -->... [RefType (DefRefType (NonNullable, x.it))]
-    | _ -> [RefType NullRefType] -->... [RefType (DefRefType (NonNullable, x.it))]
+      (ts1 @ [RefType (DefRefType (nul, SynVar y))]) -->
+      [RefType (DefRefType (NonNullable, SynVar x.it))]
+    | BotType -> [] -->... [RefType (DefRefType (NonNullable, SynVar x.it))]
+    | _ ->
+      [RefType NullRefType] -->...
+        [RefType (DefRefType (NonNullable, SynVar x.it))]
     )
 
   | LocalGet x ->
@@ -485,7 +488,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_stack_type) : op_type =
   | RefFunc x ->
     let y = func_var c x in
     refer_func c x;
-    [] --> [RefType (DefRefType (NonNullable, y))]
+    [] --> [RefType (DefRefType (NonNullable, SynVar y))]
 
   | Const v ->
     let t = NumType (type_num v.it) in

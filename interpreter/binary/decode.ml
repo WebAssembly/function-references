@@ -132,7 +132,7 @@ let sized f s =
 
 (* Types *)
 
-open Types.Syn
+open Types
 
 let num_type s =
   match vs7 s with
@@ -147,8 +147,8 @@ let ref_type s =
   | -0x10l -> FuncRefType
   | -0x11l -> AnyRefType
   | -0x12l -> NullRefType
-  | -0x14l -> DefRefType (Nullable, vu32 s)
-  | i when i >= 0l -> DefRefType (NonNullable, i)
+  | -0x14l -> DefRefType (Nullable, SynVar (vu32 s))
+  | i when i >= 0l -> DefRefType (NonNullable, SynVar i)
   | _ -> error s (pos s - 1) "invalid reference type"
 
 let value_type s =

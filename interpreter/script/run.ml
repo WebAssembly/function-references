@@ -215,12 +215,12 @@ let indent s =
 let print_module x_opt m =
   Printf.printf "module%s :\n%s%!"
     (match x_opt with None -> "" | Some x -> " " ^ x.it)
-    (indent (Types.Syn.string_of_module_type (Ast.module_type_of m)))
+    (indent (Types.string_of_module_type (Ast.module_type_of m)))
 
 let print_values vs =
   let ts = List.map Value.type_of_value vs in
   Printf.printf "%s : %s\n%!"
-    (Value.string_of_values vs) (Types.Sem.string_of_stack_type ts)
+    (Value.string_of_values vs) (Types.string_of_stack_type ts)
 
 let string_of_nan = function
   | CanonicalNan -> "nan:canonical"
@@ -229,9 +229,9 @@ let string_of_nan = function
 let type_of_result r =
   match r with
   | LitResult v -> Value.type_of_value v.it
-  | NanResult n -> Types.Sem.NumType (Value.type_of_num n.it)
-  | RefResult -> Types.Sem.RefType Types.Sem.AnyRefType
-  | FuncResult -> Types.Sem.RefType Types.Sem.FuncRefType
+  | NanResult n -> Types.NumType (Value.type_of_num n.it)
+  | RefResult -> Types.RefType Types.AnyRefType
+  | FuncResult -> Types.RefType Types.FuncRefType
 
 let string_of_result r =
   match r with
@@ -251,7 +251,7 @@ let string_of_results = function
 let print_results rs =
   let ts = List.map type_of_result rs in
   Printf.printf "%s : %s\n%!"
-    (string_of_results rs) (Types.Sem.string_of_stack_type ts)
+    (string_of_results rs) (Types.string_of_stack_type ts)
 
 
 (* Configuration *)
@@ -304,15 +304,15 @@ let rec run_definition def : Ast.module_ =
 let run_action act : Value.t list =
   match act.it with
   | Invoke (x_opt, name, vs) ->
-    trace ("Invoking function \"" ^ Types.Syn.string_of_name name ^ "\"...");
+    trace ("Invoking function \"" ^ Types.string_of_name name ^ "\"...");
     let inst = lookup_instance x_opt act.at in
     (match Instance.export inst name with
     | Some (Instance.ExternFunc f) ->
-      let Types.Sem.FuncType (ins, out) = Func.type_of f in
+      let Types.FuncType (ins, out) = Func.type_of f in
       if List.length vs <> List.length ins then
         Script.error act.at "wrong number of arguments";
       List.iter2 (fun v t ->
-        if not (Match.Sem.match_value_type () [] (Value.type_of_value v.it) t) then
+        if not (Match.match_value_type [] [] (Value.type_of_value v.it) t) then
           Script.error v.at "wrong type of argument"
       ) vs ins;
       Eval.invoke f (List.map (fun v -> v.it) vs)
@@ -321,7 +321,7 @@ let run_action act : Value.t list =
     )
 
  | Get (x_opt, name) ->
-    trace ("Getting global \"" ^ Types.Syn.string_of_name name ^ "\"...");
+    trace ("Getting global \"" ^ Types.string_of_name name ^ "\"...");
     let inst = lookup_instance x_opt act.at in
     (match Instance.export inst name with
     | Some (Instance.ExternGlobal gl) -> [Global.load gl]
@@ -470,7 +470,7 @@ let rec run_command cmd =
   | Register (name, x_opt) ->
     quote := cmd :: !quote;
     if not !Flags.dry then begin
-      trace ("Registering module \"" ^ Types.Syn.string_of_name name ^ "\"...");
+      trace ("Registering module \"" ^ Types.string_of_name name ^ "\"...");
       let inst = lookup_instance x_opt cmd.at in
       registry := Map.add (Utf8.encode name) inst !registry;
       Import.register name (lookup_registry (Utf8.encode name))

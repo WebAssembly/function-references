@@ -4,7 +4,7 @@
  * we have agreement on what libc should look like.
  *)
 
-open Types.Sem
+open Types
 open Value
 open Instance
 

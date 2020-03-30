@@ -1,5 +1,5 @@
 open Source
-open Types.Syn
+open Types
 open Value
 open Memory
 open Ast
