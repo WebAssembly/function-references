@@ -100,6 +100,7 @@ let vu1 s = Int64.to_int (vuN 1 s)
 let vu32 s = Int64.to_int32 (vuN 32 s)
 let vs7 s = Int64.to_int (vsN 7 s)
 let vs32 s = Int64.to_int32 (vsN 32 s)
+let vs33 s = I32_convert.wrap_i64 (vsN 33 s)
 let vs64 s = vsN 64 s
 let f32 s = F32.of_bits (u32 s)
 let f64 s = F64.of_bits (u64 s)
@@ -142,7 +143,7 @@ let num_type s =
   | _ -> error s (pos s - 1) "invalid number type"
 
 let ref_type s =
-  match vs32 s with
+  match vs33 s with
   | -0x10l -> FuncRefType
   | -0x11l -> AnyRefType
   | -0x12l -> NullRefType
