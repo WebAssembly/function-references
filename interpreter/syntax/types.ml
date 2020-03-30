@@ -3,6 +3,7 @@
 module type VAR =
 sig
   type t
+  val equal : t -> t -> bool
   val to_string : t -> string
 end
 
@@ -195,6 +196,7 @@ struct
   struct
     type def = ..
     type t = def ref
+    let equal = (==)
     let to_string' = ref (fun (x : t) -> (failwith "dummy" : string))
     let to_string x = !to_string' x
   end
@@ -209,7 +211,13 @@ struct
     | _ -> assert false
 
   let _ = Var.to_string' :=
-    fun x -> "(" ^ string_of_def_type (def_of x) ^ ")"
+    let inner = ref false in
+    fun x ->
+      if !inner then "..." else
+      ( inner := true;
+        try let s = string_of_def_type (def_of x) in inner := false; "(" ^ s ^ ")"
+        with exn -> inner := false; raise exn
+      )
 end
 
 

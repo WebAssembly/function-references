@@ -14,6 +14,9 @@ struct
   type context = Context.t
   type assump = (var * var) list
 
+  let assuming a (x1, x2) =
+    List.find_opt (fun (y1, y2) -> Var.equal x1 y1 && Var.equal x2 y2) a <> None
+
 
   (* Equivalence *)
 
@@ -71,7 +74,7 @@ struct
     | FuncDefType ft1, FuncDefType ft2 -> eq_func_type c a ft1 ft2
 
   and eq_var_type c a x1 x2 =
-    x1 = x2 || List.mem (x1, x2) a ||
+    Var.equal x1 x2 || assuming a (x1, x2) ||
     eq_def_type c ((x1, x2)::a) (Context.lookup c x1) (Context.lookup c x2)
 
 
@@ -140,7 +143,7 @@ struct
     eq_def_type c [] dt1 dt2
 
   and match_var_type c a x1 x2 =
-    x1 = x2 || List.mem (x1, x2) a ||
+    Var.equal x1 x2 || assuming a (x1, x2) ||
     match_def_type c ((x1, x2)::a) (Context.lookup c x1) (Context.lookup c x2)
 end
 

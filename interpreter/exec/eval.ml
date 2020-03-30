@@ -746,25 +746,23 @@ let init (m : module_) (exts : extern list) : module_inst =
   in
   if List.length exts <> List.length imports then
     Link.error m.at "wrong number of imports provided for initialisation";
-  let inst0 =
-    { (List.fold_right2 (add_import m) exts imports empty_module_inst) with
-      types = List.map create_type types }
-  in
+  let inst0 = {empty_module_inst with types = List.map create_type types} in
   List.iter2 (init_type inst0) types inst0.types;
-  let fs = List.map (create_func inst0) funcs in
-  let inst1 = {inst0 with funcs = inst0.funcs @ fs} in
-  let inst2 =
-    { inst1 with
-      tables = inst1.tables @ List.map (create_table inst1) tables;
-      memories = inst1.memories @ List.map (create_memory inst1) memories;
-      globals = inst1.globals @ List.map (create_global inst1) globals;
+  let inst1 = List.fold_right2 (add_import m) exts imports inst0 in
+  let fs = List.map (create_func inst1) funcs in
+  let inst2 = {inst1 with funcs = inst1.funcs @ fs} in
+  let inst3 =
+    { inst2 with
+      tables = inst2.tables @ List.map (create_table inst2) tables;
+      memories = inst2.memories @ List.map (create_memory inst2) memories;
+      globals = inst2.globals @ List.map (create_global inst2) globals;
     }
   in
   let inst =
-    { inst2 with
-      exports = List.map (create_export inst2) exports;
-      elems = List.map (create_elem inst2) elems;
-      datas = List.map (create_data inst2) datas;
+    { inst3 with
+      exports = List.map (create_export inst3) exports;
+      elems = List.map (create_elem inst3) elems;
+      datas = List.map (create_data inst3) datas;
     }
   in
   List.iter (init_func inst) fs;
