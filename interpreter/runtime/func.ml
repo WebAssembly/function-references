@@ -16,4 +16,4 @@ let type_inst_of = function
   | HostFunc (x, _) -> x
   | ClosureFunc (x, f, vs) -> x
 
-let type_of f = as_func_def_type !(type_inst_of f)
+let type_of f = as_func_def_type (def_of (type_inst_of f))

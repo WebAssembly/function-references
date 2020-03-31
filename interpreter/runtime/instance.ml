@@ -13,7 +13,7 @@ type module_inst =
 }
 
 and type_inst = Types.sem_var
-and func_inst = module_inst ref Func.t
+and func_inst = module_inst Lib.Promise.t Func.t
 and table_inst = Table.t
 and memory_inst = Memory.t
 and global_inst = Global.t

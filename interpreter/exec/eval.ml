@@ -97,7 +97,7 @@ let elem (inst : module_inst) x = lookup "element segment" inst.elems x
 let data (inst : module_inst) x = lookup "data segment" inst.datas x
 let local (frame : frame) x = lookup "local" frame.locals x
 
-let func_type (inst : module_inst) x = as_func_def_type !(type_ inst x)
+let func_type (inst : module_inst) x = as_func_def_type (def_of (type_ inst x))
 
 let any_ref inst x i at =
   try Table.load (table inst x) i with Table.Bounds ->
@@ -580,11 +580,12 @@ let rec step (c : config) : config =
       (match f with
       | Func.AstFunc (_, inst', func) ->
         let {locals; body; _} = func.it in
-        let ts = List.map (fun t -> Types.sem_value_type (!inst').types t.it) locals in
+        let m = Lib.Promise.value inst' in
+        let ts = List.map (fun t -> Types.sem_value_type m.types t.it) locals in
         let vs0 = List.rev args @ List.map default_value ts in
         let locals' = List.map (fun t -> t @@ func.at) ins @ locals in
         let es0 = [Plain (Let (out, locals', body)) @@ func.at] in
-        vs', [Frame (List.length out, !inst', (List.rev vs0, es0)) @@ e.at]
+        vs', [Frame (List.length out, m, (List.rev vs0, es0)) @@ e.at]
 
       | Func.HostFunc (_, f) ->
         (try List.rev (f (List.rev args)) @ vs', []
@@ -636,10 +637,10 @@ let eval_const (inst : module_inst) (const : const) : value =
 (* Modules *)
 
 let create_type (_ : type_) : type_inst =
-  Types.alloc (FuncDefType (FuncType ([], [])))
+  Types.alloc_uninit ()
 
 let create_func (inst : module_inst) (f : func) : func_inst =
-  Func.alloc (type_ inst f.it.ftype) (ref inst) f
+  Func.alloc (type_ inst f.it.ftype) (Lib.Promise.make ()) f
 
 let create_table (inst : module_inst) (tab : table) : table_inst =
   let {ttype} = tab.it in
@@ -688,11 +689,11 @@ let add_import (m : module_) (ext : extern) (im : import) (inst : module_inst)
 
 
 let init_type (inst : module_inst) (type_ : type_) (x : type_inst) =
-  x := Types.sem_def_type inst.types type_.it
+  Types.init x (Types.sem_def_type inst.types type_.it)
 
 let init_func (inst : module_inst) (func : func_inst) =
   match func with
-  | Func.AstFunc (_, inst_ref, _) -> inst_ref := inst
+  | Func.AstFunc (_, inst_prom, _) -> Lib.Promise.fulfill inst_prom inst
   | _ -> assert false
 
 let run_elem i elem =

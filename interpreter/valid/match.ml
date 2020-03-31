@@ -6,7 +6,7 @@ type assump = (var * var) list
 
 let lookup c = function
   | SynVar x -> Lib.List32.nth c x
-  | SemVar dt -> !dt
+  | SemVar x -> def_of x
 
 let equal_var x y =
   match x, y with

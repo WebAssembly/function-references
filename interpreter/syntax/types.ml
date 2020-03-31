@@ -3,7 +3,7 @@
 type name = int list
 
 and syn_var = int32
-and sem_var = def_type ref
+and sem_var = def_type Lib.Promise.t
 and var = SynVar of syn_var | SemVar of sem_var
 
 and nullability = NonNullable | Nullable
@@ -48,7 +48,11 @@ let extern_type_of_export_type (ExportType (et, _)) = et
 
 (* Allocation *)
 
-let alloc dt = ref dt
+let alloc_uninit () = Lib.Promise.make ()
+let init p dt = Lib.Promise.fulfill p dt
+let alloc dt = let p = alloc_uninit () in init p dt; p
+
+let def_of x = Lib.Promise.value x
 
 
 (* Attributes *)
@@ -146,9 +150,8 @@ let sem_import_type c (ImportType (et, module_name, name)) =
   ImportType (sem_extern_type c et, module_name, name)
 
 let sem_module_type (ModuleType (dts, its, ets)) =
-  let dummy_type = FuncDefType (FuncType ([], [])) in
-  let c = List.map (fun _ -> ref dummy_type) dts in
-  List.iter2 (fun x dt -> x := sem_def_type c dt) c dts;
+  let c = List.map (fun _ -> alloc_uninit ()) dts in
+  List.iter2 (fun x dt -> init x (sem_def_type c dt)) c dts;
   let its = List.map (sem_import_type c) its in
   let ets = List.map (sem_export_type c) ets in
   ModuleType ([], its, ets)
@@ -174,10 +177,12 @@ let rec string_of_var =
   let inner = ref false in
   function
   | SynVar x -> Int32.to_string x
-  | SemVar dt ->
+  | SemVar x ->
     if !inner then "..." else
     ( inner := true;
-      try let s = string_of_def_type !dt in inner := false; "(" ^ s ^ ")"
+      try
+        let s = string_of_def_type (def_of x) in
+        inner := false; "(" ^ s ^ ")"
       with exn -> inner := false; raise exn
     )
 
