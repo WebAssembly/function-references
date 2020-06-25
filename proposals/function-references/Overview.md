@@ -353,7 +353,7 @@ This is relevant, for example, to encode [method tables](https://github.com/WebA
 
 While doing so, the semantics of static and dynamic type checks need to remain coherent.
 That is, both static and dynamic type checking (as well as link-time checks) must use the same subtype relation.
-Otherwise, values of subtype would not always be substitutable for values of a supertype, thereby breaking a fundemental property of subtyping and various transformations and optimisations relying on substitutability.
+Otherwise, values of a subtype would not always be substitutable for values of a supertype, thereby breaking a fundemental property of subtyping and various transformations and optimisations relying on substitutability.
 
 At the same time, care has to be taken to not damage the performance of existing instructions.
 In particular, `call_indirect` performs a runtime type check over (structural) function types that is expected to be no more expensive than a single pointer comparison.
@@ -420,7 +420,7 @@ Consider:
 
   (func $call
     ...
-    (call_indirect $tf (i32.const 0))
+    (call_indirect $th (i32.const 0))
     ...
   )
 
@@ -461,8 +461,8 @@ More generally, the following imports are well-typed:
 
   (func $h1 (import "A" "g") (type $tg))
   (func $h2 (import "A" "g") (type exact $tg))
-  (func $h3 (import "A" "f") (type $tf))
-  ;; (func $h4 (import "A" "f") (type exact $tf))   ;; fails to link!
+  (func $h3 (import "A" "g") (type $tf))
+  ;; (func $h4 (import "A" "g") (type exact $tf))   ;; fails to link!
 )
 ```
 
@@ -483,7 +483,7 @@ It's a slightly different question what to do for the text format, however.
 To maintain full backwards compatibility, the flag would likewise need to be inverted:
 instead of an optional `exact` flag we'd have an optional `sub` flag with the opposite meaning:
 
-* `heaptype ::= (type exact? <typeidx>) | func | extern`
+* `heaptype ::= (type sub? <typeidx>) | func | extern`
 
 In the binary format it doesn't really matter which way both alternatives are encoded.
 But for the text format, this inversion will be rather annoying:
