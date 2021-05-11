@@ -35,15 +35,6 @@
 (assert_return (invoke "nonnullable-f") (i32.const 7))
 (assert_return (invoke "nullable-f") (i32.const 7))
 
-(assert_invalid
-  (module
-    (type $t (func (result i32)))
-    (func $g (param $r (ref $t)) (drop (br_on_null 0 (local.get $r))))
-    (func (call $g (ref.null $t)))
-  )
-  "type mismatch"
-)
-
 (module
   (type $t (func))
   (func (param $r (ref null $t)) (drop (br_on_null 0 (local.get $r))))

@@ -235,7 +235,7 @@ The following rules, now defined in terms of heap types, replace and extend the 
   - branches to `$l` on `null`, otherwise returns operand as non-null
 
 * `br_on_non_null $l` checks for null and branches if not present
-  - `br_on_null $l : [t* (ref null ht)] -> [t*]`
+  - `br_on_non_null $l : [t* (ref null ht)] -> [t*]`
     - iff `$l : [t* (ref ht)]`
     - and `ht ok`
   - branches to `$l` if operand is not `null`, passing the operand itself under non-null type (along with potential additional operands)
