@@ -666,8 +666,11 @@
 )
 
 (assert_invalid
-  (module (type $t (func)) (func $type-local-no-default (local (ref $t))))
-  "non-defaultable local type"
+  (module
+    (type $t (func))
+    (func $type-local-uninitialized (local $x (ref $t)) (drop (local.get $x)))
+  )
+  "local is uninitialized"
 )
 
 

@@ -6,6 +6,7 @@ and syn_var = int32
 and sem_var = def_type Lib.Promise.t
 and var = SynVar of syn_var | SemVar of sem_var
 
+and init = Initialized | Uninitialized
 and nullability = NonNullable | Nullable
 and num_type = I32Type | I64Type | F32Type | F64Type
 and ref_type = nullability * heap_type
@@ -22,6 +23,7 @@ type mutability = Immutable | Mutable
 type table_type = TableType of Int32.t limits * ref_type
 type memory_type = MemoryType of Int32.t limits
 type global_type = GlobalType of value_type * mutability
+type local_type = LocalType of value_type * init
 type extern_type =
   | ExternFuncType of func_type
   | ExternTableType of table_type

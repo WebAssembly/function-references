@@ -47,18 +47,18 @@ let type_of_value = function
 (* Defaults *)
 
 let default_num = function
-  | I32Type -> I32 I32.zero
-  | I64Type -> I64 I64.zero
-  | F32Type -> F32 F32.zero
-  | F64Type -> F64 F64.zero
+  | I32Type -> Some (Num (I32 I32.zero))
+  | I64Type -> Some (Num (I64 I64.zero))
+  | F32Type -> Some (Num (F32 F32.zero))
+  | F64Type -> Some (Num (F64 F64.zero))
 
 let default_ref = function
-  | (Nullable, t) -> NullRef t
-  | (NonNullable, _) -> assert false
+  | (Nullable, t) -> Some (Ref (NullRef t))
+  | (NonNullable, _) -> None
 
 let default_value = function
-  | NumType t' -> Num (default_num t')
-  | RefType t' -> Ref (default_ref t')
+  | NumType t' -> default_num t'
+  | RefType t' -> default_ref t'
   | BotType -> assert false
 
 

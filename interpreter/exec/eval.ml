@@ -49,7 +49,7 @@ type 'a stack = 'a list
 type frame =
 {
   inst : module_inst;
-  locals : value ref list;
+  locals : value option ref list;
 }
 
 type code = value stack * admin_instr list
@@ -74,8 +74,8 @@ type config =
   budget : int;  (* to model stack overflow *)
 }
 
-let frame inst = {inst; locals = []}
-let config inst vs es = {frame = frame inst; code = vs, es; budget = 300}
+let frame inst locals = {inst; locals}
+let config inst vs es = {frame = frame inst []; code = vs, es; budget = 300}
 
 let plain e = Plain e.it @@ e.at
 
@@ -279,14 +279,19 @@ let rec step (c : config) : config =
           v1 :: vs', []
 
       | LocalGet x, vs ->
-        !(local c.frame x) :: vs, []
+        (match !(local c.frame x) with
+        | Some v ->
+          v :: vs, []
+        | None ->
+          Crash.error e.at "read of uninitialized local"
+        )
 
       | LocalSet x, v :: vs' ->
-        local c.frame x := v;
+        local c.frame x := Some v;
         vs', []
 
       | LocalTee x, v :: vs' ->
-        local c.frame x := v;
+        local c.frame x := Some v;
         v :: vs', []
 
       | GlobalGet x, vs ->
@@ -578,9 +583,11 @@ let rec step (c : config) : config =
       vs' @ vs, [e']
 
     | Local (n, vs0, code'), vs ->
-      let frame' = {c.frame with locals = List.map ref vs0 @ c.frame.locals} in
+      let locals = List.map (fun v -> ref (Some v)) vs0 in
+      let frame' = {c.frame with locals = locals @ c.frame.locals} in
       let c' = step {c with frame = frame'; code = code'} in
-      let vs0' = List.map (!) (take (List.length vs0) c'.frame.locals e.at) in
+      let vs0' = List.map (fun loc -> Option.get (!loc))
+        (take (List.length vs0) c'.frame.locals e.at) in
       vs, [Local (n, vs0', c'.code) @@ e.at]
 
     | Frame (n, frame', (vs', [])), vs ->
@@ -605,17 +612,17 @@ let rec step (c : config) : config =
 
     | Invoke f, vs ->
       let FuncType (ts1, ts2) = Func.type_of f in
-      let args, vs' = split (List.length ts1) vs e.at in
+      let n1, n2 = List.length ts1, List.length ts2 in
+      let args, vs' = split n1 vs e.at in
       (match f with
       | Func.AstFunc (_, inst', func) ->
         let {locals; body; _} = func.it in
         let m = Lib.Promise.value inst' in
         let ts = List.map (fun t -> Types.sem_value_type m.types t.it) locals in
-        let vs0 = List.rev args @ List.map default_value ts in
-        let locals' = List.map (fun t -> t @@ func.at) ts1 @ locals in
-        let bt = VarBlockType (SemVar (alloc (FuncDefType (FuncType ([], ts2))))) in
-        let es0 = [Plain (Let (bt, locals', body)) @@ func.at] in
-        vs', [Frame (List.length ts2, frame m, (List.rev vs0, es0)) @@ e.at]
+        let locals' = List.rev (List.map Option.some args) @ List.map default_value ts in
+        let frame' = {inst = m; locals = List.map ref locals'} in
+        let instr' = [Label (n2, [], ([], List.map plain body)) @@ func.at] in
+        vs', [Frame (n2, frame', ([], instr')) @@ e.at]
 
       | Func.HostFunc (_, f) ->
         (try List.rev (f (List.rev args)) @ vs', []
