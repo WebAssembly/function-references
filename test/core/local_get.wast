@@ -175,7 +175,7 @@
 )
 
 
-;; local.set should have retval
+;; Invalid result type
 
 (assert_invalid
   (module (func $type-empty-vs-i32 (local i32) (local.get 0)))
@@ -224,3 +224,49 @@
   "unknown local"
 )
 
+
+;; Refined locals
+
+(module
+  (func (export "get-after-set") (param $p (ref extern)) (result (ref extern))
+    (local $x (ref null extern))
+    (local.set $x (local.get $p))
+    (local.get $x)
+  )
+  (func (export "get-after-tee") (param $p (ref extern)) (result (ref extern))
+    (local $x (ref null extern))
+    (drop (local.tee $x (local.get $p)))
+    (local.get $x)
+  )
+  (func (export "get-in-block-after-set") (param $p (ref extern)) (result (ref extern))
+    (local $x (ref null extern))
+    (local.set $x (local.get $p))
+    (block (result (ref extern)) (local.get $x))
+  )
+)
+
+(assert_return (invoke "get-after-set" (ref.extern 1)) (ref.extern 1))
+(assert_return (invoke "get-after-tee" (ref.extern 2)) (ref.extern 2))
+(assert_return (invoke "get-in-block-after-set" (ref.extern 3)) (ref.extern 3))
+
+(assert_invalid
+  (module
+    (func $unrefined-after-end (param $p (ref extern)) (result (ref extern))
+      (local $x (ref null extern))
+      (block (local.set $x (local.get $p)))
+      (local.get $x)
+    )
+  )
+  "type mismatch"
+)
+
+(assert_invalid
+  (module
+    (func $unrefined-after-end-tee (param $p (ref extern)) (result (ref extern))
+      (local $x (ref null extern))
+      (block (drop (local.tee $x (local.get $p))))
+      (local.get $x)
+    )
+  )
+  "type mismatch"
+)
