@@ -109,8 +109,8 @@ let func_ref inst x i at =
   | NullRef _ -> Trap.error at ("uninitialized element " ^ Int32.to_string i)
   | _ -> Crash.error at ("type mismatch for element " ^ Int32.to_string i)
 
-let block_type inst (BlockType (bst, _)) at =
-  match bst with
+let block_type inst bt at =
+  match bt with
   | ValBlockType None -> FuncType ([], [])
   | ValBlockType (Some t) -> FuncType ([], [t])
   | VarBlockType (SynVar x) -> func_type inst (x @@ at)
@@ -617,8 +617,8 @@ let rec step (c : config) : config =
         let ts = List.map (fun t -> Types.sem_value_type m.types t.it) locals in
         let vs0 = List.rev args @ List.map default_value ts in
         let locals' = List.map (fun t -> t @@ func.at) ts1 @ locals in
-        let bst = VarBlockType (SemVar (alloc (FuncDefType (FuncType ([], ts2))))) in
-        let es0 = [Plain (Let (BlockType (bst, []), locals', body)) @@ func.at] in
+        let bt = VarBlockType (SemVar (alloc (FuncDefType (FuncType ([], ts2))))) in
+        let es0 = [Plain (Let (bt, locals', body)) @@ func.at] in
         vs', [Frame (List.length ts2, frame m, (List.rev vs0, es0)) @@ e.at]
 
       | Func.HostFunc (_, f) ->

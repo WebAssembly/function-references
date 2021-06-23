@@ -556,39 +556,31 @@ block_instr :
 block :
   | type_use block_param_body
     { let at1 = ati 1 in
-      fun c -> let ft, xts, es = $2 c in
+      fun c -> let ft, es = $2 c in
       let x = inline_func_type_explicit c ($1 c type_) ft at1 in
-      BlockType (VarBlockType (SynVar x.it), xts), es }
+      VarBlockType (SynVar x.it), es }
   | block_param_body  /* Sugar */
     { let at = at () in
-      fun c -> let ft, xts, es = $1 c in
-      let bst =
+      fun c -> let ft, es = $1 c in
+      let bt =
         match ft with
         | FuncType ([], []) -> ValBlockType None
         | FuncType ([], [t]) -> ValBlockType (Some t)
         | ft ->  VarBlockType (SynVar (inline_func_type c ft at).it)
-      in BlockType (bst, xts), es }
+      in bt, es }
 
 block_param_body :
   | block_result_body { $1 }
   | LPAR PARAM value_type_list RPAR block_param_body
-    { fun c -> let FuncType (ins, out), xts, es = $5 c in
-      FuncType (snd $3 c @ ins, out), xts, es }
+    { fun c -> let FuncType (ins, out), es = $5 c in
+      FuncType (snd $3 c @ ins, out), es }
 
 block_result_body :
-  | block_local_body
-    { fun c -> let xts, es = $1 c in FuncType ([], []), xts, es }
+  | instr_list { fun c -> FuncType ([], []), $1 c }
   | LPAR RESULT value_type_list RPAR block_result_body
     { fun c ->
-      let FuncType (ins, out), xts, es = $5 c in
-      FuncType (ins, snd $3 c @ out), xts, es }
-
-block_local_body :
-  | instr_list { fun c -> [], $1 c }
-  | LPAR LOCAL var value_type RPAR block_local_body
-    { fun c ->
-      let xts, es = $6 c in
-      ($3 c local, $4 c) :: xts, es }
+      let FuncType (ins, out), es = $5 c in
+      FuncType (ins, snd $3 c @ out), es }
 
 
 let_block :
@@ -596,16 +588,16 @@ let_block :
     { let at = at () in
       fun c c' -> let ft, ls, es = $2 c c' in
       let x = inline_func_type_explicit c ($1 c type_) ft at in
-      BlockType (VarBlockType (SynVar x.it), []), ls, es }
+      VarBlockType (SynVar x.it), ls, es }
   | let_block_param_body  /* Sugar */
     { let at = at () in
       fun c c' -> let ft, ls, es = $1 c c' in
-      let bst =
+      let bt =
         match ft with
         | FuncType ([], []) -> ValBlockType None
         | FuncType ([], [t]) -> ValBlockType (Some t)
         | ft ->  VarBlockType (SynVar (inline_func_type c ft at).it)
-      in BlockType (bst, []), ls, es }
+      in bt, ls, es }
 
 let_block_param_body :
   | let_block_result_body { $1 }
@@ -705,40 +697,32 @@ call_expr_results :
 if_block :
   | type_use if_block_param_body
     { let at = at () in
-      fun c c' -> let ft, xts, es = $2 c c' in
+      fun c c' -> let ft, es = $2 c c' in
       let x = inline_func_type_explicit c ($1 c type_) ft at in
-      BlockType (VarBlockType (SynVar x.it), xts), es }
+      VarBlockType (SynVar x.it), es }
   | if_block_param_body  /* Sugar */
     { let at = at () in
-      fun c c' -> let ft, xts, es = $1 c c' in
-      let bst =
+      fun c c' -> let ft, es = $1 c c' in
+      let bt =
         match ft with
         | FuncType ([], []) -> ValBlockType None
         | FuncType ([], [t]) -> ValBlockType (Some t)
         | ft ->  VarBlockType (SynVar (inline_func_type c ft at).it)
-      in BlockType (bst, xts), es }
+      in bt, es }
 
 if_block_param_body :
   | if_block_result_body { $1 }
   | LPAR PARAM value_type_list RPAR if_block_param_body
     { fun c c' ->
-      let FuncType (ins, out), xts, es = $5 c c' in
-      FuncType (snd $3 c @ ins, out), xts, es }
+      let FuncType (ins, out), es = $5 c c' in
+      FuncType (snd $3 c @ ins, out), es }
 
 if_block_result_body :
-  | if_block_local_body
-    { fun c c' -> let xts, es = $1 c c' in FuncType ([], []), xts, es }
+  | if_ { fun c c' -> FuncType ([], []), $1 c c' }
   | LPAR RESULT value_type_list RPAR if_block_result_body
     { fun c c' ->
-      let FuncType (ins, out), xts, es = $5 c c' in
-      FuncType (ins, snd $3 c @ out), xts, es }
-
-if_block_local_body :
-  | if_ { fun c c' -> [], $1 c c' }
-  | LPAR LOCAL var value_type RPAR if_block_local_body
-    { fun c c' ->
-      let xts, es = $6 c c' in
-      ($3 c local, $4 c) :: xts, es }
+      let FuncType (ins, out), es = $5 c c' in
+      FuncType (ins, snd $3 c @ out), es }
 
 if_ :
   | expr if_

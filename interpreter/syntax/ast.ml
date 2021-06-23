@@ -72,8 +72,7 @@ type name = Types.name
 type local = local' Source.phrase
 and local' = value_type
 
-type block_stack_type = VarBlockType of var | ValBlockType of value_type option
-type block_type = BlockType of block_stack_type * (idx * value_type) list
+type block_type = VarBlockType of var | ValBlockType of value_type option
 
 type instr = instr' Source.phrase
 and instr' =

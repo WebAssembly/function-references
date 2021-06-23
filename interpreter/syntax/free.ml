@@ -89,15 +89,9 @@ let memory_type (MemoryType (_lim)) = empty
 let def_type = function
   | FuncDefType ft -> func_type ft
 
-let block_stack_type = function
+let block_type = function
   | VarBlockType x -> var_type x
   | ValBlockType _ -> empty
-
-let block_local_type (x, t) =
-  locals (idx x) ++ value_type t
-
-let block_type (BlockType (bst, xts)) =
-  block_stack_type bst ++ list block_local_type xts
 
 let rec instr (e : instr) =
   match e.it with
