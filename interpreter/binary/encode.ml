@@ -154,11 +154,18 @@ struct
 
   let var x = vu32 x.it
 
-  let block_type = function
+  let block_stack_type = function
     | ValBlockType None -> vs33 (-0x40l)
     | ValBlockType (Some t) -> value_type t
     | VarBlockType (SynVar x) -> vs33 x
     | VarBlockType (SemVar _) -> assert false
+
+  let block_local_type (x, t) = var x; value_type t
+
+  let block_type = function
+    | BlockType (bst, []) -> block_stack_type bst
+    | BlockType (bst, xts) ->
+      vs33 (-0x39l); block_stack_type bst; vec block_local_type xts
 
   let local (t, n) = len n; value_type t.it
   let locals locs =
@@ -200,6 +207,7 @@ struct
     | LocalGet x -> op 0x20; var x
     | LocalSet x -> op 0x21; var x
     | LocalTee x -> op 0x22; var x
+    | LocalRefine x -> op 0x27; var x
     | GlobalGet x -> op 0x23; var x
     | GlobalSet x -> op 0x24; var x
 

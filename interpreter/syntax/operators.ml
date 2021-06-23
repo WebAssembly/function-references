@@ -37,6 +37,7 @@ let func_bind x = FuncBind x
 let local_get x = LocalGet x
 let local_set x = LocalSet x
 let local_tee x = LocalTee x
+let local_refine x = LocalRefine x
 let global_get x = GlobalGet x
 let global_set x = GlobalSet x
 

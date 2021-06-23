@@ -89,9 +89,15 @@ let memory_type (MemoryType (_lim)) = empty
 let def_type = function
   | FuncDefType ft -> func_type ft
 
-let block_type = function
+let block_stack_type = function
   | VarBlockType x -> var_type x
   | ValBlockType _ -> empty
+
+let block_local_type (x, t) =
+  locals (idx x) ++ value_type t
+
+let block_type (BlockType (bst, xts)) =
+  block_stack_type bst ++ list block_local_type xts
 
 let rec instr (e : instr) =
   match e.it with
@@ -112,7 +118,7 @@ let rec instr (e : instr) =
   | Call x -> funcs (idx x)
   | CallIndirect (x, y) -> tables (idx x) ++ types (idx y)
   | FuncBind x -> types (idx x)
-  | LocalGet x | LocalSet x | LocalTee x -> locals (idx x)
+  | LocalGet x | LocalSet x | LocalTee x | LocalRefine x -> locals (idx x)
   | GlobalGet x | GlobalSet x -> globals (idx x)
   | TableGet x | TableSet x | TableSize x | TableGrow x | TableFill x ->
     tables (idx x)

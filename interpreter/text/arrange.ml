@@ -223,10 +223,16 @@ let var x = nat32 x.it
 let num v = string_of_num v.it
 let constop v = num_type (type_of_num v.it) ^ ".const"
 
-let block_type = function
+let block_stack_type = function
   | VarBlockType (SynVar x) -> [Node ("type " ^ nat32 x, [])]
   | VarBlockType (SemVar _) -> assert false
   | ValBlockType ts -> decls "result" (list_of_opt ts)
+
+let block_local_type (x, t) =
+  Node ("local " ^ var x, [Atom (value_type t)])
+
+let block_type (BlockType (bst, xts)) =
+  block_stack_type bst @ List.map block_local_type xts
 
 let rec instr e =
   let head, inner =
@@ -261,6 +267,7 @@ let rec instr e =
     | LocalGet x -> "local.get " ^ var x, []
     | LocalSet x -> "local.set " ^ var x, []
     | LocalTee x -> "local.tee " ^ var x, []
+    | LocalRefine x -> "local.refine " ^ var x, []
     | GlobalGet x -> "global.get " ^ var x, []
     | GlobalSet x -> "global.set " ^ var x, []
     | TableGet x -> "table.get " ^ var x, []

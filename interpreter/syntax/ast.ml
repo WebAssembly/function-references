@@ -72,7 +72,8 @@ type name = Types.name
 type local = local' Source.phrase
 and local' = value_type
 
-type block_type = VarBlockType of var | ValBlockType of value_type option
+type block_stack_type = VarBlockType of var | ValBlockType of value_type option
+type block_type = BlockType of block_stack_type * (idx * value_type) list
 
 type instr = instr' Source.phrase
 and instr' =
@@ -98,6 +99,7 @@ and instr' =
   | LocalGet of idx                   (* read local idxiable *)
   | LocalSet of idx                   (* write local idxiable *)
   | LocalTee of idx                   (* write local idxiable and keep value *)
+  | LocalRefine of idx                (* write local idxiable and update type *)
   | GlobalGet of idx                  (* read global idxiable *)
   | GlobalSet of idx                  (* write global idxiable *)
   | TableGet of idx                   (* read table element *)

@@ -212,7 +212,7 @@ let inline_func_type_explicit (c : context) x ft at =
 %token BLOCK END IF THEN ELSE LOOP LET
 %token BR BR_IF BR_TABLE BR_ON_NULL BR_ON_NON_NULL
 %token CALL CALL_REF CALL_INDIRECT RETURN RETURN_CALL_REF FUNC_BIND
-%token LOCAL_GET LOCAL_SET LOCAL_TEE GLOBAL_GET GLOBAL_SET
+%token LOCAL_GET LOCAL_SET LOCAL_TEE LOCAL_REFINE GLOBAL_GET GLOBAL_SET
 %token TABLE_GET TABLE_SET
 %token TABLE_SIZE TABLE_GROW TABLE_FILL TABLE_COPY TABLE_INIT ELEM_DROP
 %token MEMORY_SIZE MEMORY_GROW MEMORY_FILL MEMORY_COPY MEMORY_INIT DATA_DROP
@@ -406,6 +406,7 @@ plain_instr :
   | LOCAL_GET var { fun c -> local_get ($2 c local) }
   | LOCAL_SET var { fun c -> local_set ($2 c local) }
   | LOCAL_TEE var { fun c -> local_tee ($2 c local) }
+  | LOCAL_REFINE var { fun c -> local_refine ($2 c local) }
   | GLOBAL_GET var { fun c -> global_get ($2 c global) }
   | GLOBAL_SET var { fun c -> global_set ($2 c global) }
   | TABLE_GET var { fun c -> table_get ($2 c table) }
@@ -555,31 +556,39 @@ block_instr :
 block :
   | type_use block_param_body
     { let at1 = ati 1 in
-      fun c -> let ft, es = $2 c in
+      fun c -> let ft, xts, es = $2 c in
       let x = inline_func_type_explicit c ($1 c type_) ft at1 in
-      VarBlockType (SynVar x.it), es }
+      BlockType (VarBlockType (SynVar x.it), xts), es }
   | block_param_body  /* Sugar */
     { let at = at () in
-      fun c -> let ft, es = $1 c in
-      let bt =
+      fun c -> let ft, xts, es = $1 c in
+      let bst =
         match ft with
         | FuncType ([], []) -> ValBlockType None
         | FuncType ([], [t]) -> ValBlockType (Some t)
         | ft ->  VarBlockType (SynVar (inline_func_type c ft at).it)
-      in bt, es }
+      in BlockType (bst, xts), es }
 
 block_param_body :
   | block_result_body { $1 }
   | LPAR PARAM value_type_list RPAR block_param_body
-    { fun c -> let FuncType (ins, out), es = $5 c in
-      FuncType (snd $3 c @ ins, out), es }
+    { fun c -> let FuncType (ins, out), xts, es = $5 c in
+      FuncType (snd $3 c @ ins, out), xts, es }
 
 block_result_body :
-  | instr_list { fun c -> FuncType ([], []), $1 c }
+  | block_local_body
+    { fun c -> let xts, es = $1 c in FuncType ([], []), xts, es }
   | LPAR RESULT value_type_list RPAR block_result_body
     { fun c ->
-      let FuncType (ins, out), es = $5 c in
-      FuncType (ins, snd $3 c @ out), es }
+      let FuncType (ins, out), xts, es = $5 c in
+      FuncType (ins, snd $3 c @ out), xts, es }
+
+block_local_body :
+  | instr_list { fun c -> [], $1 c }
+  | LPAR LOCAL var value_type RPAR block_local_body
+    { fun c ->
+      let xts, es = $6 c in
+      ($3 c local, $4 c) :: xts, es }
 
 
 let_block :
@@ -587,16 +596,16 @@ let_block :
     { let at = at () in
       fun c c' -> let ft, ls, es = $2 c c' in
       let x = inline_func_type_explicit c ($1 c type_) ft at in
-      VarBlockType (SynVar x.it), ls, es }
+      BlockType (VarBlockType (SynVar x.it), []), ls, es }
   | let_block_param_body  /* Sugar */
     { let at = at () in
       fun c c' -> let ft, ls, es = $1 c c' in
-      let bt =
+      let bst =
         match ft with
         | FuncType ([], []) -> ValBlockType None
         | FuncType ([], [t]) -> ValBlockType (Some t)
         | ft ->  VarBlockType (SynVar (inline_func_type c ft at).it)
-      in bt, ls, es }
+      in BlockType (bst, []), ls, es }
 
 let_block_param_body :
   | let_block_result_body { $1 }
@@ -696,32 +705,40 @@ call_expr_results :
 if_block :
   | type_use if_block_param_body
     { let at = at () in
-      fun c c' -> let ft, es = $2 c c' in
+      fun c c' -> let ft, xts, es = $2 c c' in
       let x = inline_func_type_explicit c ($1 c type_) ft at in
-      VarBlockType (SynVar x.it), es }
+      BlockType (VarBlockType (SynVar x.it), xts), es }
   | if_block_param_body  /* Sugar */
     { let at = at () in
-      fun c c' -> let ft, es = $1 c c' in
-      let bt =
+      fun c c' -> let ft, xts, es = $1 c c' in
+      let bst =
         match ft with
         | FuncType ([], []) -> ValBlockType None
         | FuncType ([], [t]) -> ValBlockType (Some t)
         | ft ->  VarBlockType (SynVar (inline_func_type c ft at).it)
-      in bt, es }
+      in BlockType (bst, xts), es }
 
 if_block_param_body :
   | if_block_result_body { $1 }
   | LPAR PARAM value_type_list RPAR if_block_param_body
     { fun c c' ->
-      let FuncType (ins, out), es = $5 c c' in
-      FuncType (snd $3 c @ ins, out), es }
+      let FuncType (ins, out), xts, es = $5 c c' in
+      FuncType (snd $3 c @ ins, out), xts, es }
 
 if_block_result_body :
-  | if_ { fun c c' -> FuncType ([], []), $1 c c' }
+  | if_block_local_body
+    { fun c c' -> let xts, es = $1 c c' in FuncType ([], []), xts, es }
   | LPAR RESULT value_type_list RPAR if_block_result_body
     { fun c c' ->
-      let FuncType (ins, out), es = $5 c c' in
-      FuncType (ins, snd $3 c @ out), es }
+      let FuncType (ins, out), xts, es = $5 c c' in
+      FuncType (ins, snd $3 c @ out), xts, es }
+
+if_block_local_body :
+  | if_ { fun c c' -> [], $1 c c' }
+  | LPAR LOCAL var value_type RPAR if_block_local_body
+    { fun c c' ->
+      let xts, es = $6 c c' in
+      ($3 c local, $4 c) :: xts, es }
 
 if_ :
   | expr if_

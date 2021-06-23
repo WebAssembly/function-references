@@ -223,11 +223,25 @@ let memop s =
   let offset = vu32 s in
   Int32.to_int align, offset
 
-let block_type s =
+let block_stack_type s =
   match peek s with
   | Some 0x40 -> skip 1 s; ValBlockType None
   | Some b when b land 0xc0 = 0x40 -> ValBlockType (Some (value_type s))
   | _ -> VarBlockType (SynVar (vs33 s))
+
+let block_local_type s =
+  let x = at var s in
+  let t = value_type s in
+  (x, t)
+
+let block_type s =
+  match peek s with
+  | Some 0x47 ->
+    skip 1 s;
+    let bst = block_stack_type s in
+    let xts = vec block_local_type s in
+    BlockType (bst, xts)
+  | _ -> BlockType (block_stack_type s, [])
 
 let local s =
   let n = vu32 s in
@@ -317,8 +331,7 @@ let rec instr s =
   | 0x24 -> global_set (at var s)
   | 0x25 -> table_get (at var s)
   | 0x26 -> table_set (at var s)
-
-  | 0x27 as b -> illegal s pos b
+  | 0x27 -> local_refine (at var s)
 
   | 0x28 -> let a, o = memop s in i32_load a o
   | 0x29 -> let a, o = memop s in i64_load a o

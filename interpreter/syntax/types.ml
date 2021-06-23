@@ -22,7 +22,6 @@ type mutability = Immutable | Mutable
 type table_type = TableType of Int32.t limits * ref_type
 type memory_type = MemoryType of Int32.t limits
 type global_type = GlobalType of value_type * mutability
-type local_type = LocalType of value_type * value_type
 
 type extern_type =
   | ExternFuncType of func_type

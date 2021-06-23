@@ -212,6 +212,7 @@ rule token = parse
   | "local.get" { LOCAL_GET }
   | "local.set" { LOCAL_SET }
   | "local.tee" { LOCAL_TEE }
+  | "local.refine" { LOCAL_REFINE }
   | "global.get" { GLOBAL_GET }
   | "global.set" { GLOBAL_SET }
 

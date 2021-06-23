@@ -116,6 +116,11 @@ struct
   let rec concat_map f = function
     | [] -> []
     | x::xs -> f x @ concat_map f xs
+
+  let rec dedup = function
+    | x::y::xs when x = y -> dedup (y::xs)
+    | x::xs -> x :: dedup xs
+    | [] -> []
 end
 
 module List32 =

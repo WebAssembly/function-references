@@ -384,7 +384,7 @@ let wrap item_name wrap_action wrap_assertion at =
   let edesc = FuncExport item @@ at in
   let exports = [{name = Utf8.decode "run"; edesc} @@ at] in
   let body =
-    [ Block (ValBlockType None, action @ assertion @ [Return @@ at]) @@ at;
+    [ Block (BlockType (ValBlockType None, []), action @ assertion @ [Return @@ at]) @@ at;
       Unreachable @@ at ]
   in
   let funcs = [{ftype = 0l @@ at; locals; body} @@ at] in

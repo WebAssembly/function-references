@@ -228,32 +228,62 @@
 ;; Refined locals
 
 (module
-  (func (export "get-after-set") (param $p (ref extern)) (result (ref extern))
+  (func (export "get-after-refine") (param $p (ref extern)) (result (ref extern))
     (local $x (ref null extern))
-    (local.set $x (local.get $p))
+    (local.refine $x (local.get $p))
     (local.get $x)
   )
-  (func (export "get-after-tee") (param $p (ref extern)) (result (ref extern))
+  (func (export "get-in-block-after-refine") (param $p (ref extern)) (result (ref extern))
     (local $x (ref null extern))
-    (drop (local.tee $x (local.get $p)))
-    (local.get $x)
-  )
-  (func (export "get-in-block-after-set") (param $p (ref extern)) (result (ref extern))
-    (local $x (ref null extern))
-    (local.set $x (local.get $p))
+    (local.refine $x (local.get $p))
     (block (result (ref extern)) (local.get $x))
+  )
+  (func (export "get-after-refine-in-block") (param $p (ref extern)) (result (ref extern))
+    (local $x (ref null extern))
+    (block (local $x (ref extern)) (local.refine $x (local.get $p)))
+    (local.get $x)
+  )
+  (func (export "get-after-refine-in-if") (param $b i32) (param $p (ref extern)) (result (ref extern))
+    (local $x (ref null extern))
+    (if (local $x (ref extern)) (local.get $b)
+      (then (local.refine $x (local.get $p)))
+      (else (local.refine $x (local.get $p)))
+    )
+    (local.get $x)
   )
 )
 
-(assert_return (invoke "get-after-set" (ref.extern 1)) (ref.extern 1))
-(assert_return (invoke "get-after-tee" (ref.extern 2)) (ref.extern 2))
-(assert_return (invoke "get-in-block-after-set" (ref.extern 3)) (ref.extern 3))
+(assert_return (invoke "get-after-refine" (ref.extern 1)) (ref.extern 1))
+(assert_return (invoke "get-in-block-after-refine" (ref.extern 3)) (ref.extern 3))
+(assert_return (invoke "get-after-refine-in-block" (ref.extern 3)) (ref.extern 3))
+(assert_return (invoke "get-after-refine-in-if" (i32.const 0) (ref.extern 3)) (ref.extern 3))
+(assert_return (invoke "get-after-refine-in-if" (i32.const 1) (ref.extern 3)) (ref.extern 3))
 
+(assert_invalid
+  (module
+    (func $unrefined-after-set (param $p (ref extern)) (result (ref extern))
+      (local $x (ref null extern))
+      (local.set $x (local.get $p))
+      (local.get $x)
+    )
+  )
+  "type mismatch"
+)
+(assert_invalid
+  (module
+    (func $unrefined-after-end-tee (param $p (ref extern)) (result (ref extern))
+      (local $x (ref null extern))
+      (drop (local.tee $x (local.get $p)))
+      (local.get $x)
+    )
+  )
+  "type mismatch"
+)
 (assert_invalid
   (module
     (func $unrefined-after-end (param $p (ref extern)) (result (ref extern))
       (local $x (ref null extern))
-      (block (local.set $x (local.get $p)))
+      (block (local.refine $x (local.get $p)))
       (local.get $x)
     )
   )
@@ -262,9 +292,52 @@
 
 (assert_invalid
   (module
-    (func $unrefined-after-end-tee (param $p (ref extern)) (result (ref extern))
+    (func $unrefined-in-block (param $p (ref extern)) (result (ref extern))
       (local $x (ref null extern))
-      (block (drop (local.tee $x (local.get $p))))
+      (block (local $x (ref extern)) (nop))
+    )
+  )
+  "type mismatch"
+)
+(assert_invalid
+  (module
+    (func $unrefined-in-then (param $b i32) (param $p (ref extern)) (result (ref extern))
+      (local $x (ref null extern))
+      (if (local $x (ref extern)) (local.get $b)
+        (then)
+        (else (local.refine $x (local.get $p)))
+      )
+    )
+  )
+  "type mismatch"
+)
+(assert_invalid
+  (module
+    (func $unrefined-in-else (param $b i32) (param $p (ref extern)) (result (ref extern))
+      (local $x (ref null extern))
+      (if (local $x (ref extern)) (local.get $b)
+        (then (local.refine $x (local.get $p)))
+        (else)
+      )
+    )
+  )
+  "type mismatch"
+)
+(assert_invalid
+  (module
+    (func $illrefined-in-block (param $p (ref extern)) (result (ref extern))
+      (local $x (ref null extern))
+      (block (local $x (ref extern)) (local.refine $x (ref.null extern)))
+    )
+  )
+  "type mismatch"
+)
+(assert_invalid
+  (module
+    (type $t (func))
+    (func $illrefined-no-subtype (param $p (ref func)) (result (ref func))
+      (local $x (ref null $t))
+      (local.refine $x (local.get $p))
       (local.get $x)
     )
   )
