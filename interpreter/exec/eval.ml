@@ -289,7 +289,7 @@ let rec step (c : config) : config =
         local c.frame x := v;
         v :: vs', []
 
-      | LocalRefine x, v :: vs' ->
+      | LocalRefine (x, _), v :: vs' ->
         local c.frame x := v;
         vs', []
 

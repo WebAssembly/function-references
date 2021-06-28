@@ -406,7 +406,8 @@ plain_instr :
   | LOCAL_GET var { fun c -> local_get ($2 c local) }
   | LOCAL_SET var { fun c -> local_set ($2 c local) }
   | LOCAL_TEE var { fun c -> local_tee ($2 c local) }
-  | LOCAL_REFINE var { fun c -> local_refine ($2 c local) }
+  | LOCAL_REFINE var LPAR TYPE value_type RPAR
+    { fun c -> local_refine ($2 c local) ($5 c) }
   | GLOBAL_GET var { fun c -> global_get ($2 c global) }
   | GLOBAL_SET var { fun c -> global_set ($2 c global) }
   | TABLE_GET var { fun c -> table_get ($2 c table) }

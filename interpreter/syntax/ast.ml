@@ -98,7 +98,7 @@ and instr' =
   | LocalGet of idx                   (* read local idxiable *)
   | LocalSet of idx                   (* write local idxiable *)
   | LocalTee of idx                   (* write local idxiable and keep value *)
-  | LocalRefine of idx                (* write local idxiable and update type *)
+  | LocalRefine of idx * value_type   (* write local idxiable and update type *)
   | GlobalGet of idx                  (* read global idxiable *)
   | GlobalSet of idx                  (* write global idxiable *)
   | TableGet of idx                   (* read table element *)

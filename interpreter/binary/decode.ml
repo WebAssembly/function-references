@@ -317,7 +317,10 @@ let rec instr s =
   | 0x24 -> global_set (at var s)
   | 0x25 -> table_get (at var s)
   | 0x26 -> table_set (at var s)
-  | 0x27 -> local_refine (at var s)
+  | 0x27 ->
+    let x = at var s in
+    let t = value_type s in
+    local_refine x t
 
   | 0x28 -> let a, o = memop s in i32_load a o
   | 0x29 -> let a, o = memop s in i64_load a o

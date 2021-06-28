@@ -447,11 +447,10 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
   | LocalTee x ->
     [local c x] --> [local c x], c
 
-  | LocalRefine x ->
-    let t = peek 0 s in
+  | LocalRefine (x, t) ->
     require (match_value_type c.types [] t (local c x)) e.at
-      ("type mismatch: local requires type " ^ string_of_value_type (local c x) ^
-       " but stack has " ^ string_of_value_type t);
+      ("type mismatch: instruction requires type " ^ string_of_value_type t ^
+       " but local has " ^ string_of_value_type (local c x));
     [t] --> [], replace_local c x t
 
   | GlobalGet x ->

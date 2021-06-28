@@ -261,7 +261,8 @@ let rec instr e =
     | LocalGet x -> "local.get " ^ var x, []
     | LocalSet x -> "local.set " ^ var x, []
     | LocalTee x -> "local.tee " ^ var x, []
-    | LocalRefine x -> "local.refine " ^ var x, []
+    | LocalRefine (x, t) ->
+      "local.refine " ^ var x, [Node ("type", [Atom (value_type t)])]
     | GlobalGet x -> "global.get " ^ var x, []
     | GlobalSet x -> "global.set " ^ var x, []
     | TableGet x -> "table.get " ^ var x, []

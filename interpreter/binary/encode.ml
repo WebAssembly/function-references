@@ -200,7 +200,7 @@ struct
     | LocalGet x -> op 0x20; var x
     | LocalSet x -> op 0x21; var x
     | LocalTee x -> op 0x22; var x
-    | LocalRefine x -> op 0x27; var x
+    | LocalRefine (x, t) -> op 0x27; var x; value_type t
     | GlobalGet x -> op 0x23; var x
     | GlobalSet x -> op 0x24; var x
 
