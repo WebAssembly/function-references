@@ -785,6 +785,11 @@
 .. |matchesvaltype| mathdef:: \xref{valid/types}{match-valtype}{\leq}
 .. |matchesresulttype| mathdef:: \xref{valid/types}{match-resulttype}{\leq}
 .. |matchesfunctype| mathdef:: \xref{valid/types}{match-functype}{\leq}
+.. |matchestabletype| mathdef:: \xref{valid/types}{match-tabletype}{\leq}
+.. |matchesmemtype| mathdef:: \xref{valid/types}{match-memtype}{\leq}
+.. |matchesglobaltype| mathdef:: \xref{valid/types}{match-globaltype}{\leq}
+.. |matchesexterntype| mathdef:: \xref{exec/modules}{match-externtype}{\leq}
+.. |matcheslimits| mathdef:: \xref{exec/modules}{match-limits}{\leq}
 
 
 .. Contexts
@@ -823,6 +828,11 @@
 .. |vdashvaltypematch| mathdef:: \xref{valid/types}{match-valtype}{\vdash}
 .. |vdashresulttypematch| mathdef:: \xref{valid/types}{match-resulttype}{\vdash}
 .. |vdashfunctypematch| mathdef:: \xref{valid/types}{match-functype}{\vdash}
+.. |vdashtabletypematch| mathdef:: \xref{valid/types}{match-tabletype}{\vdash}
+.. |vdashmemtypematch| mathdef:: \xref{valid/types}{match-memtype}{\vdash}
+.. |vdashglobaltypematch| mathdef:: \xref{valid/types}{match-globaltype}{\vdash}
+.. |vdashexterntypematch| mathdef:: \xref{exec/modules}{match-externtype}{\vdash}
+.. |vdashlimitsmatch| mathdef:: \xref{exec/modules}{match-limits}{\vdash}
 
 .. |vdashinstr| mathdef:: \xref{valid/instructions}{valid-instr}{\vdash}
 .. |vdashinstrseq| mathdef:: \xref{valid/instructions}{valid-instr-seq}{\vdash}
@@ -854,8 +864,6 @@
 
 .. |stepto| mathdef:: \xref{exec/conventions}{formal-notation}{\hookrightarrow}
 .. |extendsto| mathdef:: \xref{appendix/properties}{extend}{\preceq}
-.. |matchesexterntype| mathdef:: \xref{exec/modules}{match-externtype}{\leq}
-.. |matcheslimits| mathdef:: \xref{exec/modules}{match-limits}{\leq}
 
 
 .. Allocation
@@ -1108,9 +1116,6 @@
 .. Judgements
 
 .. |vdashexternval| mathdef:: \xref{exec/modules}{valid-externval}{\vdash}
-
-.. |vdashlimitsmatch| mathdef:: \xref{exec/modules}{match-limits}{\vdash}
-.. |vdashexterntypematch| mathdef:: \xref{exec/modules}{match-externtype}{\vdash}
 
 
 .. Soundness

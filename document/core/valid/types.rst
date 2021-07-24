@@ -175,7 +175,7 @@ Limits
      \qquad
      (n \leq m)^?
    }{
-     \vdashlimits \{ \LMIN~n, \LMAX~m^? \} : k
+     C \vdashlimits \{ \LMIN~n, \LMAX~m^? \} : k
    }
 
 
@@ -265,7 +265,7 @@ Table Types
 
 .. math::
    \frac{
-     \vdashlimits \limits : 2^{32} - 1
+     C \vdashlimits \limits : 2^{32} - 1
      \qquad
      C \vdashreftype \reftype \ok
    }{
@@ -290,9 +290,9 @@ Memory Types
 
 .. math::
    \frac{
-     \vdashlimits \limits : 2^{16}
+     C \vdashlimits \limits : 2^{16}
    }{
-     \vdashmemtype \limits \ok
+     C \vdashmemtype \limits \ok
    }
 
 
@@ -383,8 +383,10 @@ External Types
      C \vdashexterntype \ETGLOBAL~\globaltype \ok
    }
  
- 
+
 .. index:: subtyping
+
+.. todo:: move subtyping rules to a separate section, so that sections are at the same nesting level as wf rules?
 
 Value Subtyping
 ~~~~~~~~~~~~~~~
@@ -404,7 +406,7 @@ A :ref:`number type <syntax-numtype>` :math:`\numtype_1` matches a :ref:`number 
    ~\\[-1ex]
    \frac{
    }{
-     \vdashnumtypematch \numtype \matchesvaltype \numtype
+     C \vdashnumtypematch \numtype \matchesvaltype \numtype
    }
 
 
@@ -429,13 +431,15 @@ A :ref:`heap type <syntax-heaptype>` :math:`\heaptype_1` matches a :ref:`heap ty
    }{
      C \vdashheaptypematch \heaptype \matchesheaptype \heaptype
    }
-   ~\\
+   \qquad
    \frac{
      C.\CTYPES[\typeidx] = \functype
    }{
      C \vdashheaptypematch \typeidx \matchesheaptype \FUNC
    }
-   ~\\
+
+.. math::
+   ~\\[-1ex]
    \frac{
      C.\CTYPES[\typeidx_1] = \functype_1
      \qquad
@@ -467,7 +471,7 @@ A :ref:`reference type <syntax-reftype>` :math:`\REF~\NULL_1^?~heaptype_1` match
    }{
      C \vdashreftypematch \REF~\heaptype_1 \matchesreftype \REF~\heaptype_2
    }
-   ~\\[-1ex]
+   \qquad
    \frac{
      C \vdashheaptypematch \heaptype_1 \matchesheaptype \heaptype_2
    }{
@@ -476,7 +480,6 @@ A :ref:`reference type <syntax-reftype>` :math:`\REF~\NULL_1^?~heaptype_1` match
 
 
 .. index:: value type, number type, reference type
-
 .. _match-valtype:
 
 Value Types
@@ -498,6 +501,7 @@ A :ref:`value type <syntax-valtype>` :math:`\valtype_1` matches a :ref:`value ty
    }
 
 
+.. index:: result type, value type
 .. _match-resulttype:
 
 Result Types
@@ -513,10 +517,11 @@ That is, a :ref:`result type <syntax-resulttype>` :math:`[t_1^\ast]` matches a :
    \frac{
      (C \vdashvaltypematch t_1 \matchesvaltype t_2)^\ast
    }{
-     C \vdashresulttypematch [t_1^\ast] \matchesresulttype [t_2^ast]
+     C \vdashresulttypematch [t_1^\ast] \matchesresulttype [t_2^\ast]
    }
 
 
+.. index:: function type, result type
 .. _match-functype:
 
 Function Types
@@ -534,34 +539,20 @@ That is, a :ref:`function type <syntax-functype>` :math:`[t_{11}^\ast] \to [t_{1
    ~\\[-1ex]
    \frac{
      \begin{array}{@{}c@{}}
-     C \vdashresulttypematch [t_{11}^\ast] \matchesresulttype [t_{21}^ast]
+     C \vdashresulttypematch [t_{11}^\ast] \matchesresulttype [t_{21}^\ast]
      \qquad
      C \vdashresulttypematch [t_{12}^\ast] \matchesresulttype [t_{22}^\ast]
      \\
-     C \vdashresulttypematch [t_{21}^\ast] \matchesresulttype [t_{11}^ast]
+     C \vdashresulttypematch [t_{21}^\ast] \matchesresulttype [t_{11}^\ast]
      \qquad
      C \vdashresulttypematch [t_{22}^\ast] \matchesresulttype [t_{12}^\ast]
      \end{array}
    }{
-     C \vdashfunctypematch [t_{11}^\ast] \to [t_{12}^\ast] \matchesfunctype [t_{21}^ast] \to [t_{22}^\ast]
+     C \vdashfunctypematch [t_{11}^\ast] \to [t_{12}^\ast] \matchesfunctype [t_{21}^\ast] \to [t_{22}^\ast]
    }
 
 .. note::
    In future versions of WebAssembly, subtyping on function types may be relaxed to support co- and contra-variance.
-
-
-.. index:: ! matching, external type
-.. _exec-import:
-.. _match:
-
-Import Subtyping
-~~~~~~~~~~~~~~~~
-
-When :ref:`instantiating <exec-module>` a module,
-:ref:`external values <syntax-externval>` must be provided whose :ref:`types <valid-externval>` are *matched* against the respective :ref:`external types <syntax-externtype>` classifying each import.
-In some cases, this allows for a simple form of subtyping, as defined here.
-
-.. todo:: this requires semantics types
 
 
 .. index:: limits
@@ -589,7 +580,7 @@ Limits
    \frac{
      n_1 \geq n_2
    }{
-     \vdashlimitsmatch \{ \LMIN~n_1, \LMAX~m_1^? \} \matcheslimits \{ \LMIN~n_2, \LMAX~\epsilon \}
+     C \vdashlimitsmatch \{ \LMIN~n_1, \LMAX~m_1^? \} \matcheslimits \{ \LMIN~n_2, \LMAX~\epsilon \}
    }
    \quad
    \frac{
@@ -597,8 +588,93 @@ Limits
      \qquad
      m_1 \leq m_2
    }{
-     \vdashlimitsmatch \{ \LMIN~n_1, \LMAX~m_1 \} \matcheslimits \{ \LMIN~n_2, \LMAX~m_2 \}
+     C \vdashlimitsmatch \{ \LMIN~n_1, \LMAX~m_1 \} \matcheslimits \{ \LMIN~n_2, \LMAX~m_2 \}
    }
+
+
+.. index:: table type, limits, element type
+.. _match-tabletype:
+
+Table Types
+...........
+
+A :ref:`table type <syntax-tabletype>` :math:`(\limits_1~\reftype_1)` matches :math:`(\limits_2~\reftype_2)` if and only if:
+
+* Limits :math:`\limits_1` :ref:`match <match-limits>` :math:`\limits_2`.
+
+* The :ref:`reference type <syntax-reftype>` :math:`\reftype_1` :ref:`matches <match-reftype>` :math:`\reftype_2`, and vice versa.
+
+.. math::
+   ~\\[-1ex]
+   \frac{
+     C \vdashlimitsmatch \limits_1 \matcheslimits \limits_2
+     \qquad
+     C \vdashreftypematch \reftype_1 \matchesreftype \reftype_2
+     \qquad
+     C \vdashreftypematch \reftype_2 \matchesreftype \reftype_1
+   }{
+     C \vdashtabletypematch \limits_1~\reftype_1 \matchestabletype \limits_2~\reftype_2
+   }
+
+
+.. index:: memory type, limits
+.. _match-memtype:
+
+Memory Types
+............
+
+A :ref:`memory type <syntax-memtype>` :math:`\limits_1` matches :math:`\limits_2` if and only if:
+
+* Limits :math:`\limits_1` :ref:`match <match-limits>` :math:`\limits_2`.
+
+
+.. math::
+   ~\\[-1ex]
+   \frac{
+     C \vdashlimitsmatch \limits_1 \matcheslimits \limits_2
+   }{
+     C \vdashmemtypematch \limits_1 \matchesmemtype \limits_2
+   }
+
+
+.. index:: global type, value type, mutability
+.. _match-globaltype:
+
+Global Types
+............
+
+A :ref:`global type <syntax-globaltype>` :math:`(\mut_1~t_1)` matches :math:`(\mut_2~t_2)` if and only if:
+
+* Either both :math:`\mut_1` and :math:`\mut_2` are |MVAR| and :math:`t_1` and :math:`t_2` are the same.
+ 
+* Or both :math:`\mut_1` and :math:`\mut_2` are |MCONST| and :math:`t_1` :ref:`matches <match-valtype>` :math:`t_2`.
+
+.. math::
+   ~\\[-1ex]
+   \frac{
+   }{
+     C \vdashglobaltypematch \MVAR~t \matchesglobaltype \MVAR~t
+   }
+   \qquad
+   \frac{
+     C \vdashvaltypematch t_1 \matchesvaltype t_2
+   }{
+     C \vdashglobaltypematch \MCONST~t_1 \matchesglobaltype \MCONST~t_2
+   }
+
+
+.. index:: ! matching, external type
+.. _exec-import:
+.. _match:
+
+.. todo:: import matching needs to be defined on semantic types; probably move it to exec; need to define how to reinterpret C for semantic types
+
+Import Subtyping
+~~~~~~~~~~~~~~~~
+
+When :ref:`instantiating <exec-module>` a module,
+:ref:`external values <syntax-externval>` must be provided whose :ref:`types <valid-externval>` are *matched* against the respective :ref:`external types <syntax-externtype>` classifying each import.
+In some cases, this allows for a simple form of subtyping, as defined here.
 
 
 .. _match-externtype:
@@ -611,75 +687,69 @@ Functions
 
 An :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\functype_1` matches :math:`\ETFUNC~\functype_2` if and only if:
 
-* Both :math:`\functype_1` and :math:`\functype_2` are the same.
+* Function type :math:`\functype_1` :ref:`match <match-functype>` :math:`\functype_2`.
 
 .. math::
    ~\\[-1ex]
    \frac{
+     C \vdashfunctypematch \functype_1 \matchesfunctype \functype_2
    }{
-     \vdashexterntypematch \ETFUNC~\functype \matchesexterntype \ETFUNC~\functype
+     C \vdashexterntypematch \ETFUNC~\functype_1 \matchesexterntype \ETFUNC~\functype_2
    }
 
 
-.. index:: table type, limits, element type
+.. index:: table type
 .. _match-externtabletype:
 
 Tables
 ......
 
-An :ref:`external type <syntax-externtype>` :math:`\ETTABLE~(\limits_1~\reftype_1)` matches :math:`\ETTABLE~(\limits_2~\reftype_2)` if and only if:
+An :ref:`external type <syntax-externtype>` :math:`\ETTABLE~\tabletype_1` matches :math:`\ETTABLE~\tabletype_2` if and only if:
 
-* Limits :math:`\limits_1` :ref:`match <match-limits>` :math:`\limits_2`.
-
-* Both :math:`\reftype_1` and :math:`\reftype_2` are the same.
+* Table type :math:`\tabletype_1` :ref:`match <match-tabletype>` :math:`\tabletype_2`.
 
 .. math::
+   ~\\[-1ex]
    \frac{
-     \vdashlimitsmatch \limits_1 \matcheslimits \limits_2
+     C \vdashtabletypematch \tabletype_1 \matchestabletype \tabletype_2
    }{
-     \vdashexterntypematch \ETTABLE~(\limits_1~\reftype) \matchesexterntype \ETTABLE~(\limits_2~\reftype)
+     C \vdashexterntypematch \ETTABLE~tabletype_1 \matchesexterntype \ETTABLE~\tabletype_2
    }
 
 
-.. index:: memory type, limits
+.. index:: memory type
 .. _match-externmemtype:
 
 Memories
 ........
 
-An :ref:`external type <syntax-externtype>` :math:`\ETMEM~\limits_1` matches :math:`\ETMEM~\limits_2` if and only if:
+An :ref:`external type <syntax-externtype>` :math:`\ETMEM~\memtype_1` matches :math:`\ETMEM~\memtype_2` if and only if:
 
-* Limits :math:`\limits_1` :ref:`match <match-limits>` :math:`\limits_2`.
+* Memory type :math:`\memtype_1` :ref:`match <match-memtype>` :math:`\memtype_2`.
 
 .. math::
+   ~\\[-1ex]
    \frac{
-     \vdashlimitsmatch \limits_1 \matcheslimits \limits_2
+     C \vdashmemtypematch \memtype_1 \matchesmemtype \memtype_2
    }{
-     \vdashexterntypematch \ETMEM~\limits_1 \matchesexterntype \ETMEM~\limits_2
+     C \vdashexterntypematch \ETMEM~memtype_1 \matchesexterntype \ETMEM~\memtype_2
    }
 
 
-.. index:: global type, value type, mutability
+.. index:: global type
 .. _match-externglobaltype:
 
 Globals
 .......
 
-An :ref:`external type <syntax-externtype>` :math:`\ETGLOBAL~(\mut_1~t_1)` matches :math:`\ETGLOBAL~(\mut_2~t_2)` if and only if:
+An :ref:`external type <syntax-externtype>` :math:`\ETGLOBAL~\globaltype_1` matches :math:`\ETGLOBAL~\globaltype_2` if and only if:
 
-* Either both :math:`\mut_1` and :math:`\mut_2` are |MVAR| and :math:`t_1` and :math:`t_2` are the same.
- 
-* Or both :math:`\mut_1` and :math:`\mut_2` are |MCONST| and :math:`t_1` :ref:`matches <match-valtype>` :math:`t_2`.
+* Global type :math:`\globaltype_1` :ref:`match <match-globaltype>` :math:`\globaltype_2`.
 
 .. math::
    ~\\[-1ex]
    \frac{
+     C \vdashglobaltypematch \globaltype_1 \matchesglobaltype \globaltype_2
    }{
-     \vdashexterntypematch \ETGLOBAL~(\MVAR~t) \matchesexterntype \ETGLOBAL~(\MVAR~t)
-   }
-   \qquad
-   \frac{
-     \vdashvaltypematch t_1 \matchesvaltype t_2
-   }{
-     \vdashexterntypematch \ETGLOBAL~(\MCONST~t_1) \matchesexterntype \ETGLOBAL~(\MCONST~t_2)
+     C \vdashexterntypematch \ETGLOBAL~globaltype_1 \matchesexterntype \ETGLOBAL~\globaltype_2
    }
