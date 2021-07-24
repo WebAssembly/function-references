@@ -687,7 +687,7 @@ Functions
 
 An :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\functype_1` matches :math:`\ETFUNC~\functype_2` if and only if:
 
-* Function type :math:`\functype_1` :ref:`match <match-functype>` :math:`\functype_2`.
+* Function type :math:`\functype_1` :ref:`matches <match-functype>` :math:`\functype_2`.
 
 .. math::
    ~\\[-1ex]
@@ -706,14 +706,14 @@ Tables
 
 An :ref:`external type <syntax-externtype>` :math:`\ETTABLE~\tabletype_1` matches :math:`\ETTABLE~\tabletype_2` if and only if:
 
-* Table type :math:`\tabletype_1` :ref:`match <match-tabletype>` :math:`\tabletype_2`.
+* Table type :math:`\tabletype_1` :ref:`matches <match-tabletype>` :math:`\tabletype_2`.
 
 .. math::
    ~\\[-1ex]
    \frac{
      C \vdashtabletypematch \tabletype_1 \matchestabletype \tabletype_2
    }{
-     C \vdashexterntypematch \ETTABLE~tabletype_1 \matchesexterntype \ETTABLE~\tabletype_2
+     C \vdashexterntypematch \ETTABLE~\tabletype_1 \matchesexterntype \ETTABLE~\tabletype_2
    }
 
 
@@ -725,14 +725,14 @@ Memories
 
 An :ref:`external type <syntax-externtype>` :math:`\ETMEM~\memtype_1` matches :math:`\ETMEM~\memtype_2` if and only if:
 
-* Memory type :math:`\memtype_1` :ref:`match <match-memtype>` :math:`\memtype_2`.
+* Memory type :math:`\memtype_1` :ref:`matches <match-memtype>` :math:`\memtype_2`.
 
 .. math::
    ~\\[-1ex]
    \frac{
      C \vdashmemtypematch \memtype_1 \matchesmemtype \memtype_2
    }{
-     C \vdashexterntypematch \ETMEM~memtype_1 \matchesexterntype \ETMEM~\memtype_2
+     C \vdashexterntypematch \ETMEM~\memtype_1 \matchesexterntype \ETMEM~\memtype_2
    }
 
 
@@ -744,12 +744,12 @@ Globals
 
 An :ref:`external type <syntax-externtype>` :math:`\ETGLOBAL~\globaltype_1` matches :math:`\ETGLOBAL~\globaltype_2` if and only if:
 
-* Global type :math:`\globaltype_1` :ref:`match <match-globaltype>` :math:`\globaltype_2`.
+* Global type :math:`\globaltype_1` :ref:`matches <match-globaltype>` :math:`\globaltype_2`.
 
 .. math::
    ~\\[-1ex]
    \frac{
      C \vdashglobaltypematch \globaltype_1 \matchesglobaltype \globaltype_2
    }{
-     C \vdashexterntypematch \ETGLOBAL~globaltype_1 \matchesexterntype \ETGLOBAL~\globaltype_2
+     C \vdashexterntypematch \ETGLOBAL~\globaltype_1 \matchesexterntype \ETGLOBAL~\globaltype_2
    }

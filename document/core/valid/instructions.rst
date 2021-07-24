@@ -201,7 +201,7 @@ Reference Instructions
 
 * The function :math:`C.\CFUNCS[x]` must be defined in the context.
 
-* There must exist a :ref:`type index <syntax-typeidx>` :ref:`y` such that :math:`C.\CTYPE[y]` is the same :ref:`function type <syntax-functype>` as :math:`C.\CFUNCS[x]`.
+* There must exist a :ref:`type index <syntax-typeidx>` :math:`y` such that :math:`C.\CTYPES[y]` is the same :ref:`function type <syntax-functype>` as :math:`C.\CFUNCS[x]`.
 
 * The :ref:`function index <syntax-funcidx>` :math:`x` must be contained in :math:`C.\CREFS`.
 
