@@ -780,6 +780,7 @@
 .. |ok| mathdef:: \mathrel{\mbox{ok}}
 .. |const| mathdef:: \xref{valid/instructions}{valid-constant}{\mathrel{\mbox{const}}}
 
+.. |matchesnumtype| mathdef:: \xref{valid/types}{match-numtype}{\leq}
 .. |matchesheaptype| mathdef:: \xref{valid/types}{match-heaptype}{\leq}
 .. |matchesreftype| mathdef:: \xref{valid/types}{match-reftype}{\leq}
 .. |matchesvaltype| mathdef:: \xref{valid/types}{match-valtype}{\leq}
