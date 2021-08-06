@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Index of Types &#8212; WebAssembly 1.1 + function-references (Draft 2021-07-24)</title>
+    <title>Index of Types &#8212; WebAssembly 1.1 + function-references (Draft 2021-08-06)</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -115,39 +115,51 @@
 <td></td>
 <td><p><span class="math notranslate nohighlight">\(\def\mathdef628#1{\mathtt{0x#1}}\mathdef628{7B}\)</span> .. <span class="math notranslate nohighlight">\(\def\mathdef629#1{\mathtt{0x#1}}\mathdef629{71}\)</span></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../syntax/types.html#syntax-reftype"><span class="std std-ref">Reference type</span></a></p></td>
-<td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-reftype}{\mathsf{funcref}}\)</span></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../syntax/types.html#syntax-heaptype"><span class="std std-ref">Heap type</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-heaptype}{\mathsf{func}}\)</span></p></td>
 <td><p><span class="math notranslate nohighlight">\(\def\mathdef630#1{\mathtt{0x#1}}\mathdef630{70}\)</span> (-16 as <span class="math notranslate nohighlight">\(\href{../binary/values.html#binary-int}{\def\mathdef595#1{{\mathtt{s}#1}}\mathdef595{\mathtt{7}}}\)</span>)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../syntax/types.html#syntax-reftype"><span class="std std-ref">Reference type</span></a></p></td>
-<td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-reftype}{\mathsf{externref}}\)</span></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../syntax/types.html#syntax-heaptype"><span class="std std-ref">Heap type</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-heaptype}{\mathsf{extern}}\)</span></p></td>
 <td><p><span class="math notranslate nohighlight">\(\def\mathdef631#1{\mathtt{0x#1}}\mathdef631{6F}\)</span> (-17 as <span class="math notranslate nohighlight">\(\href{../binary/values.html#binary-int}{\def\mathdef595#1{{\mathtt{s}#1}}\mathdef595{\mathtt{7}}}\)</span>)</p></td>
 </tr>
 <tr class="row-even"><td><p>(reserved)</p></td>
 <td></td>
-<td><p><span class="math notranslate nohighlight">\(\def\mathdef632#1{\mathtt{0x#1}}\mathdef632{6E}\)</span> .. <span class="math notranslate nohighlight">\(\def\mathdef633#1{\mathtt{0x#1}}\mathdef633{61}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\def\mathdef632#1{\mathtt{0x#1}}\mathdef632{6E}\)</span> .. <span class="math notranslate nohighlight">\(\def\mathdef633#1{\mathtt{0x#1}}\mathdef633{6D}\)</span></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../syntax/types.html#syntax-functype"><span class="std std-ref">Function type</span></a></p></td>
-<td><p><span class="math notranslate nohighlight">\([\href{../syntax/types.html#syntax-valtype}{\mathit{valtype}}^\ast] \href{../syntax/types.html#syntax-functype}{\rightarrow} [\href{../syntax/types.html#syntax-valtype}{\mathit{valtype}}^\ast]\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\def\mathdef634#1{\mathtt{0x#1}}\mathdef634{60}\)</span> (-32 as <span class="math notranslate nohighlight">\(\href{../binary/values.html#binary-int}{\def\mathdef595#1{{\mathtt{s}#1}}\mathdef595{\mathtt{7}}}\)</span>)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../syntax/types.html#syntax-reftype"><span class="std std-ref">Reference type</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}\)</span> <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\def\mathdef634#1{\mathtt{0x#1}}\mathdef634{6C}\)</span> (-20 as <span class="math notranslate nohighlight">\(\href{../binary/values.html#binary-int}{\def\mathdef595#1{{\mathtt{s}#1}}\mathdef595{\mathtt{7}}}\)</span>)</p></td>
 </tr>
-<tr class="row-even"><td><p>(reserved)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../syntax/types.html#syntax-reftype"><span class="std std-ref">Reference type</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\def\mathdef635#1{\mathtt{0x#1}}\mathdef635{6B}\)</span> (-21 as <span class="math notranslate nohighlight">\(\href{../binary/values.html#binary-int}{\def\mathdef595#1{{\mathtt{s}#1}}\mathdef595{\mathtt{7}}}\)</span>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>(reserved)</p></td>
 <td></td>
-<td><p><span class="math notranslate nohighlight">\(\def\mathdef635#1{\mathtt{0x#1}}\mathdef635{5F}\)</span> .. <span class="math notranslate nohighlight">\(\def\mathdef636#1{\mathtt{0x#1}}\mathdef636{41}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\def\mathdef636#1{\mathtt{0x#1}}\mathdef636{6A}\)</span> .. <span class="math notranslate nohighlight">\(\def\mathdef637#1{\mathtt{0x#1}}\mathdef637{61}\)</span></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../syntax/types.html#syntax-resulttype"><span class="std std-ref">Result type</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../syntax/types.html#syntax-functype"><span class="std std-ref">Function type</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\([\href{../syntax/types.html#syntax-valtype}{\mathit{valtype}}^\ast] \href{../syntax/types.html#syntax-functype}{\rightarrow} [\href{../syntax/types.html#syntax-valtype}{\mathit{valtype}}^\ast]\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\def\mathdef638#1{\mathtt{0x#1}}\mathdef638{60}\)</span> (-32 as <span class="math notranslate nohighlight">\(\href{../binary/values.html#binary-int}{\def\mathdef595#1{{\mathtt{s}#1}}\mathdef595{\mathtt{7}}}\)</span>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>(reserved)</p></td>
+<td></td>
+<td><p><span class="math notranslate nohighlight">\(\def\mathdef639#1{\mathtt{0x#1}}\mathdef639{5F}\)</span> .. <span class="math notranslate nohighlight">\(\def\mathdef640#1{\mathtt{0x#1}}\mathdef640{41}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../syntax/types.html#syntax-resulttype"><span class="std std-ref">Result type</span></a></p></td>
 <td><p><span class="math notranslate nohighlight">\([\epsilon]\)</span></p></td>
-<td><p><span class="math notranslate nohighlight">\(\def\mathdef637#1{\mathtt{0x#1}}\mathdef637{40}\)</span> (-64 as <span class="math notranslate nohighlight">\(\href{../binary/values.html#binary-int}{\def\mathdef595#1{{\mathtt{s}#1}}\mathdef595{\mathtt{7}}}\)</span>)</p></td>
+<td><p><span class="math notranslate nohighlight">\(\def\mathdef641#1{\mathtt{0x#1}}\mathdef641{40}\)</span> (-64 as <span class="math notranslate nohighlight">\(\href{../binary/values.html#binary-int}{\def\mathdef595#1{{\mathtt{s}#1}}\mathdef595{\mathtt{7}}}\)</span>)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../syntax/types.html#syntax-tabletype"><span class="std std-ref">Table type</span></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../syntax/types.html#syntax-tabletype"><span class="std std-ref">Table type</span></a></p></td>
 <td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-limits}{\mathit{limits}}~\href{../syntax/types.html#syntax-reftype}{\mathit{reftype}}\)</span></p></td>
 <td><p>(none)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../syntax/types.html#syntax-memtype"><span class="std std-ref">Memory type</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../syntax/types.html#syntax-memtype"><span class="std std-ref">Memory type</span></a></p></td>
 <td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-limits}{\mathit{limits}}\)</span></p></td>
 <td><p>(none)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../syntax/types.html#syntax-globaltype"><span class="std std-ref">Global type</span></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../syntax/types.html#syntax-globaltype"><span class="std std-ref">Global type</span></a></p></td>
 <td><p><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-mut}{\mathit{mut}}~\href{../syntax/types.html#syntax-valtype}{\mathit{valtype}}\)</span></p></td>
 <td><p>(none)</p></td>
 </tr>
