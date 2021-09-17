@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Instructions &#8212; WebAssembly 1.1 + function-references (Draft 2021-09-15)</title>
+    <title>Instructions &#8212; WebAssembly 1.1 + function-references (Draft 2021-09-17)</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -229,39 +229,15 @@ which maps to the generic <span class="math notranslate nohighlight">\(\href{../
 </section>
 <section id="reference-instructions">
 <span id="exec-instr-ref"></span><span id="index-2"></span><h2>Reference Instructions<a class="headerlink" href="#reference-instructions" title="Permalink to this headline">¶</a></h2>
-<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-null-t">
-<span id="exec-ref-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-null-t" title="Permalink to this headline">¶</a></h3>
+<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-null-mathit-ht">
+<span id="exec-ref-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-null-mathit-ht" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
-<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t\)</span> to the stack.</p></li>
+<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}\)</span> to the stack.</p></li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>No formal reduction rule is required for this instruction, since the <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}\)</span> instruction is already a <a class="reference internal" href="runtime.html#syntax-val"><span class="std std-ref">value</span></a>.</p>
 </div>
-</section>
-<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-is-null">
-<span id="exec-ref-is-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-is-null" title="Permalink to this headline">¶</a></h3>
-<ol class="arabic simple">
-<li><p>Assert: due to <a class="reference internal" href="../valid/instructions.html#valid-ref-is-null"><span class="std std-ref">validation</span></a>, a <a class="reference internal" href="runtime.html#syntax-ref"><span class="std std-ref">reference value</span></a> is on the top of the stack.</p></li>
-<li><p>Pop the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> from the stack.</p></li>
-<li><p>If <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> is <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t\)</span>, then:</p>
-<ol class="loweralpha simple">
-<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~1\)</span> to the stack.</p></li>
-</ol>
-</li>
-<li><p>Else:</p>
-<ol class="loweralpha simple">
-<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~0\)</span> to the stack.</p></li>
-</ol>
-</li>
-</ol>
-<div class="math notranslate nohighlight">
-\[\begin{split}\begin{array}{lcl&#64;{\qquad}l}
-\href{../exec/runtime.html#syntax-val}{\mathit{val}}~\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}} &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~1
-  &amp; (\mathrel{\mbox{if}} \href{../exec/runtime.html#syntax-val}{\mathit{val}} = \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t) \\
-\href{../exec/runtime.html#syntax-val}{\mathit{val}}~\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}} &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~0
-  &amp; (\mathrel{\mbox{otherwise}}) \\
-\end{array}\end{split}\]</div>
 </section>
 <section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-func-x">
 <span id="exec-ref-func"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}func}}~x\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-func-x" title="Permalink to this headline">¶</a></h3>
@@ -275,6 +251,50 @@ which maps to the generic <span class="math notranslate nohighlight">\(\href{../
 \[\begin{split}\begin{array}{lcl&#64;{\qquad}l}
 F; \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}func}}~x &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; F; \href{../exec/runtime.html#syntax-ref}{\mathsf{ref}}~a
   &amp; (\mathrel{\mbox{if}} a = F.\href{../exec/runtime.html#syntax-frame}{\mathsf{module}}.\href{../exec/runtime.html#syntax-moduleinst}{\mathsf{funcaddrs}}[x]) \\
+\end{array}\end{split}\]</div>
+</section>
+<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-is-null">
+<span id="exec-ref-is-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-is-null" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Assert: due to <a class="reference internal" href="../valid/instructions.html#valid-ref-is-null"><span class="std std-ref">validation</span></a>, a <a class="reference internal" href="runtime.html#syntax-ref"><span class="std std-ref">reference value</span></a> is on the top of the stack.</p></li>
+<li><p>Pop the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> from the stack.</p></li>
+<li><p>If <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> is <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}\)</span>, then:</p>
+<ol class="loweralpha simple">
+<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~1\)</span> to the stack.</p></li>
+</ol>
+</li>
+<li><p>Else:</p>
+<ol class="loweralpha simple">
+<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~0\)</span> to the stack.</p></li>
+</ol>
+</li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{array}{lcl&#64;{\qquad}l}
+\href{../exec/runtime.html#syntax-val}{\mathit{val}}~\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}} &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~1
+  &amp; (\mathrel{\mbox{if}} \href{../exec/runtime.html#syntax-val}{\mathit{val}} = \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}) \\
+\href{../exec/runtime.html#syntax-val}{\mathit{val}}~\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}} &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~0
+  &amp; (\mathrel{\mbox{otherwise}}) \\
+\end{array}\end{split}\]</div>
+</section>
+<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-as-non-null">
+<span id="exec-ref-as-non-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}as\_non\_null}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-as-non-null" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Assert: due to <a class="reference internal" href="../valid/instructions.html#valid-ref-is-null"><span class="std std-ref">validation</span></a>, a <a class="reference internal" href="runtime.html#syntax-ref"><span class="std std-ref">reference value</span></a> is on the top of the stack.</p></li>
+<li><p>Pop the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> from the stack.</p></li>
+<li><p>If <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> is <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}\)</span>, then:</p>
+<ol class="loweralpha simple">
+<li><p>Trap.</p></li>
+</ol>
+</li>
+<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> back to the stack.</p></li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{array}{lcl&#64;{\qquad}l}
+\href{../exec/runtime.html#syntax-val}{\mathit{val}}~\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}as\_non\_null}} &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \href{../exec/runtime.html#syntax-trap}{\mathsf{trap}}
+  &amp; (\mathrel{\mbox{if}} \href{../exec/runtime.html#syntax-val}{\mathit{val}} = \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}) \\
+\href{../exec/runtime.html#syntax-val}{\mathit{val}}~\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}as\_non\_null}} &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \href{../exec/runtime.html#syntax-val}{\mathit{val}}
+  &amp; (\mathrel{\mbox{otherwise}}) \\
 \end{array}\end{split}\]</div>
 </section>
 </section>
@@ -1429,6 +1449,55 @@ F; \href{../exec/runtime.html#syntax-val}{\mathit{val}}^m~(\href{../syntax/types
   &amp; (\mathrel{\mbox{if}} |l^\ast| \leq i) \\
 \end{array}\end{split}\]</div>
 </section>
+<section id="xref-syntax-instructions-syntax-instr-control-mathsf-br-on-null-l">
+<span id="exec-br-on-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}}~l\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-br-on-null-l" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Assert: due to <a class="reference internal" href="../valid/instructions.html#valid-ref-is-null"><span class="std std-ref">validation</span></a>, a <a class="reference internal" href="runtime.html#syntax-ref"><span class="std std-ref">reference value</span></a> is on the top of the stack.</p></li>
+<li><p>Pop the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> from the stack.</p></li>
+<li><p>If <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> is <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}\)</span>, then:</p>
+<ol class="loweralpha simple">
+<li><p><a class="reference internal" href="#exec-br"><span class="std std-ref">Execute</span></a> the instruction <span class="math notranslate nohighlight">\((\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br}}~l)\)</span>.</p></li>
+</ol>
+</li>
+<li><p>Else:</p>
+<ol class="loweralpha simple">
+<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> back to the stack.</p></li>
+</ol>
+</li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{array}{lcl&#64;{\qquad}l}
+\href{../exec/runtime.html#syntax-val}{\mathit{val}}~(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}}~l) &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; (\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br}}~l)
+  &amp; (\mathrel{\mbox{if}} \href{../exec/runtime.html#syntax-val}{\mathit{val}} = \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}) \\
+\href{../exec/runtime.html#syntax-val}{\mathit{val}}~(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}}~l) &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \href{../exec/runtime.html#syntax-val}{\mathit{val}}
+  &amp; (\mathrel{\mbox{otherwise}}) \\
+\end{array}\end{split}\]</div>
+</section>
+<section id="xref-syntax-instructions-syntax-instr-control-mathsf-br-on-non-null-l">
+<span id="exec-br-on-non-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_non\_null}}~l\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-br-on-non-null-l" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Assert: due to <a class="reference internal" href="../valid/instructions.html#valid-ref-is-null"><span class="std std-ref">validation</span></a>, a <a class="reference internal" href="runtime.html#syntax-ref"><span class="std std-ref">reference value</span></a> is on the top of the stack.</p></li>
+<li><p>Pop the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> from the stack.</p></li>
+<li><p>If <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> is <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}\)</span>, then:</p>
+<ol class="loweralpha simple">
+<li><p>Do nothing.</p></li>
+</ol>
+</li>
+<li><p>Else:</p>
+<ol class="loweralpha simple">
+<li><p>Push the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-val}{\mathit{val}}\)</span> back to the stack.</p></li>
+<li><p><a class="reference internal" href="#exec-br"><span class="std std-ref">Execute</span></a> the instruction <span class="math notranslate nohighlight">\((\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br}}~l)\)</span>.</p></li>
+</ol>
+</li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{array}{lcl&#64;{\qquad}l}
+\href{../exec/runtime.html#syntax-val}{\mathit{val}}~(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_non\_null}}~l) &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \epsilon
+  &amp; (\mathrel{\mbox{if}} \href{../exec/runtime.html#syntax-val}{\mathit{val}} = \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}) \\
+\href{../exec/runtime.html#syntax-val}{\mathit{val}}~(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_non\_null}}~l) &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; \href{../exec/runtime.html#syntax-val}{\mathit{val}}~(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br}}~l)
+  &amp; (\mathrel{\mbox{otherwise}}) \\
+\end{array}\end{split}\]</div>
+</section>
 <section id="xref-syntax-instructions-syntax-instr-control-mathsf-return">
 <span id="exec-return"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{return}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-return" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
@@ -1467,6 +1536,18 @@ F; (\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call}}~x) &a
   &amp; (\mathrel{\mbox{if}} F.\href{../exec/runtime.html#syntax-frame}{\mathsf{module}}.\href{../exec/runtime.html#syntax-moduleinst}{\mathsf{funcaddrs}}[x] = a)
 \end{array}\]</div>
 </section>
+<section id="xref-syntax-instructions-syntax-instr-control-mathsf-call-ref">
+<span id="exec-call-ref"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_ref}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-call-ref" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Assert: due to <a class="reference internal" href="../valid/instructions.html#valid-call-ref"><span class="std std-ref">validation</span></a>, a <a class="reference internal" href="runtime.html#syntax-ref"><span class="std std-ref">function reference</span></a> is on the top of the stack.</p></li>
+<li><p>Pop the value <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-ref}{\mathsf{ref}}~a\)</span> from the stack.</p></li>
+<li><p><a class="reference internal" href="#exec-invoke"><span class="std std-ref">Invoke</span></a> the function instance at address <span class="math notranslate nohighlight">\(a\)</span>.</p></li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{array}{lcl&#64;{\qquad}l}
+F; (\href{../exec/runtime.html#syntax-ref}{\mathsf{ref}}~a)~\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_ref}} &amp;\href{../exec/conventions.html#formal-notation}{\hookrightarrow}&amp; F; (\href{../exec/runtime.html#syntax-invoke}{\mathsf{invoke}}~a)
+\end{array}\]</div>
+</section>
 <section id="xref-syntax-instructions-syntax-instr-control-mathsf-call-indirect-x-y">
 <span id="exec-call-indirect"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_indirect}}~x~y\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-call-indirect-x-y" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
@@ -1485,7 +1566,7 @@ F; (\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call}}~x) &a
 </ol>
 </li>
 <li><p>Let <span class="math notranslate nohighlight">\(r\)</span> be the <a class="reference internal" href="runtime.html#syntax-ref"><span class="std std-ref">reference</span></a> <span class="math notranslate nohighlight">\(\mathit{tab}.\href{../exec/runtime.html#syntax-tableinst}{\mathsf{elem}}[i]\)</span>.</p></li>
-<li><p>If <span class="math notranslate nohighlight">\(r\)</span> is <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t\)</span>, then:</p>
+<li><p>If <span class="math notranslate nohighlight">\(r\)</span> is <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}\)</span>, then:</p>
 <ol class="loweralpha simple">
 <li><p>Trap.</p></li>
 </ol>

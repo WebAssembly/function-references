@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Instructions &#8212; WebAssembly 1.1 + function-references (Draft 2021-09-15)</title>
+    <title>Instructions &#8212; WebAssembly 1.1 + function-references (Draft 2021-09-17)</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -200,31 +200,17 @@ In contrast,</p>
 </section>
 <section id="reference-instructions">
 <span id="valid-instr-ref"></span><span id="index-2"></span><h2>Reference Instructions<a class="headerlink" href="#reference-instructions" title="Permalink to this headline">¶</a></h2>
-<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-null-t">
-<span id="valid-ref-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-null-t" title="Permalink to this headline">¶</a></h3>
+<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-null-mathit-ht">
+<span id="valid-ref-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-null-mathit-ht" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>The instruction is valid with type <span class="math notranslate nohighlight">\([] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t]\)</span>.</p></li>
+<li><p>The <a class="reference internal" href="../syntax/types.html#syntax-heaptype"><span class="std std-ref">heap type</span></a> <span class="math notranslate nohighlight">\(\mathit{ht}\)</span> must be <a class="reference internal" href="types.html#valid-heaptype"><span class="std std-ref">valid</span></a>.</p></li>
+<li><p>Then the instruction is valid with type <span class="math notranslate nohighlight">\([] \href{../syntax/types.html#syntax-functype}{\rightarrow} [(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})]\)</span>.</p></li>
 </ul>
 <div class="math notranslate nohighlight">
 \[\frac{
+  C \href{../valid/types.html#valid-heaptype}{\vdash} \mathit{ht} \mathrel{\mbox{ok}}
 }{
-  C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t : [] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t]
-}\]</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In future versions of WebAssembly, there may be reference types for which no null reference is allowed.</p>
-</div>
-</section>
-<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-is-null">
-<span id="valid-ref-is-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-is-null" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>The instruction is valid with type <span class="math notranslate nohighlight">\([t] \href{../syntax/types.html#syntax-functype}{\rightarrow} [\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}]\)</span>, for any <a class="reference internal" href="../syntax/types.html#syntax-reftype"><span class="std std-ref">reference type</span></a> <span class="math notranslate nohighlight">\(t\)</span>.</p></li>
-</ul>
-<div class="math notranslate nohighlight">
-\[\frac{
-  t = \href{../syntax/types.html#syntax-reftype}{\mathit{reftype}}
-}{
-  C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}} : [t] \href{../syntax/types.html#syntax-functype}{\rightarrow} [\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}]
+  C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\mathit{ht} : [] \href{../syntax/types.html#syntax-functype}{\rightarrow} [(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})]
 }\]</div>
 </section>
 <section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-func-x">
@@ -244,16 +230,41 @@ In contrast,</p>
   C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}func}}~x : [] \href{../syntax/types.html#syntax-functype}{\rightarrow} [(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~y)]
 }\]</div>
 </section>
+<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-is-null">
+<span id="valid-ref-is-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-is-null" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>The instruction is valid with type <span class="math notranslate nohighlight">\([(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})] \href{../syntax/types.html#syntax-functype}{\rightarrow} [\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}]\)</span>, for any <a class="reference internal" href="types.html#valid-heaptype"><span class="std std-ref">valid</span></a> <a class="reference internal" href="../syntax/types.html#syntax-heaptype"><span class="std std-ref">heap type</span></a> <span class="math notranslate nohighlight">\(\mathit{ht}\)</span>.</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+  C \href{../valid/types.html#valid-heaptype}{\vdash} \mathit{ht} \mathrel{\mbox{ok}}
+}{
+  C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}} : [(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})] \href{../syntax/types.html#syntax-functype}{\rightarrow} [\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}]
+}\]</div>
+</section>
+<section id="xref-syntax-instructions-syntax-instr-ref-mathsf-ref-as-non-null">
+<span id="valid-ref-as-non-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}as\_non\_null}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-ref-mathsf-ref-as-non-null" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>The instruction is valid with type <span class="math notranslate nohighlight">\([(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})] \href{../syntax/types.html#syntax-functype}{\rightarrow} [(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\mathit{ht})]\)</span>, for any <a class="reference internal" href="types.html#valid-heaptype"><span class="std std-ref">valid</span></a> <a class="reference internal" href="../syntax/types.html#syntax-heaptype"><span class="std std-ref">heap type</span></a> <span class="math notranslate nohighlight">\(\mathit{ht}\)</span>.</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+  C \href{../valid/types.html#valid-heaptype}{\vdash} \mathit{ht} \mathrel{\mbox{ok}}
+}{
+  C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}as\_non\_null}} : [(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})] \href{../syntax/types.html#syntax-functype}{\rightarrow} [(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\mathit{ht})]
+}\]</div>
+</section>
 </section>
 <section id="parametric-instructions">
 <span id="valid-instr-parametric"></span><span id="index-3"></span><h2>Parametric Instructions<a class="headerlink" href="#parametric-instructions" title="Permalink to this headline">¶</a></h2>
 <section id="xref-syntax-instructions-syntax-instr-parametric-mathsf-drop">
 <span id="valid-drop"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-parametric}{\mathsf{drop}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-parametric-mathsf-drop" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>The instruction is valid with type <span class="math notranslate nohighlight">\([t] \href{../syntax/types.html#syntax-functype}{\rightarrow} []\)</span>, for any <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value type</span></a> <span class="math notranslate nohighlight">\(t\)</span>.</p></li>
+<li><p>The instruction is valid with type <span class="math notranslate nohighlight">\([t] \href{../syntax/types.html#syntax-functype}{\rightarrow} []\)</span>, for any <a class="reference internal" href="types.html#valid-valtype"><span class="std std-ref">valid</span></a> <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value type</span></a> <span class="math notranslate nohighlight">\(t\)</span>.</p></li>
 </ul>
 <div class="math notranslate nohighlight">
 \[\frac{
+  C \href{../valid/types.html#valid-valtype}{\vdash} t \mathrel{\mbox{ok}}
 }{
   C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-parametric}{\mathsf{drop}} : [t] \href{../syntax/types.html#syntax-functype}{\rightarrow} []
 }\]</div>
@@ -820,6 +831,39 @@ Although it may seem necessary to compute <span class="math notranslate nohighli
 a simple <a class="reference internal" href="../appendix/algorithm.html#algo-valid"><span class="std std-ref">linear algorithm</span></a> does not require this.</p>
 </div>
 </section>
+<section id="xref-syntax-instructions-syntax-instr-control-mathsf-br-on-null-l">
+<span id="valid-br-on-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}}~l\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-br-on-null-l" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>The label <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l]\)</span> must be defined in the context.</p></li>
+<li><p>Let <span class="math notranslate nohighlight">\([t^\ast]\)</span> be the <a class="reference internal" href="../syntax/types.html#syntax-resulttype"><span class="std std-ref">result type</span></a> <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l]\)</span>.</p></li>
+<li><p>Then the instruction is valid with type <span class="math notranslate nohighlight">\([t^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\mathit{ht})]\)</span> for any <a class="reference internal" href="types.html#valid-heaptype"><span class="std std-ref">valid</span></a> <a class="reference internal" href="../syntax/types.html#syntax-heaptype"><span class="std std-ref">heap type</span></a> <span class="math notranslate nohighlight">\(\mathit{ht}\)</span>.</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+  C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l] = [t^\ast]
+  \qquad
+  C \href{../valid/types.html#valid-heaptype}{\vdash} \mathit{ht} \mathrel{\mbox{ok}}
+}{
+  C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}}~l : [t^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\mathit{ht})]
+}\]</div>
+</section>
+<section id="xref-syntax-instructions-syntax-instr-control-mathsf-br-on-non-null-l">
+<span id="valid-br-on-non-null"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_non\_null}}~l\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-br-on-non-null-l" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>The label <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l]\)</span> must be defined in the context.</p></li>
+<li><p>Let <span class="math notranslate nohighlight">\([{t'}^\ast]\)</span> be the <a class="reference internal" href="../syntax/types.html#syntax-resulttype"><span class="std std-ref">result type</span></a> <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l]\)</span>.</p></li>
+<li><p>The result type <span class="math notranslate nohighlight">\([{t'}^\ast]\)</span> must contain at least one type.</p></li>
+<li><p>Let the <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value type</span></a> <span class="math notranslate nohighlight">\(t_l\)</span> be the last element in the sequence <span class="math notranslate nohighlight">\({t'}^\ast\)</span>, and <span class="math notranslate nohighlight">\([t^\ast]\)</span> the remainder of the sequence preceding it.</p></li>
+<li><p>The value type <span class="math notranslate nohighlight">\(t_l\)</span> must be a reference type of the form <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}^?~\mathit{ht}\)</span>.</p></li>
+<li><p>Then the instruction is valid with type <span class="math notranslate nohighlight">\([t^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t^\ast]\)</span>.</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+  C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l] = [t^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\mathit{ht})]
+}{
+  C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_non\_null}}~l : [t^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\mathit{ht})] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t^\ast]
+}\]</div>
+</section>
 <section id="xref-syntax-instructions-syntax-instr-control-mathsf-return">
 <span id="valid-return"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{return}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-return" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -854,6 +898,19 @@ which is the case for functions not returning anything.</p>
   C.\href{../valid/conventions.html#context}{\mathsf{funcs}}[x] = [t_1^\ast] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t_2^\ast]
 }{
   C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call}}~x : [t_1^\ast] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t_2^\ast]
+}\]</div>
+</section>
+<section id="xref-syntax-instructions-syntax-instr-control-mathsf-call-ref">
+<span id="valid-call-ref"></span><h3><span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_ref}}\)</span><a class="headerlink" href="#xref-syntax-instructions-syntax-instr-control-mathsf-call-ref" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Let <span class="math notranslate nohighlight">\(x\)</span> be some <a class="reference internal" href="../syntax/modules.html#syntax-typeidx"><span class="std std-ref">type index</span></a> for which <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{types}}[x]\)</span> is a <a class="reference internal" href="../syntax/types.html#syntax-functype"><span class="std std-ref">function type</span></a> of the form <span class="math notranslate nohighlight">\([t_1^\ast] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t_2^\ast]\)</span>.</p></li>
+<li><p>Then the instruction is valid with type <span class="math notranslate nohighlight">\([t_1^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~x)] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t_2^\ast]\)</span>.</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+  C.\href{../valid/conventions.html#context}{\mathsf{types}}[x] = [t_1^\ast] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t_2^\ast]
+}{
+  C \href{../valid/instructions.html#valid-instr}{\vdash} \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_ref}} : [t_1^\ast~(\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~x)] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t_2^\ast]
 }\]</div>
 </section>
 <section id="xref-syntax-instructions-syntax-instr-control-mathsf-call-indirect-x-y">

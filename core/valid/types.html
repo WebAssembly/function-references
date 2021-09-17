@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Types &#8212; WebAssembly 1.1 + function-references (Draft 2021-09-15)</title>
+    <title>Types &#8212; WebAssembly 1.1 + function-references (Draft 2021-09-17)</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -168,51 +168,8 @@ However, restrictions apply to most other types, such as <a class="reference int
 }\]</div>
 </section>
 </section>
-<section id="result-types">
-<span id="valid-resulttype"></span><span id="index-4"></span><h2>Result Types<a class="headerlink" href="#result-types" title="Permalink to this headline">¶</a></h2>
-<section id="t-ast">
-<h3><span class="math notranslate nohighlight">\([t^\ast]\)</span><a class="headerlink" href="#t-ast" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>Each <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value type</span></a> <span class="math notranslate nohighlight">\(t_i\)</span> in the type sequence <span class="math notranslate nohighlight">\(t^\ast\)</span> must be <a class="reference internal" href="#valid-valtype"><span class="std std-ref">valid</span></a>.</p></li>
-<li><p>Then the result type is valid.</p></li>
-</ul>
-<div class="math notranslate nohighlight">
-\[\frac{
-  (C \href{../valid/types.html#valid-valtype}{\vdash} t \mathrel{\mbox{ok}})^\ast
-}{
-  C \href{../valid/types.html#valid-resulttype}{\vdash} [t^\ast] \mathrel{\mbox{ok}}
-}\]</div>
-</section>
-</section>
-<section id="limits">
-<span id="valid-limits"></span><span id="index-5"></span><h2>Limits<a class="headerlink" href="#limits" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="../syntax/types.html#syntax-limits"><span class="std std-ref">Limits</span></a> must have meaningful bounds that are within a given range.</p>
-<section id="xref-syntax-types-syntax-limits-mathsf-min-n-xref-syntax-types-syntax-limits-mathsf-max-m">
-<h3><span class="math notranslate nohighlight">\(\{ \href{../syntax/types.html#syntax-limits}{\mathsf{min}}~n, \href{../syntax/types.html#syntax-limits}{\mathsf{max}}~m^? \}\)</span><a class="headerlink" href="#xref-syntax-types-syntax-limits-mathsf-min-n-xref-syntax-types-syntax-limits-mathsf-max-m" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>The value of <span class="math notranslate nohighlight">\(n\)</span> must not be larger than <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
-<li><p>If the maximum <span class="math notranslate nohighlight">\(m^?\)</span> is not empty, then:</p>
-<ul>
-<li><p>Its value must not be larger than <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
-<li><p>Its value must not be smaller than <span class="math notranslate nohighlight">\(n\)</span>.</p></li>
-</ul>
-</li>
-<li><p>Then the limit is valid within range <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
-</ul>
-<div class="math notranslate nohighlight">
-\[\frac{
-  n \leq k
-  \qquad
-  (m \leq k)^?
-  \qquad
-  (n \leq m)^?
-}{
-  C \href{../valid/types.html#valid-limits}{\vdash} \{ \href{../syntax/types.html#syntax-limits}{\mathsf{min}}~n, \href{../syntax/types.html#syntax-limits}{\mathsf{max}}~m^? \} : k
-}\]</div>
-</section>
-</section>
 <section id="block-types">
-<span id="valid-blocktype"></span><span id="index-6"></span><h2>Block Types<a class="headerlink" href="#block-types" title="Permalink to this headline">¶</a></h2>
+<span id="valid-blocktype"></span><span id="index-4"></span><h2>Block Types<a class="headerlink" href="#block-types" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="../syntax/instructions.html#syntax-blocktype"><span class="std std-ref">Block types</span></a> may be expressed in one of two forms, both of which are converted to plain <a class="reference internal" href="../syntax/types.html#syntax-functype"><span class="std std-ref">function types</span></a> by the following rules.</p>
 <section id="id1">
 <h3><span class="math notranslate nohighlight">\(\href{../syntax/modules.html#syntax-typeidx}{\mathit{typeidx}}\)</span><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
@@ -238,6 +195,49 @@ However, restrictions apply to most other types, such as <a class="reference int
   (C \href{../valid/types.html#valid-valtype}{\vdash} \href{../syntax/types.html#syntax-valtype}{\mathit{valtype}} \mathrel{\mbox{ok}})^?
 }{
   C \href{../valid/types.html#valid-blocktype}{\vdash} [\href{../syntax/types.html#syntax-valtype}{\mathit{valtype}}^?] : [] \href{../syntax/types.html#syntax-functype}{\rightarrow} [\href{../syntax/types.html#syntax-valtype}{\mathit{valtype}}^?]
+}\]</div>
+</section>
+</section>
+<section id="result-types">
+<span id="valid-resulttype"></span><span id="index-5"></span><h2>Result Types<a class="headerlink" href="#result-types" title="Permalink to this headline">¶</a></h2>
+<section id="t-ast">
+<h3><span class="math notranslate nohighlight">\([t^\ast]\)</span><a class="headerlink" href="#t-ast" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Each <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value type</span></a> <span class="math notranslate nohighlight">\(t_i\)</span> in the type sequence <span class="math notranslate nohighlight">\(t^\ast\)</span> must be <a class="reference internal" href="#valid-valtype"><span class="std std-ref">valid</span></a>.</p></li>
+<li><p>Then the result type is valid.</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+  (C \href{../valid/types.html#valid-valtype}{\vdash} t \mathrel{\mbox{ok}})^\ast
+}{
+  C \href{../valid/types.html#valid-resulttype}{\vdash} [t^\ast] \mathrel{\mbox{ok}}
+}\]</div>
+</section>
+</section>
+<section id="limits">
+<span id="valid-limits"></span><span id="index-6"></span><h2>Limits<a class="headerlink" href="#limits" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="../syntax/types.html#syntax-limits"><span class="std std-ref">Limits</span></a> must have meaningful bounds that are within a given range.</p>
+<section id="xref-syntax-types-syntax-limits-mathsf-min-n-xref-syntax-types-syntax-limits-mathsf-max-m">
+<h3><span class="math notranslate nohighlight">\(\{ \href{../syntax/types.html#syntax-limits}{\mathsf{min}}~n, \href{../syntax/types.html#syntax-limits}{\mathsf{max}}~m^? \}\)</span><a class="headerlink" href="#xref-syntax-types-syntax-limits-mathsf-min-n-xref-syntax-types-syntax-limits-mathsf-max-m" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>The value of <span class="math notranslate nohighlight">\(n\)</span> must not be larger than <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
+<li><p>If the maximum <span class="math notranslate nohighlight">\(m^?\)</span> is not empty, then:</p>
+<ul>
+<li><p>Its value must not be larger than <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
+<li><p>Its value must not be smaller than <span class="math notranslate nohighlight">\(n\)</span>.</p></li>
+</ul>
+</li>
+<li><p>Then the limit is valid within range <span class="math notranslate nohighlight">\(k\)</span>.</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+  n \leq k
+  \qquad
+  (m \leq k)^?
+  \qquad
+  (n \leq m)^?
+}{
+  C \href{../valid/types.html#valid-limits}{\vdash} \{ \href{../syntax/types.html#syntax-limits}{\mathsf{min}}~n, \href{../syntax/types.html#syntax-limits}{\mathsf{max}}~m^? \} : k
 }\]</div>
 </section>
 </section>
