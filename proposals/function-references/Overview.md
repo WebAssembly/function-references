@@ -199,6 +199,33 @@ The following rules, now defined in terms of heap types, replace and extend the 
 * TODO: Table definitions with a type that is not defaultable must have an initialiser value. (Imports are not affected.)
 
 
+#### Local Types
+
+* Locals are now types in the context with types of the following form:
+  - `localtype ::= set? <valtype>`
+  - the flag `set` records that the local has been initialized
+  - all locals with non-defaultable type start out unset
+
+
+#### Instruction Types
+
+* Instructions and instruction sequences are now typed with types of the following form:
+  - `instrtype ::= <functype> <localidx>*`
+  - the local indices record which locals have been set by the instructions
+  - most typing rules except those for locals and for instruction sequences remain unchanged, since the index list is empty
+
+* There is a natural notion of subtyping on instruction types:
+  - `[t1*] -> [t2*] x1*  <:  [t3*] -> [t4*] x2*`
+    - iff `t1* = t0* t1'*`
+    - and `t2* = t0* t2'*`
+    - and `[t1'*] -> [t2'*] <: [t3*] -> [t4*]*`
+    - and `{x2*} subset {x1*}`
+
+* Block types are instruction types with empty index set.
+
+Note: Extending block types to with index sets is a possible extension.
+
+
 ### Instructions
 
 #### Functions
@@ -274,6 +301,44 @@ where `(t.default)` is `(t.const 0)` for numeric types `t`, and `(ref.null)` for
 The rule also implies that let-bound locals are mutable.
 
 Like all other block instructions, `let` binds a label
+
+
+#### Locals
+
+Typing of local instructions is updated to account for uninitialized locals.
+
+* `local.get $x`
+  - `local.get $x : [] -> [t]`
+    - iff `$x : set t`
+
+* `local.set $x`
+  - `local.set $x : [t] -> [] $x`
+    - iff `$x : set? t`
+
+* `local.tee $x`
+  - `local.tee $x : [t] -> [t] $x`
+    - iff `$x : set? t`
+
+Note: These typing rules do not try to suppress indices for locals that have already been set, but an implementation could.
+
+
+#### Instruction sequences
+
+Typing of instruction sequences is updated to account for initialization of locals.
+
+* `instr1 instr*`
+  - `instr1 instr* : [t1*] -> [t3*] x1* x2*`
+    - iff `instr1 : [t1*] -> [t2*] x1*`
+    - and `instr* : [t2*] -> [t3*] x2*` under a context where `x1*` are changed to `set`
+
+Note: This typing rules does not try to eliminate duplicate indices, but an implementation could.
+
+A weakening rule for instructions allows to go to a supertype:
+
+* `instr`
+  - `instr : [t1*] -> [t2*] x*`
+    - iff `instr : [t1'*] -> [t2'*] x'*`
+    - and `[t1'*] -> [t2'*] x'*  <:  [t1*] -> [t2*] x*`
 
 
 ### Tables

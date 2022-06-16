@@ -1,8 +1,10 @@
 (* Types *)
 
+type type_idx = int32
+type local_idx = int32
 type name = int list
 
-and syn_var = int32
+and syn_var = type_idx
 and sem_var = def_type Lib.Promise.t
 and var = SynVar of syn_var | SemVar of sem_var
 
@@ -17,6 +19,7 @@ and value_type =
   NumType of num_type | VecType of vec_type | RefType of ref_type | BotType
 
 and result_type = value_type list
+and instr_type = result_type * local_idx list
 and func_type = FuncType of result_type * result_type
 and def_type = FuncDefType of func_type
 

@@ -41,10 +41,6 @@ let lookup category list x =
   try Lib.List32.nth list x.it with Failure _ ->
     error x.at ("unknown " ^ category ^ " " ^ I32.to_string_u x.it)
 
-let replace category list x y =
-  try Lib.List32.replace list x.it y with Failure _ ->
-    error x.at ("unknown " ^ category ^ " " ^ I32.to_string_u x.it)
-
 let type_ (c : context) x = lookup "type" c.types x
 let func (c : context) x = lookup "function" c.funcs x
 let table (c : context) x = lookup "table" c.tables x
@@ -55,8 +51,16 @@ let data (c : context) x = lookup "data segment" c.datas x
 let local (c : context) x = lookup "local" c.locals x
 let label (c : context) x = lookup "label" c.labels x
 
-let replace_local (c : context) x y =
-  {c with locals = replace "local" c.locals x y}
+let replace category list x y =
+  try Lib.List32.replace list x.it y with Failure _ ->
+    error x.at ("unknown " ^ category ^ " " ^ I32.to_string_u x.it)
+
+let init_local (c : context) x =
+  let LocalType (t, _) = local c x in
+  {c with locals = replace "local" c.locals x (LocalType (t, Initialized))}
+
+let init_locals (c : context) xs =
+  List.fold_left init_local c xs
 
 let func_type (c : context) x =
   match type_ c x with
@@ -146,7 +150,8 @@ let check_def_type (c : context) (dt : def_type) at =
 
 type ellipses = NoEllipses | Ellipses
 type infer_result_type = ellipses * value_type list
-type op_type = {ins : infer_result_type; outs : infer_result_type}
+type infer_func_type = {ins : infer_result_type; outs : infer_result_type}
+type infer_instr_type = infer_func_type * idx list
 
 let stack ts = (NoEllipses, ts)
 let (-->) ts1 ts2 = {ins = NoEllipses, ts1; outs = NoEllipses, ts2}
@@ -314,45 +319,45 @@ let check_local (c : context) (defaulted : bool) (t : local) : local_type =
     then Initialized else Uninitialized
   in LocalType (t.it, init)
 
-let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type * context =
+let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_instr_type =
   match e.it with
   | Unreachable ->
-    [] -->... [], c
+    [] -->... [], []
 
   | Nop ->
-    [] --> [], c
+    [] --> [], []
 
   | Drop ->
-    [peek 0 s] --> [], c
+    [peek 0 s] --> [], []
 
   | Select None ->
     let t = peek 1 s in
     require (is_num_type t || is_vec_type t) e.at
       ("type mismatch: instruction requires numeric or vector type" ^
        " but stack has " ^ string_of_value_type t);
-    [t; t; NumType I32Type] --> [t], c
+    [t; t; NumType I32Type] --> [t], []
 
   | Select (Some ts) ->
     require (List.length ts = 1) e.at
       "invalid result arity other than 1 is not (yet) allowed";
     check_result_type c ts e.at;
-    (ts @ ts @ [NumType I32Type]) --> ts, c
+    (ts @ ts @ [NumType I32Type]) --> ts, []
 
   | Block (bt, es) ->
     let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
     check_block {c with labels = ts2 :: c.labels} es ft e.at;
-    ts1 --> ts2, c
+    ts1 --> ts2, []
 
   | Loop (bt, es) ->
     let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
     check_block {c with labels = ts1 :: c.labels} es ft e.at;
-    ts1 --> ts2, c
+    ts1 --> ts2, []
 
   | If (bt, es1, es2) ->
     let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
     check_block {c with labels = ts2 :: c.labels} es1 ft e.at;
     check_block {c with labels = ts2 :: c.labels} es2 ft e.at;
-    (ts1 @ [NumType I32Type]) --> ts2, c
+    (ts1 @ [NumType I32Type]) --> ts2, []
 
   | Let (bt, locals, es) ->
     let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
@@ -363,25 +368,25 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
         locals = ts @ c.locals;
       }
     in check_block c' es ft e.at;
-    (ts1 @ List.map Source.it locals) --> ts2, c
+    (ts1 @ List.map Source.it locals) --> ts2, []
 
   | Br x ->
-    label c x -->... [], c
+    label c x -->... [], []
 
   | BrIf x ->
-    (label c x @ [NumType I32Type]) --> label c x, c
+    (label c x @ [NumType I32Type]) --> label c x, []
 
   | BrTable (xs, x) ->
     let n = List.length (label c x) in
     let ts = Lib.List.table n (fun i -> peek (n - i) s) in
     check_stack c ts (label c x) x.at;
     List.iter (fun x' -> check_stack c ts (label c x') x'.at) xs;
-    (ts @ [NumType I32Type]) -->... [], c
+    (ts @ [NumType I32Type]) -->... [], []
 
   | BrOnNull x ->
     let (_, t) = peek_ref 0 s e.at in
     (label c x @ [RefType (Nullable, t)]) -->
-      (label c x @ [RefType (NonNullable, t)]), c
+      (label c x @ [RefType (NonNullable, t)]), []
 
   | BrOnNonNull x ->
     let (_, ht) as rt = peek_ref 0 s e.at in
@@ -393,22 +398,22 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
     require (match_value_type c.types [] t' t) e.at
       ("type mismatch: instruction requires type " ^ string_of_value_type t' ^
        " but label has " ^ string_of_result_type (label c x));
-    (ts0 @ [RefType rt]) --> ts0, c
+    (ts0 @ [RefType rt]) --> ts0, []
 
   | Return ->
-    c.results -->... [], c
+    c.results -->... [], []
 
   | Call x ->
     let FuncType (ts1, ts2) = func c x in
-    ts1 --> ts2, c
+    ts1 --> ts2, []
 
   | CallRef ->
     (match peek_ref 0 s e.at with
     | (nul, DefHeapType (SynVar x)) ->
       let FuncType (ts1, ts2) = func_type c (x @@ e.at) in
-      (ts1 @ [RefType (nul, DefHeapType (SynVar x))]) --> ts2, c
+      (ts1 @ [RefType (nul, DefHeapType (SynVar x))]) --> ts2, []
     | (_, BotHeapType) as rt ->
-      [RefType rt] -->... [], c
+      [RefType rt] -->... [], []
     | rt ->
       error e.at
         ("type mismatch: instruction requires function reference type" ^
@@ -421,7 +426,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
     require (match_ref_type c.types [] t (Nullable, FuncHeapType)) x.at
       ("type mismatch: instruction requires table of function type" ^
        " but table has element type " ^ string_of_ref_type t);
-    (ts1 @ [NumType I32Type]) --> ts2, c
+    (ts1 @ [NumType I32Type]) --> ts2, []
 
   | ReturnCallRef ->
     (match peek_ref 0 s e.at with
@@ -431,9 +436,9 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
         ("type mismatch: current function requires result type " ^
          string_of_result_type c.results ^
          " but callee returns " ^ string_of_result_type ts2);
-      (ts1 @ [RefType (nul, DefHeapType (SynVar x))]) -->... [], c
+      (ts1 @ [RefType (nul, DefHeapType (SynVar x))]) -->... [], []
     | (_, BotHeapType) as rt ->
-      [RefType rt] -->... [], c
+      [RefType rt] -->... [], []
     | rt ->
       error e.at
         ("type mismatch: instruction requires function reference type" ^
@@ -451,9 +456,9 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
       require (match_func_type c.types [] (FuncType (ts12, ts2)) ft') e.at
         "type mismatch in function type";
       (ts11 @ [RefType (nul, DefHeapType (SynVar y))]) -->
-        [RefType (NonNullable, DefHeapType (SynVar x.it))], c
+        [RefType (NonNullable, DefHeapType (SynVar x.it))], []
     | (_, BotHeapType) as rt ->
-      [RefType rt] -->.. [RefType (NonNullable, DefHeapType (SynVar x.it))], c
+      [RefType rt] -->.. [RefType (NonNullable, DefHeapType (SynVar x.it))], []
     | rt ->
       error e.at
         ("type mismatch: instruction requires function reference type" ^
@@ -463,44 +468,44 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
   | LocalGet x ->
     let LocalType (t, init) = local c x in
     require (init = Initialized) x.at "local is uninitialized";
-    [] --> [t], c
+    [] --> [t], []
 
   | LocalSet x ->
     let LocalType (t, _) = local c x in
-    [t] --> [], replace_local c x (LocalType (t, Initialized))
+    [t] --> [], [x]
 
   | LocalTee x ->
     let LocalType (t, _) = local c x in
-    [t] --> [t], replace_local c x (LocalType (t, Initialized))
+    [t] --> [t], [x]
 
   | GlobalGet x ->
     let GlobalType (t, _mut) = global c x in
-    [] --> [t], c
+    [] --> [t], []
 
   | GlobalSet x ->
     let GlobalType (t, mut) = global c x in
     require (mut = Mutable) x.at "global is immutable";
-    [t] --> [], c
+    [t] --> [], []
 
   | TableGet x ->
     let TableType (_lim, t) = table c x in
-    [NumType I32Type] --> [RefType t], c
+    [NumType I32Type] --> [RefType t], []
 
   | TableSet x ->
     let TableType (_lim, t) = table c x in
-    [NumType I32Type; RefType t] --> [], c
+    [NumType I32Type; RefType t] --> [], []
 
   | TableSize x ->
     let _tt = table c x in
-    [] --> [NumType I32Type], c
+    [] --> [NumType I32Type], []
 
   | TableGrow x ->
     let TableType (_lim, t) = table c x in
-    [RefType t; NumType I32Type] --> [NumType I32Type], c
+    [RefType t; NumType I32Type] --> [NumType I32Type], []
 
   | TableFill x ->
     let TableType (_lim, t) = table c x in
-    [NumType I32Type; RefType t; NumType I32Type] --> [], c
+    [NumType I32Type; RefType t; NumType I32Type] --> [], []
 
   | TableCopy (x, y) ->
     let TableType (_lim1, t1) = table c x in
@@ -508,7 +513,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
     require (match_ref_type c.types [] t2 t1) x.at
       ("type mismatch: source element type " ^ string_of_ref_type t1 ^
        " does not match destination element type " ^ string_of_ref_type t2);
-    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], c
+    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], []
 
   | TableInit (x, y) ->
     let TableType (_lim1, t1) = table c x in
@@ -516,192 +521,192 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
     require (match_ref_type c.types [] t2 t1) x.at
       ("type mismatch: element segment's type " ^ string_of_ref_type t1 ^
        " does not match table's element type " ^ string_of_ref_type t2);
-    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], c
+    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], []
 
   | ElemDrop x ->
     ignore (elem c x);
-    [] --> [], c
+    [] --> [], []
 
   | Load memop ->
     check_memop c memop num_size (Lib.Option.map fst) e.at;
-    [NumType I32Type] --> [NumType memop.ty], c
+    [NumType I32Type] --> [NumType memop.ty], []
 
   | Store memop ->
     check_memop c memop num_size (fun sz -> sz) e.at;
-    [NumType I32Type; NumType memop.ty] --> [], c
+    [NumType I32Type; NumType memop.ty] --> [], []
 
   | VecLoad memop ->
     check_memop c memop vec_size (Lib.Option.map fst) e.at;
-    [NumType I32Type] --> [VecType memop.ty], c
+    [NumType I32Type] --> [VecType memop.ty], []
 
   | VecStore memop ->
     check_memop c memop vec_size (fun _ -> None) e.at;
-    [NumType I32Type; VecType memop.ty] --> [], c
+    [NumType I32Type; VecType memop.ty] --> [], []
 
   | VecLoadLane (memop, i) ->
     check_memop c memop vec_size (fun sz -> Some sz) e.at;
     require (i < vec_size memop.ty / packed_size memop.pack) e.at
       "invalid lane index";
-    [NumType I32Type; VecType memop.ty] -->  [VecType memop.ty], c
+    [NumType I32Type; VecType memop.ty] -->  [VecType memop.ty], []
 
   | VecStoreLane (memop, i) ->
     check_memop c memop vec_size (fun sz -> Some sz) e.at;
     require (i < vec_size memop.ty / packed_size memop.pack) e.at
       "invalid lane index";
-    [NumType I32Type; VecType memop.ty] -->  [], c
+    [NumType I32Type; VecType memop.ty] -->  [], []
 
   | MemorySize ->
     let _mt = memory c (0l @@ e.at) in
-    [] --> [NumType I32Type], c
+    [] --> [NumType I32Type], []
 
   | MemoryGrow ->
     let _mt = memory c (0l @@ e.at) in
-    [NumType I32Type] --> [NumType I32Type], c
+    [NumType I32Type] --> [NumType I32Type], []
 
   | MemoryFill ->
     ignore (memory c (0l @@ e.at));
-    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], c
+    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], []
 
   | MemoryCopy ->
     ignore (memory c (0l @@ e.at));
-    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], c
+    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], []
 
   | MemoryInit x ->
     ignore (memory c (0l @@ e.at));
     ignore (data c x);
-    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], c
+    [NumType I32Type; NumType I32Type; NumType I32Type] --> [], []
 
   | DataDrop x ->
     ignore (data c x);
-    [] --> [], c
+    [] --> [], []
 
   | RefNull t ->
     check_heap_type c t e.at;
-    [] --> [RefType (Nullable, t)], c
+    [] --> [RefType (Nullable, t)], []
 
   | RefIsNull ->
     let (_, t) = peek_ref 0 s e.at in
-    [RefType (Nullable, t)] --> [NumType I32Type], c
+    [RefType (Nullable, t)] --> [NumType I32Type], []
 
   | RefAsNonNull ->
     let (_, t) = peek_ref 0 s e.at in
-    [RefType (Nullable, t)] --> [RefType (NonNullable, t)], c
+    [RefType (Nullable, t)] --> [RefType (NonNullable, t)], []
 
   | RefFunc x ->
     let ft = func c x in
     let y = Lib.Option.force (Lib.List32.index_of (FuncDefType ft) c.types) in
     refer_func c x;
-    [] --> [RefType (NonNullable, DefHeapType (SynVar y))], c
+    [] --> [RefType (NonNullable, DefHeapType (SynVar y))], []
 
   | Const v ->
     let t = NumType (type_num v.it) in
-    [] --> [t], c
+    [] --> [t], []
 
   | Test testop ->
     let t = NumType (type_num testop) in
-    [t] --> [NumType I32Type], c
+    [t] --> [NumType I32Type], []
 
   | Compare relop ->
     let t = NumType (type_num relop) in
-    [t; t] --> [NumType I32Type], c
+    [t; t] --> [NumType I32Type], []
 
   | Unary unop ->
     check_unop unop e.at;
     let t = NumType (type_num unop) in
-    [t] --> [t], c
+    [t] --> [t], []
 
   | Binary binop ->
     let t = NumType (type_num binop) in
-    [t; t] --> [t], c
+    [t; t] --> [t], []
 
   | Convert cvtop ->
     let t1, t2 = type_cvtop e.at cvtop in
-    [NumType t1] --> [NumType t2], c
+    [NumType t1] --> [NumType t2], []
 
   | VecConst v ->
     let t = VecType (type_vec v.it) in
-    [] --> [t], c
+    [] --> [t], []
 
   | VecTest testop ->
     let t = VecType (type_vec testop) in
-    [t] --> [NumType I32Type], c
+    [t] --> [NumType I32Type], []
 
   | VecUnary unop ->
     let t = VecType (type_vec unop) in
-    [t] --> [t], c
+    [t] --> [t], []
 
   | VecBinary binop ->
     check_vec_binop binop e.at;
     let t = VecType (type_vec binop) in
-    [t; t] --> [t], c
+    [t; t] --> [t], []
 
   | VecCompare relop ->
     let t = VecType (type_vec relop) in
-    [t; t] --> [t], c
+    [t; t] --> [t], []
 
   | VecConvert cvtop ->
     let t = VecType (type_vec cvtop) in
-    [t] --> [t], c
+    [t] --> [t], []
 
   | VecShift shiftop ->
     let t = VecType (type_vec shiftop) in
-    [t; NumType I32Type] --> [VecType V128Type], c
+    [t; NumType I32Type] --> [VecType V128Type], []
 
   | VecBitmask bitmaskop ->
     let t = VecType (type_vec bitmaskop) in
-    [t] --> [NumType I32Type], c
+    [t] --> [NumType I32Type], []
 
   | VecTestBits vtestop ->
     let t = VecType (type_vec vtestop) in
-    [t] --> [NumType I32Type], c
+    [t] --> [NumType I32Type], []
 
   | VecUnaryBits vunop ->
     let t = VecType (type_vec vunop) in
-    [t] --> [t], c
+    [t] --> [t], []
 
   | VecBinaryBits vbinop ->
     let t = VecType (type_vec vbinop) in
-    [t; t] --> [t], c
+    [t; t] --> [t], []
 
   | VecTernaryBits vternop ->
     let t = VecType (type_vec vternop) in
-    [t; t; t] --> [t], c
+    [t; t; t] --> [t], []
 
   | VecSplat splatop ->
     let t1 = type_vec_lane splatop in
     let t2 = VecType (type_vec splatop) in
-    [NumType t1] --> [t2], c
+    [NumType t1] --> [t2], []
 
   | VecExtract extractop ->
     let t = VecType (type_vec extractop) in
     let t2 = type_vec_lane extractop in
     require (lane_extractop extractop < num_lanes extractop) e.at
       "invalid lane index";
-    [t] --> [NumType t2], c
+    [t] --> [NumType t2], []
 
   | VecReplace replaceop ->
     let t = VecType (type_vec replaceop) in
     let t2 = type_vec_lane replaceop in
     require (lane_replaceop replaceop < num_lanes replaceop) e.at
       "invalid lane index";
-    [t; NumType t2] --> [t], c
+    [t; NumType t2] --> [t], []
 
 and check_seq (c : context) (s : infer_result_type) (es : instr list)
-  : infer_result_type * context =
+  : infer_result_type * idx list =
   match es with
   | [] ->
-    s, c
+    s, []
 
   | _ ->
     let es', e = Lib.List.split_last es in
-    let s', c' = check_seq c s es' in
-    let {ins; outs}, c'' = check_instr c' e s' in
-    push c' outs (pop c' ins s' e.at), c''
+    let s', xs = check_seq c s es' in
+    let {ins; outs}, xs' = check_instr (init_locals c xs) e s' in
+    push c outs (pop c ins s' e.at), xs @ xs'
 
 and check_block (c : context) (es : instr list) (ft : func_type) at =
   let FuncType (ts1, ts2) = ft in
-  let s, c' = check_seq c (stack ts1) es in
-  let s' = pop c' (stack ts2) s at in
+  let s, xs = check_seq c (stack ts1) es in
+  let s' = pop c (stack ts2) s at in
   require (snd s' = []) at
     ("type mismatch: block requires " ^ string_of_result_type ts2 ^
      " but stack has " ^ string_of_result_type (snd s))
