@@ -532,23 +532,23 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
 
   | VecLoad memop ->
     check_memop c memop vec_size (Lib.Option.map fst) e.at;
-    [NumType I32Type] --> [VecType memop.ty]
+    [NumType I32Type] --> [VecType memop.ty], c
 
   | VecStore memop ->
     check_memop c memop vec_size (fun _ -> None) e.at;
-    [NumType I32Type; VecType memop.ty] --> []
+    [NumType I32Type; VecType memop.ty] --> [], c
 
   | VecLoadLane (memop, i) ->
     check_memop c memop vec_size (fun sz -> Some sz) e.at;
     require (i < vec_size memop.ty / packed_size memop.pack) e.at
       "invalid lane index";
-    [NumType I32Type; VecType memop.ty] -->  [VecType memop.ty]
+    [NumType I32Type; VecType memop.ty] -->  [VecType memop.ty], c
 
   | VecStoreLane (memop, i) ->
     check_memop c memop vec_size (fun sz -> Some sz) e.at;
     require (i < vec_size memop.ty / packed_size memop.pack) e.at
       "invalid lane index";
-    [NumType I32Type; VecType memop.ty] -->  []
+    [NumType I32Type; VecType memop.ty] -->  [], c
 
   | MemorySize ->
     let _mt = memory c (0l @@ e.at) in
@@ -620,71 +620,71 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
 
   | VecConst v ->
     let t = VecType (type_vec v.it) in
-    [] --> [t]
+    [] --> [t], c
 
   | VecTest testop ->
     let t = VecType (type_vec testop) in
-    [t] --> [NumType I32Type]
+    [t] --> [NumType I32Type], c
 
   | VecUnary unop ->
     let t = VecType (type_vec unop) in
-    [t] --> [t]
+    [t] --> [t], c
 
   | VecBinary binop ->
     check_vec_binop binop e.at;
     let t = VecType (type_vec binop) in
-    [t; t] --> [t]
+    [t; t] --> [t], c
 
   | VecCompare relop ->
     let t = VecType (type_vec relop) in
-    [t; t] --> [t]
+    [t; t] --> [t], c
 
   | VecConvert cvtop ->
     let t = VecType (type_vec cvtop) in
-    [t] --> [t]
+    [t] --> [t], c
 
   | VecShift shiftop ->
     let t = VecType (type_vec shiftop) in
-    [t; NumType I32Type] --> [VecType V128Type]
+    [t; NumType I32Type] --> [VecType V128Type], c
 
   | VecBitmask bitmaskop ->
     let t = VecType (type_vec bitmaskop) in
-    [t] --> [NumType I32Type]
+    [t] --> [NumType I32Type], c
 
   | VecTestBits vtestop ->
     let t = VecType (type_vec vtestop) in
-    [t] --> [NumType I32Type]
+    [t] --> [NumType I32Type], c
 
   | VecUnaryBits vunop ->
     let t = VecType (type_vec vunop) in
-    [t] --> [t]
+    [t] --> [t], c
 
   | VecBinaryBits vbinop ->
     let t = VecType (type_vec vbinop) in
-    [t; t] --> [t]
+    [t; t] --> [t], c
 
   | VecTernaryBits vternop ->
     let t = VecType (type_vec vternop) in
-    [t; t; t] --> [t]
+    [t; t; t] --> [t], c
 
   | VecSplat splatop ->
     let t1 = type_vec_lane splatop in
     let t2 = VecType (type_vec splatop) in
-    [NumType t1] --> [t2]
+    [NumType t1] --> [t2], c
 
   | VecExtract extractop ->
     let t = VecType (type_vec extractop) in
     let t2 = type_vec_lane extractop in
     require (lane_extractop extractop < num_lanes extractop) e.at
       "invalid lane index";
-    [t] --> [NumType t2]
+    [t] --> [NumType t2], c
 
   | VecReplace replaceop ->
     let t = VecType (type_vec replaceop) in
     let t2 = type_vec_lane replaceop in
     require (lane_replaceop replaceop < num_lanes replaceop) e.at
       "invalid lane index";
-    [t; NumType t2] --> [t]
+    [t; NumType t2] --> [t], c
 
 and check_seq (c : context) (s : infer_result_type) (es : instr list)
   : infer_result_type * context =

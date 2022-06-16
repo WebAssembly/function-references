@@ -139,16 +139,16 @@ let default_num = function
   | F64Type -> Some (Num (F64 F64.zero))
 
 let default_vec = function
-  | V128Type -> V128 V128.zero
+  | V128Type -> Some (Vec (V128 V128.zero))
 
 let default_ref = function
   | (Nullable, t) -> Some (Ref (NullRef t))
   | (NonNullable, _) -> None
 
 let default_value = function
-  | NumType t' -> Num (default_num t')
-  | VecType t' -> Vec (default_vec t')
-  | RefType t' -> Ref (default_ref t')
+  | NumType t' -> default_num t'
+  | VecType t' -> default_vec t'
+  | RefType t' -> default_ref t'
   | BotType -> assert false
 
 
