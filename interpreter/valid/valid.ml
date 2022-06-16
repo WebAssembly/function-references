@@ -18,7 +18,7 @@ let require b at s = if not b then error at s
 type context =
 {
   types : def_type list;
-  funcs : syn_var list;
+  funcs : func_type list;
   tables : table_type list;
   memories : memory_type list;
   globals : global_type list;
@@ -46,7 +46,7 @@ let replace category list x y =
     error x.at ("unknown " ^ category ^ " " ^ I32.to_string_u x.it)
 
 let type_ (c : context) x = lookup "type" c.types x
-let func_var (c : context) x = lookup "function" c.funcs x
+let func (c : context) x = lookup "function" c.funcs x
 let table (c : context) x = lookup "table" c.tables x
 let memory (c : context) x = lookup "memory" c.memories x
 let global (c : context) x = lookup "global" c.globals x
@@ -61,8 +61,6 @@ let replace_local (c : context) x y =
 let func_type (c : context) x =
   match type_ c x with
   | FuncDefType ft -> ft
-
-let func (c : context) x = func_type c (func_var c x @@ x.at)
 
 let refer category (s : Free.Set.t) x =
   if not (Free.Set.mem x.it s) then
@@ -86,6 +84,9 @@ let check_limits {min; max} range at msg =
 let check_num_type (c : context) (t : num_type) at =
   ()
 
+let check_vec_type (c : context) (t : vec_type) at =
+  ()
+
 let check_heap_type (c : context) (t : heap_type) at =
   match t with
   | FuncHeapType | ExternHeapType -> ()
@@ -99,6 +100,7 @@ let check_ref_type (c : context) (t : ref_type) at =
 let check_value_type (c : context) (t : value_type) at =
   match t with
   | NumType t' -> check_num_type c t' at
+  | VecType t' -> check_vec_type c t' at
   | RefType t' -> check_ref_type c t' at
   | BotType -> ()
 
@@ -129,9 +131,6 @@ let check_def_type (c : context) (dt : def_type) at =
   match dt with
   | FuncDefType ft -> check_func_type c ft at
 
-
-let check_type (c : context) (t : type_) =
-  check_def_type c t.it t.at
 
 
 (* Stack typing *)
@@ -177,13 +176,6 @@ let push c (ell1, ts1) (ell2, ts2) =
 let peek i (ell, ts) =
   try List.nth (List.rev ts) i with Failure _ -> BotType
 
-let peek_num i (ell, ts) at =
-  let t = peek i (ell, ts) in
-  require (is_num_type t) at
-    ("type mismatch: instruction requires numeric type" ^
-     " but stack has " ^ string_of_value_type t);
-  t
-
 let peek_ref i (ell, ts) at =
   match peek i (ell, ts) with
   | RefType rt -> rt
@@ -197,10 +189,9 @@ let peek_ref i (ell, ts) at =
 (* Type Synthesis *)
 
 let type_num = Value.type_of_num
-let type_unop = Value.type_of_num
-let type_binop = Value.type_of_num
-let type_testop = Value.type_of_num
-let type_relop = Value.type_of_num
+let type_vec = Value.type_of_vec
+let type_vec_lane = function
+  | Value.V128 laneop -> V128.type_of_lane laneop
 
 let type_cvtop at = function
   | Value.I32 cvtop ->
@@ -238,25 +229,51 @@ let type_cvtop at = function
     | DemoteF64 -> error at "invalid conversion"
     ), F64Type
 
+let num_lanes = function
+  | Value.V128 laneop -> V128.num_lanes laneop
+
+let lane_extractop = function
+  | Value.V128 extractop ->
+    let open V128 in let open V128Op in
+    match extractop with
+    | I8x16 (Extract (i, _)) | I16x8 (Extract (i, _))
+    | I32x4 (Extract (i, _)) | I64x2 (Extract (i, _))
+    | F32x4 (Extract (i, _)) | F64x2 (Extract (i, _)) -> i
+
+let lane_replaceop = function
+  | Value.V128 replaceop ->
+    let open V128 in let open V128Op in
+    match replaceop with
+    | I8x16 (Replace i) | I16x8 (Replace i)
+    | I32x4 (Replace i) | I64x2 (Replace i)
+    | F32x4 (Replace i) | F64x2 (Replace i) -> i
+
 
 (* Expressions *)
 
-let check_pack sz t at =
-  require (packed_size sz < size t) at "invalid sign extension"
+let check_pack sz t_sz at =
+  require (packed_size sz < t_sz) at "invalid sign extension"
 
 let check_unop unop at =
   match unop with
   | Value.I32 (IntOp.ExtendS sz) | Value.I64 (IntOp.ExtendS sz) ->
-    check_pack sz (Value.type_of_num unop) at
+    check_pack sz (num_size (Value.type_of_num unop)) at
   | _ -> ()
 
-let check_memop (c : context) (memop : 'a memop) get_sz at =
+let check_vec_binop binop at =
+  match binop with
+  | Value.(V128 (V128.I8x16 (V128Op.Shuffle is))) ->
+    if List.exists ((<=) 32) is then
+      error at "invalid lane index"
+  | _ -> ()
+
+let check_memop (c : context) (memop : ('t, 's) memop) ty_size get_sz at =
   let _mt = memory c (0l @@ at) in
   let size =
-    match get_sz memop.sz with
-    | None -> size memop.ty
+    match get_sz memop.pack with
+    | None -> ty_size memop.ty
     | Some sz ->
-      check_pack sz memop.ty at;
+      check_pack sz (ty_size memop.ty) at;
       packed_size sz
   in
   require (1 lsl memop.align <= size) at
@@ -309,11 +326,15 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
     [peek 0 s] --> [], c
 
   | Select None ->
-    let t = peek_num 1 s e.at in
+    let t = peek 1 s in
+    require (is_num_type t || is_vec_type t) e.at
+      ("type mismatch: instruction requires numeric or vector type" ^
+       " but stack has " ^ string_of_value_type t);
     [t; t; NumType I32Type] --> [t], c
 
   | Select (Some ts) ->
-    require (List.length ts = 1) e.at "invalid result arity other than 1 is not (yet) allowed";
+    require (List.length ts = 1) e.at
+      "invalid result arity other than 1 is not (yet) allowed";
     check_result_type c ts e.at;
     (ts @ ts @ [NumType I32Type]) --> ts, c
 
@@ -502,12 +523,32 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
     [] --> [], c
 
   | Load memop ->
-    check_memop c memop (Lib.Option.map fst) e.at;
+    check_memop c memop num_size (Lib.Option.map fst) e.at;
     [NumType I32Type] --> [NumType memop.ty], c
 
   | Store memop ->
-    check_memop c memop (fun sz -> sz) e.at;
+    check_memop c memop num_size (fun sz -> sz) e.at;
     [NumType I32Type; NumType memop.ty] --> [], c
+
+  | VecLoad memop ->
+    check_memop c memop vec_size (Lib.Option.map fst) e.at;
+    [NumType I32Type] --> [VecType memop.ty]
+
+  | VecStore memop ->
+    check_memop c memop vec_size (fun _ -> None) e.at;
+    [NumType I32Type; VecType memop.ty] --> []
+
+  | VecLoadLane (memop, i) ->
+    check_memop c memop vec_size (fun sz -> Some sz) e.at;
+    require (i < vec_size memop.ty / packed_size memop.pack) e.at
+      "invalid lane index";
+    [NumType I32Type; VecType memop.ty] -->  [VecType memop.ty]
+
+  | VecStoreLane (memop, i) ->
+    check_memop c memop vec_size (fun sz -> Some sz) e.at;
+    require (i < vec_size memop.ty / packed_size memop.pack) e.at
+      "invalid lane index";
+    [NumType I32Type; VecType memop.ty] -->  []
 
   | MemorySize ->
     let _mt = memory c (0l @@ e.at) in
@@ -547,7 +588,8 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
     [RefType (Nullable, t)] --> [RefType (NonNullable, t)], c
 
   | RefFunc x ->
-    let y = func_var c x in
+    let ft = func c x in
+    let y = Lib.Option.force (Lib.List32.index_of (FuncDefType ft) c.types) in
     refer_func c x;
     [] --> [RefType (NonNullable, DefHeapType (SynVar y))], c
 
@@ -556,25 +598,93 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : op_type 
     [] --> [t], c
 
   | Test testop ->
-    let t = NumType (type_testop testop) in
+    let t = NumType (type_num testop) in
     [t] --> [NumType I32Type], c
 
   | Compare relop ->
-    let t = NumType (type_relop relop) in
+    let t = NumType (type_num relop) in
     [t; t] --> [NumType I32Type], c
 
   | Unary unop ->
     check_unop unop e.at;
-    let t = NumType (type_unop unop) in
+    let t = NumType (type_num unop) in
     [t] --> [t], c
 
   | Binary binop ->
-    let t = NumType (type_binop binop) in
+    let t = NumType (type_num binop) in
     [t; t] --> [t], c
 
   | Convert cvtop ->
     let t1, t2 = type_cvtop e.at cvtop in
     [NumType t1] --> [NumType t2], c
+
+  | VecConst v ->
+    let t = VecType (type_vec v.it) in
+    [] --> [t]
+
+  | VecTest testop ->
+    let t = VecType (type_vec testop) in
+    [t] --> [NumType I32Type]
+
+  | VecUnary unop ->
+    let t = VecType (type_vec unop) in
+    [t] --> [t]
+
+  | VecBinary binop ->
+    check_vec_binop binop e.at;
+    let t = VecType (type_vec binop) in
+    [t; t] --> [t]
+
+  | VecCompare relop ->
+    let t = VecType (type_vec relop) in
+    [t; t] --> [t]
+
+  | VecConvert cvtop ->
+    let t = VecType (type_vec cvtop) in
+    [t] --> [t]
+
+  | VecShift shiftop ->
+    let t = VecType (type_vec shiftop) in
+    [t; NumType I32Type] --> [VecType V128Type]
+
+  | VecBitmask bitmaskop ->
+    let t = VecType (type_vec bitmaskop) in
+    [t] --> [NumType I32Type]
+
+  | VecTestBits vtestop ->
+    let t = VecType (type_vec vtestop) in
+    [t] --> [NumType I32Type]
+
+  | VecUnaryBits vunop ->
+    let t = VecType (type_vec vunop) in
+    [t] --> [t]
+
+  | VecBinaryBits vbinop ->
+    let t = VecType (type_vec vbinop) in
+    [t; t] --> [t]
+
+  | VecTernaryBits vternop ->
+    let t = VecType (type_vec vternop) in
+    [t; t; t] --> [t]
+
+  | VecSplat splatop ->
+    let t1 = type_vec_lane splatop in
+    let t2 = VecType (type_vec splatop) in
+    [NumType t1] --> [t2]
+
+  | VecExtract extractop ->
+    let t = VecType (type_vec extractop) in
+    let t2 = type_vec_lane extractop in
+    require (lane_extractop extractop < num_lanes extractop) e.at
+      "invalid lane index";
+    [t] --> [NumType t2]
+
+  | VecReplace replaceop ->
+    let t = VecType (type_vec replaceop) in
+    let t2 = type_vec_lane replaceop in
+    require (lane_replaceop replaceop < num_lanes replaceop) e.at
+      "invalid lane index";
+    [t; NumType t2] --> [t]
 
 and check_seq (c : context) (s : infer_result_type) (es : instr list)
   : infer_result_type * context =
@@ -628,7 +738,8 @@ let is_const (c : context) (e : instr) =
   match e.it with
   | RefNull _
   | RefFunc _
-  | Const _ -> true
+  | Const _
+  | VecConst _ -> true
   | GlobalGet x -> let GlobalType (_, mut) = global c x in mut = Immutable
   | _ -> false
 
@@ -686,27 +797,30 @@ let check_global (c : context) (glob : global) =
 
 (* Modules *)
 
-let check_start (c : context) (start : idx option) =
-  Lib.Option.app (fun x ->
-    require (func c x = FuncType ([], [])) x.at
-      "start function must not have parameters or results"
-  ) start
+let check_start (c : context) (start : start) =
+  let {sfunc} = start.it in
+  require (func c sfunc = FuncType ([], [])) start.at
+    "start function must not have parameters or results"
 
-let check_import (im : import) (c : context) : context =
+let check_type (c : context) (ty : type_) : context =
+  check_def_type c ty.it ty.at;
+  {c with types = c.types @ [ty.it]}
+
+let check_import (c : context) (im : import) : context =
   let {module_name = _; item_name = _; idesc} = im.it in
   match idesc.it with
   | FuncImport x ->
-    ignore (func_type c x);
-    {c with funcs = x.it :: c.funcs}
+    let ft = func_type c x in
+    {c with funcs = c.funcs @ [ft]}
   | TableImport tt ->
     check_table_type c tt idesc.at;
-    {c with tables = tt :: c.tables}
+    {c with tables = c.tables @ [tt]}
   | MemoryImport mt ->
     check_memory_type c mt idesc.at;
-    {c with memories = mt :: c.memories}
+    {c with memories = c.memories @ [mt]}
   | GlobalImport gt ->
     check_global_type c gt idesc.at;
-    {c with globals = gt :: c.globals}
+    {c with globals = c.globals @ [gt]}
 
 module NameSet = Set.Make(struct type t = Ast.name let compare = compare end)
 
@@ -727,33 +841,28 @@ let check_module (m : module_) =
     { types; imports; tables; memories; globals; funcs; start; elems; datas;
       exports } = m.it
   in
-  let c0 =
-    List.fold_right check_import imports
-      { empty_context with
-        refs = Free.module_ ({m.it with funcs = []; start = None} @@ m.at);
-        types = List.map (fun ty -> ty.it) types;
-      }
-  in
-  let c1 =
-    { c0 with
-      funcs = c0.funcs @ List.map (fun f -> ignore (func_type c0 f.it.ftype); f.it.ftype.it) funcs;
-      tables = c0.tables @ List.map (fun tab -> tab.it.ttype) tables;
-      memories = c0.memories @ List.map (fun mem -> mem.it.mtype) memories;
+  let c0 = List.fold_left check_type empty_context types in
+  let c1 = List.fold_left check_import c0 imports in
+  let c2 =
+    { c1 with
+      funcs = c1.funcs @ List.map (fun f -> func_type c1 f.it.ftype) funcs;
+      tables = c1.tables @ List.map (fun tab -> tab.it.ttype) tables;
+      memories = c1.memories @ List.map (fun mem -> mem.it.mtype) memories;
       elems = List.map (fun elem -> elem.it.etype) elems;
       datas = List.map (fun _data -> ()) datas;
+      refs = Free.module_ ({m.it with funcs = []; start = None} @@ m.at);
     }
   in
   let c =
-    { c1 with globals = c1.globals @ List.map (fun g -> g.it.gtype) globals }
+    { c2 with globals = c1.globals @ List.map (fun g -> g.it.gtype) globals }
   in
-  List.iter (check_type c1) types;
-  List.iter (check_global c1) globals;
-  List.iter (check_table c1) tables;
-  List.iter (check_memory c1) memories;
-  List.iter (check_elem c1) elems;
-  List.iter (check_data c1) datas;
+  List.iter (check_global c2) globals;
+  List.iter (check_table c2) tables;
+  List.iter (check_memory c2) memories;
+  List.iter (check_elem c2) elems;
+  List.iter (check_data c2) datas;
   List.iter (check_func c) funcs;
-  check_start c start;
+  Lib.Option.app (check_start c) start;
   ignore (List.fold_left (check_export c) NameSet.empty exports);
   require (List.length c.memories <= 1) m.at
     "multiple memories are not allowed (yet)"

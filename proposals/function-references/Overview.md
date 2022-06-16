@@ -150,9 +150,15 @@ A *reference type* denotes the type of a reference to some data. It may either i
   - the opcodes for `funcref` and `externref` continue to exist as shorthands as described above
 
 
-#### Subtyping
+#### Type Definitions
 
-Greatest fixpoint (co-inductive interpretation) of the given rules (implying reflexivity and transitivity).
+* Type definitions are validated in sequence and without allowing recursion
+  - `functype* ok`
+    - iff `functype* = epsilon`
+    - or `functype* = functype'* functype''`and `functype'* ok` and `functype'' ok` using only type indices up to `|functype'*|-1`
+
+
+#### Subtyping
 
 The following rules, now defined in terms of heap types, replace and extend the rules for [basic reference types](https://github.com/WebAssembly/reference-types/proposals/reference-types/Overview.md#subtyping).
 
@@ -168,13 +174,18 @@ The following rules, now defined in terms of heap types, replace and extend the 
   - `(ref <heaptype1>) <: (ref null <heaptype2>)`
     - iff `<heaptype1> <: <heaptype2>`
 
-##### Constructed Types
+##### Heap Types
 
 * Any function type is a subtype of `func`
   - `$t <: func`
      - iff `$t = <functype>`
 
-* Note: Function types themselves are invariant for now. This may be relaxed in future extensions.
+##### Type Indices
+
+* Type indices are subtypes only if they define equivalent types
+  - `$t <: $t'`
+    - iff `$t = <functype>` and `$t' = <functype'>` and `<functype> == <functype'>`
+  - Note: Function types are invariant for now. This may be relaxed in future extensions.
 
 
 #### Defaultability

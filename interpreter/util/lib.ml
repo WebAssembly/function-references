@@ -1,4 +1,4 @@
-type void
+type void = |
 
 module Fun =
 struct
@@ -116,6 +116,11 @@ struct
   let rec concat_map f = function
     | [] -> []
     | x::xs -> f x @ concat_map f xs
+
+  let rec pairwise f = function
+    | [] -> []
+    | x1::x2::xs -> f x1 x2 :: pairwise f xs
+    | _ -> failwith "pairwise"
 end
 
 module List32 =
@@ -159,6 +164,15 @@ struct
   and mapi' f i = function
     | [] -> []
     | x::xs -> f i x :: mapi' f (Int32.add i 1l) xs
+
+  let rec index_where p xs = index_where' p xs 0l
+  and index_where' p xs i =
+    match xs with
+    | [] -> None
+    | x::xs' when p x -> Some i
+    | x::xs' -> index_where' p xs' (Int32.add i 1l)
+
+  let index_of x = index_where ((=) x)
 end
 
 module Array32 =
