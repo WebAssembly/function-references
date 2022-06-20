@@ -18,10 +18,9 @@ and heap_type =
 and value_type =
   NumType of num_type | VecType of vec_type | RefType of ref_type | BotType
 
-and result_type = value_type list
-and label_type = result_type * local_idx Source.phrase list
-and instr_type = func_type * local_idx Source.phrase list
-and func_type = FuncType of result_type * result_type
+and result_type = ResultType of value_type list * local_idx Source.phrase list
+and instr_type = InstrType of value_type list * value_type list * local_idx Source.phrase list
+and func_type = FuncType of value_type list * value_type list
 and def_type = FuncDefType of func_type
 
 type 'a limits = {min : 'a; max : 'a option}
@@ -213,10 +212,13 @@ let string_of_name n =
   List.iter escape n;
   Buffer.contents b
 
+let string_of_idx x = I32.to_string_u x
+let string_of_local_idx x = string_of_idx x.Source.it
+
 let rec string_of_var =
   let inner = ref false in
   function
-  | SynVar x -> I32.to_string_u x
+  | SynVar x -> string_of_idx x
   | SemVar x ->
     if !inner then "..." else
     ( inner := true;
@@ -255,12 +257,22 @@ and string_of_value_type = function
   | RefType t -> string_of_ref_type t
   | BotType -> "(something)"
 
-and string_of_result_type ts =
+and string_of_value_types ts =
   "[" ^ String.concat " " (List.map string_of_value_type ts) ^ "]"
 
+and string_of_result_type = function
+  | ResultType (ts, xs) ->
+    String.concat " "
+      (string_of_value_types ts :: List.map string_of_local_idx xs)
+
+and stirng_of_instr_type = function
+  | InstrType (ts1, ts2, xs) ->
+    string_of_value_types ts1 ^ " -> " ^
+      string_of_result_type (ResultType (ts2, xs))
+
 and string_of_func_type = function
-  | FuncType (ins, out) ->
-    string_of_result_type ins ^ " -> " ^ string_of_result_type out
+  | FuncType (ts1, ts2) ->
+    string_of_value_types ts1 ^ " -> " ^ string_of_value_types ts2
 
 and string_of_def_type = function
   | FuncDefType ft -> "func " ^ string_of_func_type ft

@@ -26,7 +26,7 @@ type context =
   datas : unit list;
   locals : local_type list;
   results : value_type list;
-  labels : label_type list;
+  labels : result_type list;
   refs : Free.t;
 }
 
@@ -112,13 +112,13 @@ let check_value_type (c : context) (t : value_type) at =
   | RefType t' -> check_ref_type c t' at
   | BotType -> ()
 
-let check_result_type (c : context) (ts : result_type) at =
+let check_value_types (c : context) (ts : value_type list) at =
   List.iter (fun t -> check_value_type c t at) ts
 
 let check_func_type (c : context) (ft : func_type) at =
   let FuncType (ts1, ts2) = ft in
-  check_result_type c ts1 at;
-  check_result_type c ts2 at
+  check_value_types c ts1 at;
+  check_value_types c ts2 at
 
 let check_table_type (c : context) (tt : table_type) at =
   let TableType (lim, t) = tt in
@@ -167,8 +167,8 @@ let check_stack (c : context) ts1 ts2 at =
   require
     (List.length ts1 = List.length ts2 &&
       List.for_all2 (match_value_type c.types []) ts1 ts2) at
-    ("type mismatch: instruction requires " ^ string_of_result_type ts2 ^
-     " but stack has " ^ string_of_result_type ts1)
+    ("type mismatch: instruction requires " ^ string_of_value_types ts2 ^
+     " but stack has " ^ string_of_value_types ts1)
 
 let pop c (ell1, ts1) (ell2, ts2) at =
   let n1 = List.length ts1 in
@@ -296,8 +296,8 @@ let check_memop (c : context) (memop : ('t, 's) memop) ty_size get_sz at =
  *   e  : instr
  *   es : instr list
  *   v  : value
- *   t  : value_type var
- *   ts : result_type
+ *   t  : value_type
+ *   ts : value_type list
  *   x  : variable
  *
  * Note: To deal with the non-determinism in some of the declarative rules,
@@ -311,14 +311,15 @@ let check_memop (c : context) (memop : ('t, 's) memop) ty_size get_sz at =
  *)
 
 let check_block_type (c : context) (bt : block_type) at : instr_type =
-  let ft, xs =
+  let ts1, ts2, xs =
     match bt with
-    | ValBlockType (None, xs) -> FuncType ([], []), xs
-    | ValBlockType (Some t, xs) -> check_value_type c t at; FuncType ([], [t]), xs
-    | VarBlockType (SynVar x, xs) -> func_type c (x @@ at), xs
+    | ValBlockType (None, xs) -> [], [], xs
+    | ValBlockType (Some t, xs) -> check_value_type c t at; [], [t], xs
+    | VarBlockType (SynVar x, xs) ->
+      let FuncType (ts1, ts2) = func_type c (x @@ at) in ts1, ts2, xs
     | VarBlockType (SemVar _, _) -> assert false
   in
-  ft, List.map (fun x -> ignore (local c x); x) xs
+  InstrType (ts1, ts2, List.map (fun x -> ignore (local c x); x) xs)
 
 let check_local (c : context) (defaulted : bool) (t : local) : local_type =
   check_value_type c t.it t.at;
@@ -355,77 +356,77 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
   | Select (Some ts) ->
     require (List.length ts = 1) e.at
       "invalid result arity other than 1 is not (yet) allowed";
-    check_result_type c ts e.at;
+    check_value_types c ts e.at;
     (ts @ ts @ [NumType I32Type]) --> ts, []
 
   | Block (bt, es) ->
-    let FuncType (ts1, ts2), xs as it = check_block_type c bt e.at in
-    check_block {c with labels = (ts2, xs) :: c.labels} es it e.at;
+    let InstrType (ts1, ts2, xs) as it = check_block_type c bt e.at in
+    check_block {c with labels = ResultType (ts2, xs) :: c.labels} es it e.at;
     ts1 --> ts2, xs
 
   | Loop (bt, es) ->
-    let FuncType (ts1, ts2), xs as it = check_block_type c bt e.at in
-    check_block {c with labels = (ts1, []) :: c.labels} es it e.at;
+    let InstrType (ts1, ts2, xs) as it = check_block_type c bt e.at in
+    check_block {c with labels = ResultType (ts1, []) :: c.labels} es it e.at;
     ts1 --> ts2, xs
 
   | If (bt, es1, es2) ->
-    let FuncType (ts1, ts2), xs as it = check_block_type c bt e.at in
-    check_block {c with labels = (ts2, xs) :: c.labels} es1 it e.at;
-    check_block {c with labels = (ts2, xs) :: c.labels} es2 it e.at;
+    let InstrType (ts1, ts2, xs) as it = check_block_type c bt e.at in
+    check_block {c with labels = ResultType (ts2, xs) :: c.labels} es1 it e.at;
+    check_block {c with labels = ResultType (ts2, xs) :: c.labels} es2 it e.at;
     (ts1 @ [NumType I32Type]) --> ts2, xs
 
   | Let (bt, locals, es) ->
-    let FuncType (ts1, ts2), xs as it = check_block_type c bt e.at in
+    let InstrType (ts1, ts2, xs) as it = check_block_type c bt e.at in
     let ts = List.map (check_local c false) locals in
     let c' =
       { c with
-        labels = (ts2, xs) :: c.labels;
+        labels = ResultType (ts2, xs) :: c.labels;
         locals = ts @ c.locals;
       }
     in check_block c' es it e.at;
     (ts1 @ List.map Source.it locals) --> ts2, xs
 
   | Br x ->
-    let ts, xs = label c x in
+    let ResultType (ts, xs) = label c x in
     check_init c xs x.at;
     ts -->... [], []
 
   | BrIf x ->
-    let ts, xs = label c x in
+    let ResultType (ts, xs) = label c x in
     check_init c xs x.at;
     (ts @ [NumType I32Type]) --> ts, []
 
   | BrTable (xs, x) ->
-    let ts, ys = label c x in
+    let ResultType (ts, ys) = label c x in
     let n = List.length ts in
     let ts' = Lib.List.table n (fun i -> peek (n - i) s) in
     check_init c ys x.at;
     check_stack c ts' ts x.at;
     List.iter (fun x' ->
-      let ts'', ys' = label c x' in
+      let ResultType (ts'', ys') = label c x' in
       check_init c ys' x'.at;
       check_stack c ts' ts'' x'.at
     ) xs;
     (ts' @ [NumType I32Type]) -->... [], []
 
   | BrOnNull x ->
-    let ts, xs = label c x in
+    let ResultType (ts, xs) = label c x in
     let (_, t) = peek_ref 0 s e.at in
     check_init c xs x.at;
     (ts @ [RefType (Nullable, t)]) --> (ts @ [RefType (NonNullable, t)]), []
 
   | BrOnNonNull x ->
-    let ts, xs = label c x in
+    let ResultType (ts, xs) = label c x in
     let (_, ht) as rt = peek_ref 0 s e.at in
     let t' = RefType (NonNullable, ht) in
     check_init c xs x.at;
     require (ts <> []) e.at
       ("type mismatch: instruction requires type " ^ string_of_value_type t' ^
-       " but label has " ^ string_of_result_type ts);
+       " but label has " ^ string_of_value_types ts);
     let ts0, t = Lib.List.split_last ts in
     require (match_value_type c.types [] t' t) e.at
       ("type mismatch: instruction requires type " ^ string_of_value_type t' ^
-       " but label has " ^ string_of_result_type ts);
+       " but label has " ^ string_of_value_types ts);
     (ts0 @ [RefType rt]) --> ts0, []
 
   | Return ->
@@ -460,10 +461,10 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
     (match peek_ref 0 s e.at with
     | (nul, DefHeapType (SynVar x)) ->
       let FuncType (ts1, ts2) = func_type c (x @@ e.at) in
-      require (match_result_type c.types [] ts2 c.results) e.at
+      require (match_value_types c.types [] ts2 c.results) e.at
         ("type mismatch: current function requires result type " ^
-         string_of_result_type c.results ^
-         " but callee returns " ^ string_of_result_type ts2);
+         string_of_value_types c.results ^
+         " but callee returns " ^ string_of_value_types ts2);
       (ts1 @ [RefType (nul, DefHeapType (SynVar x))]) -->... [], []
     | (_, BotHeapType) as rt ->
       [RefType rt] -->... [], []
@@ -732,13 +733,13 @@ and check_seq (c : context) (s : infer_result_type) (es : instr list)
     push c outs (pop c ins s' e.at), xs @ xs'
 
 and check_block (c : context) (es : instr list) (it : instr_type) at =
-  let FuncType (ts1, ts2), xs = it in
+  let InstrType (ts1, ts2, xs) = it in
   let s, xs' = check_seq c (stack ts1) es in
   let s' = pop c (stack ts2) s at in
   check_init (init_locals c xs' (poly s')) xs at;
   require (snd s' = []) at
-    ("type mismatch: block requires " ^ string_of_result_type ts2 ^
-     " but stack has " ^ string_of_result_type (snd s))
+    ("type mismatch: block requires " ^ string_of_value_types ts2 ^
+     " but stack has " ^ string_of_value_types (snd s))
 
 
 (* Functions & Constants *)
@@ -763,9 +764,9 @@ let check_func (c : context) (f : func) =
     { c with
       locals = List.map (fun t -> LocalType (t, Initialized)) ts1 @ ts;
       results = ts2;
-      labels = [(ts2, [])]
+      labels = [ResultType (ts2, [])]
     }
-  in check_block c' body (FuncType ([], ts2), []) f.at
+  in check_block c' body (InstrType ([], ts2, [])) f.at
 
 
 let is_const (c : context) (e : instr) =
@@ -780,7 +781,7 @@ let is_const (c : context) (e : instr) =
 let check_const (c : context) (const : const) (t : value_type) =
   require (List.for_all (is_const c) const.it) const.at
     "constant expression required";
-  check_block c const.it (FuncType ([], [t]), []) const.at
+  check_block c const.it (InstrType ([], [t], [])) const.at
 
 
 (* Tables, Memories, & Globals *)

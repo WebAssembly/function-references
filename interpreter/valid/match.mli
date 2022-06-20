@@ -9,8 +9,7 @@ type assump = (var * var) list
 val eq_num_type : context -> assump -> num_type -> num_type -> bool
 val eq_ref_type : context -> assump -> ref_type -> ref_type -> bool
 val eq_value_type : context -> assump -> value_type -> value_type -> bool
-
-val eq_result_type : context -> assump -> result_type -> result_type -> bool
+val eq_value_types : context -> assump -> value_type list -> value_type list -> bool
 
 val eq_func_type : context -> assump -> func_type -> func_type -> bool
 val eq_table_type : context -> assump -> table_type -> table_type -> bool
@@ -27,8 +26,7 @@ val eq_def_type : context -> assump -> def_type -> def_type -> bool
 val match_num_type : context -> assump -> num_type -> num_type -> bool
 val match_ref_type : context -> assump -> ref_type -> ref_type -> bool
 val match_value_type : context -> assump -> value_type -> value_type -> bool
-
-val match_result_type : context -> assump -> result_type -> result_type -> bool
+val match_value_types : context -> assump -> value_type list -> value_type list -> bool
 
 val match_func_type : context -> assump -> func_type -> func_type -> bool
 val match_table_type : context -> assump -> table_type -> table_type -> bool
