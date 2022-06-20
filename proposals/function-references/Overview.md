@@ -201,7 +201,7 @@ The following rules, now defined in terms of heap types, replace and extend the 
 
 #### Local Types
 
-* Locals are now types in the context with types of the following form:
+* Locals are now recorded in the context with types of the following form:
   - `localtype ::= set? <valtype>`
   - the flag `set` records that the local has been initialized
   - all locals with non-defaultable type start out unset
@@ -212,6 +212,7 @@ The following rules, now defined in terms of heap types, replace and extend the 
 * Result types are refined to the following form:
   - `resulttype ::= [<valtype>*] <localidx>*`
   - the local indices record which locals have been set as a side effect
+  - result types are assigned to labels and the result of instruction sequences
 
 * There is a natural notion of subtyping on result types:
   - `[t1*] x1*  <:  [t2*] x2*`
@@ -240,12 +241,6 @@ The following rules, now defined in terms of heap types, replace and extend the 
   - `blocktype ::= (<valtype> | <typeidx>) <localidx>*`
     - `t x* == [] -> [t] x*` iff `t ok` and `(x ok)*`
     - `$t x* == [t1*] -> [t2*] x*` iff `$t = [t1*] -> [t2*]` and `(x ok)*`
-
-
-#### Label Types
-
-* Labels are now typed as result types:
-  - `labeltype ::= <resulttype>`
 
 
 ### Instructions
@@ -327,7 +322,7 @@ Like all other block instructions, `let` binds a label
 
 #### Locals
 
-Typing of local instructions is updated to account for uninitialized locals.
+Typing of local instructions is updated to account for the initialization status of locals.
 
 * `local.get $x`
   - `local.get $x : [] -> [t]`
@@ -355,7 +350,7 @@ Typing of instruction sequences is updated to account for initialization of loca
   - `epsilon : [] -> [] x*`
     - iff `(x : set t)*`
 
-Note: This typing rules does not try to eliminate duplicate indices, but an implementation could.
+Note: These typing rules do not try to eliminate duplicate indices, but an implementation could.
 
 A subsumption rule allows to go to a supertype for any instruction:
 
@@ -388,7 +383,7 @@ The block types ascribed to blocks declare the instruction type of the respectiv
 
 #### Branches
 
-Branches need to match the respective label type. Moreover, stack polymorphism now entails an arbitrary index set.
+Branches need to match the respective label type. Moreover, stack polymorphism now entails an arbitrary initialization set.
 
 * `br $l`
   - `br $l : [t1* t*] -> [t2*] x2*`
