@@ -239,8 +239,8 @@ The following rules, now defined in terms of heap types, replace and extend the 
 
 * Block types denote [instruction types](#instruction-types). For that purpose, they are likewise extended with a (possibly empty) sequence of local indices
   - `blocktype ::= (<valtype> | <typeidx>) <localidx>*`
-    - `t x* == [] -> [t] x*` iff `t ok` and `(x ok)*`
-    - `$t x* == [t1*] -> [t2*] x*` iff `$t = [t1*] -> [t2*]` and `(x ok)*`
+    - `t x* : [] -> [t] x*` iff `t ok` and `(x ok)*`
+    - `$t x* : [t1*] -> [t2*] x*` iff `$t = [t1*] -> [t2*]` and `(x ok)*`
 
 
 ### Instructions
@@ -365,20 +365,23 @@ A subsumption rule allows to go to a supertype for any instruction:
 The block types ascribed to blocks declare the instruction type of the respective body's instruction sequence.
 
 * `block bt <instr>* end`
-  - `block $l bt <instr>* end : bt`
-    - iff `<instr>* : bt` assuming `$l : [t2*] x*`
-    - where `bt == [t1*] -> [t2*] x*`
+  - `block $l bt <instr>* end : it`
+    - iff `bt : it`
+    - and `<instr>* : it` assuming `$l : [t2*] x*`
+    - where `it = [t1*] -> [t2*] x*`
 
 * `loop bt <instr>* end`
-  - `loop $l bt <instr>* end : bt`
-    - iff `<instr>* : bt` assuming `$l : [t1*]`
-    - where `bt == [t1*] -> [t2*] x*`
+  - `loop $l bt <instr>* end : it`
+    - iff `bt : it`
+    - and `<instr>* : it` assuming `$l : [t1*]`
+    - where `it = [t1*] -> [t2*] x*`
 
 * `if bt <instr1>* else <instr2>* end`
-  - `if $l bt <instr1>* else <instr2>* end : bt`
-    - iff `<instr1>* : bt` assuming `$l : [t2*] x*`
-    - and `<instr2>* : bt` assuming `$l : [t2*] x*`
-    - where `bt == [t1*] -> [t2*] x*`
+  - `if $l bt <instr1>* else <instr2>* end : it`
+    - iff `bt : it`
+    - and `<instr1>* : it` assuming `$l : [t2*] x*`
+    - and `<instr2>* : it` assuming `$l : [t2*] x*`
+    - where `it = [t1*] -> [t2*] x*`
 
 
 #### Branches
