@@ -392,6 +392,7 @@ Branches need to match the respective label type. Moreover, stack polymorphism n
   - `br $l : [t1* t*] -> [t2*] x2*`
     - iff `$l : [t*] x*`
     - and `(x : set tX)*`
+    - and `(x2 : set? tX2)*`
 
 * `br_if $l`
   - `br_if $l : [t* i32] -> [t*]`
@@ -399,11 +400,12 @@ Branches need to match the respective label type. Moreover, stack polymorphism n
     - and `(x : set tX)*`
 
 * `br_table $l* $l'`
-  - `br_table $l* $l' : [t'* i32] -> [t'*]`
+  - `br_table $l* $l' : [t1* t'* i32] -> [t2* t'*] x2*`
     - iff `$l' : [t'*] x'*`
     - and `(x' : set tX')*`
     - and `($l : [t*] x*)*`
     - and `(x : set tX)*`
+    - and `(x2 : set? tX2)*`
 
 
 ### Tables
