@@ -207,10 +207,22 @@ The following rules, now defined in terms of heap types, replace and extend the 
   - all locals with non-defaultable type start out unset
 
 
+#### Result Types
+
+* Result types are refined to the following form:
+  - `resulttype ::= [<valtype>*] <localidx>*`
+  - the local indices record which locals have been set as a side effect
+
+* There is a natural notion of subtyping on result types:
+  - `[t1*] x1*  <:  [t2*] x2*`
+    - iff `(t1 <: t2)*`
+    - and `{x2*} subset {x1*}`
+
+
 #### Instruction Types
 
 * Instructions and instruction sequences are now typed with types of the following form:
-  - `instrtype ::= <functype> <localidx>*`
+  - `instrtype ::= [<valtype>*] -> <resulttype>`
   - the local indices record which locals have been set by the instructions
   - most typing rules except those for locals and for instruction sequences remain unchanged, since the index list is empty
 
@@ -218,12 +230,22 @@ The following rules, now defined in terms of heap types, replace and extend the 
   - `[t1*] -> [t2*] x1*  <:  [t3*] -> [t4*] x2*`
     - iff `t1* = t0* t1'*`
     - and `t2* = t0* t2'*`
-    - and `[t1'*] -> [t2'*] <: [t3*] -> [t4*]*`
-    - and `{x2*} subset {x1*}`
+    - and `(t3 <: t1')*`
+    - and `[t2'*] x1* <: [t4*] x2*`
 
-* Block types are instruction types with empty index set.
 
-Note: Extending block types to with index sets is a possible extension.
+#### Block Types
+
+* Block types denote [instruction types](#instruction-types). For that purpose, they are likewise extended with a (possibly empty) sequence of local indices
+  - `blocktype ::= (<valtype> | <typeidx>) <localidx>*`
+    - `t x* == [] -> [t] x*` iff `t ok` and `(x ok)*`
+    - `$t x* == [t1*] -> [t2*] x*` iff `$t = [t1*] -> [t2*]` and `(x ok)*`
+
+
+#### Label Types
+
+* Labels are now typed as result types:
+  - `labeltype ::= <resulttype>`
 
 
 ### Instructions
@@ -319,26 +341,71 @@ Typing of local instructions is updated to account for uninitialized locals.
   - `local.tee $x : [t] -> [t] $x`
     - iff `$x : set? t`
 
-Note: These typing rules do not try to suppress indices for locals that have already been set, but an implementation could.
+Note: These typing rules do not try to exclude indices for locals that have already been set, but an implementation could.
 
 
-#### Instruction sequences
+#### Instruction Sequences
 
 Typing of instruction sequences is updated to account for initialization of locals.
 
-* `instr1 instr*`
-  - `instr1 instr* : [t1*] -> [t3*] x1* x2*`
-    - iff `instr1 : [t1*] -> [t2*] x1*`
-    - and `instr* : [t2*] -> [t3*] x2*` under a context where `x1*` are changed to `set`
+* `instr*`
+  - `instr* instrN : [t1*] -> [t3*] x1* x2*`
+    - iff `instr* : [t1*] -> [t2*] x1*`
+    - and `instrN : [t2*] -> [t3*] x2*` under a context where `x1*` are changed to `set`
+  - `epsilon : [] -> [] x*`
+    - iff `(x : set t)*`
 
 Note: This typing rules does not try to eliminate duplicate indices, but an implementation could.
 
-A weakening rule for instructions allows to go to a supertype:
+A subsumption rule allows to go to a supertype for any instruction:
 
 * `instr`
   - `instr : [t1*] -> [t2*] x*`
     - iff `instr : [t1'*] -> [t2'*] x'*`
     - and `[t1'*] -> [t2'*] x'*  <:  [t1*] -> [t2*] x*`
+
+
+#### Blocks
+
+The block types ascribed to blocks declare the instruction type of the respective body's instruction sequence.
+
+* `block bt <instr>* end`
+  - `block $l bt <instr>* end : bt`
+    - iff `<instr>* : bt` assuming `$l : [t2*] x*`
+    - where `bt == [t1*] -> [t2*] x*`
+
+* `loop bt <instr>* end`
+  - `loop $l bt <instr>* end : bt`
+    - iff `<instr>* : bt` assuming `$l : [t1*]`
+    - where `bt == [t1*] -> [t2*] x*`
+
+* `if bt <instr1>* else <instr2>* end`
+  - `if $l bt <instr1>* else <instr2>* end : bt`
+    - iff `<instr1>* : bt` assuming `$l : [t2*] x*`
+    - and `<instr2>* : bt` assuming `$l : [t2*] x*`
+    - where `bt == [t1*] -> [t2*] x*`
+
+
+#### Branches
+
+Branches need to match the respective label type. Moreover, stack polymorphism now entails an arbitrary index set.
+
+* `br $l`
+  - `br $l : [t1* t*] -> [t2*] x2*`
+    - iff `$l : [t*] x*`
+    - and `(x : set tX)*`
+
+* `br_if $l`
+  - `br_if $l : [t* i32] -> [t*]`
+    - iff `$l : [t*] x*`
+    - and `(x : set tX)*`
+
+* `br_table $l* $l'`
+  - `br_table $l* $l' : [t'* i32] -> [t'*]`
+    - iff `$l' : [t'*] x'*`
+    - and `(x' : set tX')*`
+    - and `($l : [t*] x*)*`
+    - and `(x : set tX)*`
 
 
 ### Tables
@@ -370,6 +437,18 @@ The opcode for heap types is encoded as an `s33`.
 | i >= 0 | i               |            |
 | -0x10  | `func`          |            |
 | -0x11  | `extern`        |            |
+
+#### Block Types
+
+The opcode for block types is encoded as an `s33`.
+
+| Opcode | Type            | Parameters | Note |
+| ------ | --------------- | ---------- | ---- |
+| -0x40  | `[] -> []`      |            |      |
+| -0x3f  | `<ft> <idx>*`   | `idx* : vec(u32)`, `ft : blocktype` | `ft` must not be `-0x3f` |
+| i < 0  | `valtype`       |            |      |
+| i >= 0 | `$t`            |            |      |
+
 
 ### Instructions
 

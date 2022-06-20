@@ -251,7 +251,7 @@
 
 (assert_invalid
   (module (func $uninit (local $x (ref extern)) (drop (local.get $x))))
-  "local is uninitialized"
+  "uninitialized local"
 )
 (assert_invalid
   (module
@@ -261,5 +261,5 @@
       (drop (local.get $x))
     )
   )
-  "local is uninitialized"
+  "uninitialized local"
 )

@@ -33,6 +33,7 @@ end
 module List32 :
 sig
   val make : int32 -> 'a -> 'a list
+  val table : int32 -> (int32 -> 'a) -> 'a list
   val length : 'a list -> int32
   val nth : 'a list -> int32 -> 'a (* raises Failure *)
   val replace : 'a list -> int32 -> 'a -> 'a list (* raises Failure *)

@@ -26,7 +26,7 @@ type context =
   datas : unit list;
   locals : local_type list;
   results : value_type list;
-  labels : result_type list;
+  labels : label_type list;
   refs : Free.t;
 }
 
@@ -55,12 +55,16 @@ let replace category list x y =
   try Lib.List32.replace list x.it y with Failure _ ->
     error x.at ("unknown " ^ category ^ " " ^ I32.to_string_u x.it)
 
+let all_locals (c : context) =
+  Lib.List32.table (Lib.List32.length c.locals) (fun x -> x @@ no_region)
+
 let init_local (c : context) x =
   let LocalType (t, _) = local c x in
   {c with locals = replace "local" c.locals x (LocalType (t, Initialized))}
 
-let init_locals (c : context) xs =
-  List.fold_left init_local c xs
+let init_locals (c : context) xs poly =
+  List.fold_left init_local c (if poly then all_locals c else xs)
+
 
 let func_type (c : context) x =
   match type_ c x with
@@ -157,6 +161,7 @@ let stack ts = (NoEllipses, ts)
 let (-->) ts1 ts2 = {ins = NoEllipses, ts1; outs = NoEllipses, ts2}
 let (-->..) ts1 ts2 = {ins = Ellipses, ts1; outs = NoEllipses, ts2}
 let (-->...) ts1 ts2 = {ins = Ellipses, ts1; outs = Ellipses, ts2}
+let poly (ell, _) = (ell = Ellipses)
 
 let check_stack (c : context) ts1 ts2 at =
   require
@@ -305,12 +310,15 @@ let check_memop (c : context) (memop : ('t, 's) memop) ty_size get_sz at =
  * declarative typing rules.
  *)
 
-let check_block_type (c : context) (bt : block_type) at : func_type =
-  match bt with
-  | ValBlockType None -> FuncType ([], [])
-  | ValBlockType (Some t) -> check_value_type c t at; FuncType ([], [t])
-  | VarBlockType (SynVar x) -> func_type c (x @@ at)
-  | VarBlockType (SemVar _) -> assert false
+let check_block_type (c : context) (bt : block_type) at : instr_type =
+  let ft, xs =
+    match bt with
+    | ValBlockType (None, xs) -> FuncType ([], []), xs
+    | ValBlockType (Some t, xs) -> check_value_type c t at; FuncType ([], [t]), xs
+    | VarBlockType (SynVar x, xs) -> func_type c (x @@ at), xs
+    | VarBlockType (SemVar _, _) -> assert false
+  in
+  ft, List.map (fun x -> ignore (local c x); x) xs
 
 let check_local (c : context) (defaulted : bool) (t : local) : local_type =
   check_value_type c t.it t.at;
@@ -318,6 +326,13 @@ let check_local (c : context) (defaulted : bool) (t : local) : local_type =
     if not defaulted || defaultable_value_type t.it
     then Initialized else Uninitialized
   in LocalType (t.it, init)
+
+and check_init (c : context) (xs : idx list) at =
+  List.iter (fun x ->
+    let LocalType (_, init) = local c x in
+    require (init = Initialized) at
+      ("uninitialized local " ^ I32.to_string_u x.it ^ " at branch or block end")
+  ) xs
 
 let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_instr_type =
   match e.it with
@@ -344,60 +359,73 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
     (ts @ ts @ [NumType I32Type]) --> ts, []
 
   | Block (bt, es) ->
-    let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
-    check_block {c with labels = ts2 :: c.labels} es ft e.at;
-    ts1 --> ts2, []
+    let FuncType (ts1, ts2), xs as it = check_block_type c bt e.at in
+    check_block {c with labels = (ts2, xs) :: c.labels} es it e.at;
+    ts1 --> ts2, xs
 
   | Loop (bt, es) ->
-    let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
-    check_block {c with labels = ts1 :: c.labels} es ft e.at;
-    ts1 --> ts2, []
+    let FuncType (ts1, ts2), xs as it = check_block_type c bt e.at in
+    check_block {c with labels = (ts1, []) :: c.labels} es it e.at;
+    ts1 --> ts2, xs
 
   | If (bt, es1, es2) ->
-    let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
-    check_block {c with labels = ts2 :: c.labels} es1 ft e.at;
-    check_block {c with labels = ts2 :: c.labels} es2 ft e.at;
-    (ts1 @ [NumType I32Type]) --> ts2, []
+    let FuncType (ts1, ts2), xs as it = check_block_type c bt e.at in
+    check_block {c with labels = (ts2, xs) :: c.labels} es1 it e.at;
+    check_block {c with labels = (ts2, xs) :: c.labels} es2 it e.at;
+    (ts1 @ [NumType I32Type]) --> ts2, xs
 
   | Let (bt, locals, es) ->
-    let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
+    let FuncType (ts1, ts2), xs as it = check_block_type c bt e.at in
     let ts = List.map (check_local c false) locals in
     let c' =
       { c with
-        labels = ts2 :: c.labels;
+        labels = (ts2, xs) :: c.labels;
         locals = ts @ c.locals;
       }
-    in check_block c' es ft e.at;
-    (ts1 @ List.map Source.it locals) --> ts2, []
+    in check_block c' es it e.at;
+    (ts1 @ List.map Source.it locals) --> ts2, xs
 
   | Br x ->
-    label c x -->... [], []
+    let ts, xs = label c x in
+    check_init c xs x.at;
+    ts -->... [], []
 
   | BrIf x ->
-    (label c x @ [NumType I32Type]) --> label c x, []
+    let ts, xs = label c x in
+    check_init c xs x.at;
+    (ts @ [NumType I32Type]) --> ts, []
 
   | BrTable (xs, x) ->
-    let n = List.length (label c x) in
-    let ts = Lib.List.table n (fun i -> peek (n - i) s) in
-    check_stack c ts (label c x) x.at;
-    List.iter (fun x' -> check_stack c ts (label c x') x'.at) xs;
-    (ts @ [NumType I32Type]) -->... [], []
+    let ts, ys = label c x in
+    let n = List.length ts in
+    let ts' = Lib.List.table n (fun i -> peek (n - i) s) in
+    check_init c ys x.at;
+    check_stack c ts' ts x.at;
+    List.iter (fun x' ->
+      let ts'', ys' = label c x' in
+      check_init c ys' x'.at;
+      check_stack c ts' ts'' x'.at
+    ) xs;
+    (ts' @ [NumType I32Type]) -->... [], []
 
   | BrOnNull x ->
+    let ts, xs = label c x in
     let (_, t) = peek_ref 0 s e.at in
-    (label c x @ [RefType (Nullable, t)]) -->
-      (label c x @ [RefType (NonNullable, t)]), []
+    check_init c xs x.at;
+    (ts @ [RefType (Nullable, t)]) --> (ts @ [RefType (NonNullable, t)]), []
 
   | BrOnNonNull x ->
+    let ts, xs = label c x in
     let (_, ht) as rt = peek_ref 0 s e.at in
     let t' = RefType (NonNullable, ht) in
-    require (label c x <> []) e.at
+    check_init c xs x.at;
+    require (ts <> []) e.at
       ("type mismatch: instruction requires type " ^ string_of_value_type t' ^
-       " but label has " ^ string_of_result_type (label c x));
-    let ts0, t = Lib.List.split_last (label c x) in
+       " but label has " ^ string_of_result_type ts);
+    let ts0, t = Lib.List.split_last ts in
     require (match_value_type c.types [] t' t) e.at
       ("type mismatch: instruction requires type " ^ string_of_value_type t' ^
-       " but label has " ^ string_of_result_type (label c x));
+       " but label has " ^ string_of_result_type ts);
     (ts0 @ [RefType rt]) --> ts0, []
 
   | Return ->
@@ -467,7 +495,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
 
   | LocalGet x ->
     let LocalType (t, init) = local c x in
-    require (init = Initialized) x.at "local is uninitialized";
+    require (init = Initialized) x.at "uninitialized local";
     [] --> [t], []
 
   | LocalSet x ->
@@ -700,13 +728,14 @@ and check_seq (c : context) (s : infer_result_type) (es : instr list)
   | _ ->
     let es', e = Lib.List.split_last es in
     let s', xs = check_seq c s es' in
-    let {ins; outs}, xs' = check_instr (init_locals c xs) e s' in
+    let {ins; outs}, xs' = check_instr (init_locals c xs (poly s')) e s' in
     push c outs (pop c ins s' e.at), xs @ xs'
 
-and check_block (c : context) (es : instr list) (ft : func_type) at =
-  let FuncType (ts1, ts2) = ft in
-  let s, xs = check_seq c (stack ts1) es in
+and check_block (c : context) (es : instr list) (it : instr_type) at =
+  let FuncType (ts1, ts2), xs = it in
+  let s, xs' = check_seq c (stack ts1) es in
   let s' = pop c (stack ts2) s at in
+  check_init (init_locals c xs' (poly s')) xs at;
   require (snd s' = []) at
     ("type mismatch: block requires " ^ string_of_result_type ts2 ^
      " but stack has " ^ string_of_result_type (snd s))
@@ -734,9 +763,9 @@ let check_func (c : context) (f : func) =
     { c with
       locals = List.map (fun t -> LocalType (t, Initialized)) ts1 @ ts;
       results = ts2;
-      labels = [ts2]
+      labels = [(ts2, [])]
     }
-  in check_block c' body (FuncType ([], ts2)) f.at
+  in check_block c' body (FuncType ([], ts2), []) f.at
 
 
 let is_const (c : context) (e : instr) =
@@ -751,7 +780,7 @@ let is_const (c : context) (e : instr) =
 let check_const (c : context) (const : const) (t : value_type) =
   require (List.for_all (is_const c) const.it) const.at
     "constant expression required";
-  check_block c const.it (FuncType ([], [t])) const.at
+  check_block c const.it (FuncType ([], [t]), []) const.at
 
 
 (* Tables, Memories, & Globals *)

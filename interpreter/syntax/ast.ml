@@ -137,7 +137,9 @@ type name = Utf8.unicode
 type local = local' Source.phrase
 and local' = value_type
 
-type block_type = VarBlockType of var | ValBlockType of value_type option
+type block_type =
+  | VarBlockType of var * idx list
+  | ValBlockType of value_type option * idx list
 
 type instr = instr' Source.phrase
 and instr' =

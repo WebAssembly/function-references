@@ -249,10 +249,16 @@ let memop s =
   Int32.to_int align, offset
 
 let block_type s =
+  let xs =
+    either [
+      (fun s -> expect 0x41 s ""; vec (at var));
+      (fun s -> fun _ -> []);
+    ] s s
+  in
   either [
-    (fun s -> VarBlockType (var_type s));
-    (fun s -> expect 0x40 s ""; ValBlockType None);
-    (fun s -> ValBlockType (Some (value_type s)));
+    (fun s -> VarBlockType (var_type s, xs));
+    (fun s -> expect 0x40 s ""; ValBlockType (None, xs));
+    (fun s -> ValBlockType (Some (value_type s), xs));
   ] s
 
 let local s =

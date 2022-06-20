@@ -95,8 +95,8 @@ let def_type = function
   | FuncDefType ft -> func_type ft
 
 let block_type = function
-  | VarBlockType x -> var_type x
-  | ValBlockType t -> opt value_type t
+  | VarBlockType (x, xs) -> var_type x ++ list (fun x -> locals (idx x)) xs
+  | ValBlockType (t, xs) -> opt value_type t ++ list (fun x -> locals (idx x)) xs
 
 let rec instr (e : instr) =
   match e.it with

@@ -129,6 +129,10 @@ struct
   and make' n x xs =
     if n = 0l then xs else make' (Int32.sub n 1l) x (x::xs)
 
+  let rec table n f = table' n f []
+  and table' n f xs =
+    if n = 0l then xs else table' (Int32.sub n 1l) f (f (Int32.sub n 1l) :: xs)
+
   let rec length xs = length' xs 0l
   and length' xs n =
     match xs with

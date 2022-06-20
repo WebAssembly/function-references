@@ -2,7 +2,7 @@
 
 type type_idx = int32
 type local_idx = int32
-type name = int list
+type name = Utf8.unicode
 
 and syn_var = type_idx
 and sem_var = def_type Lib.Promise.t
@@ -19,7 +19,8 @@ and value_type =
   NumType of num_type | VecType of vec_type | RefType of ref_type | BotType
 
 and result_type = value_type list
-and instr_type = result_type * local_idx list
+and label_type = result_type * local_idx Source.phrase list
+and instr_type = func_type * local_idx Source.phrase list
 and func_type = FuncType of result_type * result_type
 and def_type = FuncDefType of func_type
 

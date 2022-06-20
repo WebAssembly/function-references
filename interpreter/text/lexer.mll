@@ -152,6 +152,7 @@ rule token = parse
       | "ref" -> REF
       | "null" -> NULL
       | "mut" -> MUT
+      | "set" -> SET
 
       | "nop" -> NOP
       | "unreachable" -> UNREACHABLE

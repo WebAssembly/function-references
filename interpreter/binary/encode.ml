@@ -165,10 +165,13 @@ struct
   let var x = u32 x.it
 
   let block_type = function
-    | ValBlockType None -> s33 (-0x40l)
-    | ValBlockType (Some t) -> value_type t
-    | VarBlockType (SynVar x) -> s33 x
-    | VarBlockType (SemVar _) -> assert false
+    | ValBlockType (None, []) -> s33 (-0x40l)
+    | ValBlockType (Some t, []) -> value_type t
+    | VarBlockType (SynVar x, []) -> s33 x
+    | ValBlockType (None, xs) -> s33 (-0x3fl); vec var xs; s33 (-0x40l)
+    | ValBlockType (Some t, xs) -> s33 (-0x3fl); vec var xs; value_type t
+    | VarBlockType (SynVar x, xs) -> s33 (-0x3fl); vec var xs; s33 x
+    | VarBlockType (SemVar _, _) -> assert false
 
   let local (t, n) = len n; value_type t.it
 

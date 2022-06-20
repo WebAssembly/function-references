@@ -429,10 +429,14 @@ let vec v = string_of_vec v.it
 let constop v = num_type (type_of_num v) ^ ".const"
 let vec_constop v = vec_type (type_of_vec v) ^ ".const i32x4"
 
+let inits = function
+  | [] -> []
+  | xs -> [Node ("set " ^ String.concat " " (list var xs), [])]
+
 let block_type = function
-  | VarBlockType (SynVar x) -> [Node ("type " ^ nat32 x, [])]
-  | VarBlockType (SemVar _) -> assert false
-  | ValBlockType ts -> decls "result" (list_of_opt ts)
+  | VarBlockType (SynVar x, xs) -> Node ("type " ^ nat32 x, []) :: inits xs
+  | VarBlockType (SemVar _, _) -> assert false
+  | ValBlockType (ts, xs) -> decls "result" (list_of_opt ts) @ inits xs
 
 let rec instr e =
   let head, inner =

@@ -111,10 +111,10 @@ let func_ref inst x i at =
 
 let block_type inst bt at =
   match bt with
-  | ValBlockType None -> FuncType ([], [])
-  | ValBlockType (Some t) -> FuncType ([], [t])
-  | VarBlockType (SynVar x) -> func_type inst (x @@ at)
-  | VarBlockType (SemVar x) -> as_func_def_type (def_of x)
+  | ValBlockType (None, _) -> FuncType ([], [])
+  | ValBlockType (Some t, _) -> FuncType ([], [t])
+  | VarBlockType (SynVar x, _) -> func_type inst (x @@ at)
+  | VarBlockType (SemVar x, _) -> as_func_def_type (def_of x)
 
 let take n (vs : 'a stack) at =
   try Lib.List.take n vs with Failure _ -> Crash.error at "stack underflow"
