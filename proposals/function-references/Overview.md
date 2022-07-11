@@ -383,6 +383,16 @@ The block types ascribed to blocks declare the instruction type of the respectiv
     - and `<instr2>* : it` assuming `$l : [t2*] x*`
     - where `it = [t1*] -> [t2*] x*`
 
+Note: For a future `try-catch`, the block type associated with `try` would likewise apply to all catch clauses – in order to avoid the need for exception and effect analysis, no assumption is being made about what parts of the `try` block have already been executed when entering a catch clause, and conservatively assumes none. Sketch (omitting `catch_all`):
+
+  - `try $l bt <instr0>* (catch $x <instr>*)* end`
+    - iff `bt : it`
+    - and `<instr0>* : it0` assuming `$l : [t2*] x*`
+    - and `(<instr>* : it)*` assuming `$l : [t2*] x*`
+    - and `($x : [tx*] -> [])*`
+    - where `it0 = [t1*] -> [t2*] x*`
+    - and `(it = [tx*] -> [t2*] x*)*`
+
 
 #### Branches
 
