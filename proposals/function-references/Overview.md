@@ -240,8 +240,8 @@ The following rules, now defined in terms of heap types, replace and extend the 
 * Block types denote [instruction types](#instruction-types). For that purpose, they are likewise extended with a (possibly empty) sequence of local indices
   - `blocktype ::= (<valtype> | <typeidx>) <localidx>*`
     - `t x* : [] -> [t] x*` iff `t ok` and `(x ok)*`
+      - note: this rule does not enforce that the `x*` are all different
     - `$t x* : [t1*] -> [t2*] x*` iff `$t = [t1*] -> [t2*]` and `(x ok)*`
-
 
 ### Instructions
 
