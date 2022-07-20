@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Types &#8212; WebAssembly 2.0 + function references (Draft 2022-07-14)</title>
+    <title>Types &#8212; WebAssembly 2.0 + function references (Draft 2022-07-20)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -372,6 +372,53 @@ However, restrictions apply to most other types, such as <a class="reference int
   C \href{../valid/types.html#valid-globaltype}{\vdash} \href{../syntax/types.html#syntax-globaltype}{\mathit{globaltype}} \mathrel{\mbox{ok}}
 }{
   C \href{../valid/types.html#valid-externtype}{\vdash} \href{../syntax/types.html#syntax-externtype}{\mathsf{global}}~\href{../syntax/types.html#syntax-globaltype}{\mathit{globaltype}} \mathrel{\mbox{ok}}
+}\]</div>
+</section>
+</section>
+<section id="defaultable-types">
+<span id="valid-defaultable"></span><span id="index-13"></span><h2>Defaultable Types<a class="headerlink" href="#defaultable-types" title="Permalink to this headline">¶</a></h2>
+<p>A type is <em>defaultable</em> if it has a <a class="reference internal" href="../exec/runtime.html#default-val"><span class="std std-ref">default value</span></a> for initialization.</p>
+<section id="id2">
+<h3>Value Types<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>A defaultable <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value type</span></a> <span class="math notranslate nohighlight">\(t\)</span> must be:</p>
+<ul>
+<li><p>either a <a class="reference internal" href="../syntax/types.html#syntax-numtype"><span class="std std-ref">number type</span></a>,</p></li>
+<li><p>or a <a class="reference internal" href="../syntax/types.html#syntax-vectype"><span class="std std-ref">vector type</span></a>,</p></li>
+<li><p>or a <a class="reference internal" href="../syntax/types.html#syntax-numtype"><span class="std std-ref">nullable reference type</span></a>.</p></li>
+</ul>
+</li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+}{
+  C \href{../valid/types.html#valid-defaultable}{\vdash} \href{../syntax/types.html#syntax-numtype}{\mathit{numtype}} \href{../valid/types.html#valid-defaultable}{\mathrel{\mbox{defaultable}}}
+}\]</div>
+<div class="math notranslate nohighlight">
+\[\frac{
+}{
+  C \href{../valid/types.html#valid-defaultable}{\vdash} \href{../syntax/types.html#syntax-vectype}{\mathit{vectype}} \href{../valid/types.html#valid-defaultable}{\mathrel{\mbox{defaultable}}}
+}\]</div>
+<div class="math notranslate nohighlight">
+\[\frac{
+}{
+  C \href{../valid/types.html#valid-defaultable}{\vdash} (\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\href{../syntax/types.html#syntax-heaptype}{\mathit{heaptype}}) \href{../valid/types.html#valid-defaultable}{\mathrel{\mbox{defaultable}}}
+}\]</div>
+</section>
+<section id="id3">
+<h3>Table Types<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>A defaultable <a class="reference internal" href="../syntax/types.html#syntax-tabletype"><span class="std std-ref">table type</span></a> must be:</p>
+<ul>
+<li><p>of the form <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-limits}{\mathit{limits}}~t\)</span>, where <cite>t</cite> is a <a class="reference internal" href="#valid-defaultable"><span class="std std-ref">defaultable</span></a> <a class="reference internal" href="../syntax/types.html#syntax-numtype"><span class="std std-ref">reference type</span></a>.</p></li>
+</ul>
+</li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+  C \href{../valid/types.html#valid-defaultable}{\vdash} \href{../syntax/types.html#syntax-reftype}{\mathit{reftype}} \href{../valid/types.html#valid-defaultable}{\mathrel{\mbox{defaultable}}}
+}{
+  C \href{../valid/types.html#valid-defaultable}{\vdash} \href{../syntax/types.html#syntax-limits}{\mathit{limits}}~\href{../syntax/types.html#syntax-reftype}{\mathit{reftype}} \href{../valid/types.html#valid-defaultable}{\mathrel{\mbox{defaultable}}}
 }\]</div>
 </section>
 </section>
