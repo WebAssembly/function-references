@@ -8,7 +8,7 @@ The proposal distinguished regular and nullable function reference. The former c
 
 The proposal has instructions for producing and consuming (calling) function references. It also includes instruction for testing and converting between regular and nullable references.
 
-Typed references have no canonical default value, because they cannot be null. To enable storing them in locals, which so far depend on default values for initialisation, the proposal also introduces a new instruction `let` for block-scoped locals whose initialisation values are taken from the operand stack.
+Typed references have no canonical default value, because they cannot be null. To enable storing them in locals, which so far depend on default values for initialisation, the proposal also tracks the initialisation status of locals during validation.
 
 
 ### Motivation
@@ -36,7 +36,7 @@ Typed references have no canonical default value, because they cannot be null. T
 
 * Refine the instruction `ref.func $f` to return a typed function reference
 
-* Add a block instruction `let (local t*) ... end` for introducing locals with block scope, in order to handle reference types without default initialisation values
+* Track initialisation status of locals during validation and only allow `local.get` after a `local.set/tee` in the same or a surrounding block.
 
 * Add an optional initialiser expression to table definitions, for element types that do not have an implicit default value.
 
@@ -242,28 +242,6 @@ Note: Extending block types with index sets to allow initialization status to la
 * Note: `ref.is_null` already exists via the [reference types proposal](https://github.com/WebAssembly/reference-types)
 
 
-#### Local Bindings
-
-* `let <blocktype> (local <valtype>)* <instr>* end` locally binds operands to variables
-  - `let bt (local t)* instr* end : [t1* t*] -> [t2*]`
-    - iff `bt = [t1*] -> [t2*]`
-    - and `instr* : bt` under a context with `locals` extended with `t*` and `labels` extended with `[t2*]`
-
-Note: The latter condition implies that inside the body of the `let`, its locals are prepended to the list of locals. Nesting multiple `let` blocks hence addresses them relatively, similar to labels. Function-level local declarations can be viewed as syntactic sugar for a bunch of zero constant instructions and a `let` wrapping the function body. That is,
-```
-(func ... (local t)* ...)
-```
-is equivalent to
-```
-(func ... (t.default)* (let (local t)* ...))
-```
-where `(t.default)` is `(t.const 0)` for numeric types `t`, and `(ref.null)` for reference types.
-
-The rule also implies that let-bound locals are mutable.
-
-Like all other block instructions, `let` binds a label
-
-
 #### Locals
 
 Typing of local instructions is updated to account for the initialization status of locals.
@@ -339,7 +317,6 @@ The opcode for heap types is encoded as an `s33`.
 | ------ | ------------------------ | ---------- |
 | 0x14   | `call_ref`               |            |
 | 0x15   | `return_call_ref`        |            |
-| 0x17   | `let <bt> <locals>`      | `bt : blocktype, locals : (as in functions)` |
 | 0xd3   | `ref.as_non_null`        |            |
 | 0xd4   | `br_on_null $l`          | `$l : u32` |
 | 0xd6   | `br_on_non_null $l`      | `$l : u32` |
