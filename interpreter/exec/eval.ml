@@ -64,7 +64,6 @@ and admin_instr' =
   | ReturningInvoke of value stack * func_inst
   | Breaking of int32 * value stack
   | Label of int * instr list * code
-  | Local of int * value list * code
   | Frame of int * frame * code
 
 type config =
@@ -183,16 +182,6 @@ let rec step (c : config) : config =
           vs', [Plain (Block (bt, es2)) @@ e.at]
         else
           vs', [Plain (Block (bt, es1)) @@ e.at]
-
-      | Let (bt, locals, es'), vs ->
-        let vs0, vs' = split (List.length locals) vs e.at in
-        let FuncType (ts1, ts2) = block_type c.frame.inst bt e.at in
-        let vs1, vs2 = split (List.length ts1) vs' e.at in
-        vs2, [
-          Local (List.length ts2, List.rev vs0,
-            (vs1, [Plain (Block (bt, es')) @@ e.at])
-          ) @@ e.at
-        ]
 
       | Br x, vs ->
         [], [Breaking (x.it, vs) @@ e.at]
@@ -694,20 +683,6 @@ let rec step (c : config) : config =
       let c' = step {c with code = code'} in
       vs, [Label (n, es0, c'.code) @@ e.at]
 
-    | Local (n, vs0, (vs', [])), vs ->
-      vs' @ vs, []
-
-    | Local (n, vs0, (vs', e' :: es')), vs when is_jumping e' ->
-      vs' @ vs, [e']
-
-    | Local (n, vs0, code'), vs ->
-      let locals = List.map (fun v -> ref (Some v)) vs0 in
-      let frame' = {c.frame with locals = locals @ c.frame.locals} in
-      let c' = step {c with frame = frame'; code = code'} in
-      let vs0' = List.map (fun loc -> Option.get (!loc))
-        (take (List.length vs0) c'.frame.locals e.at) in
-      vs, [Local (n, vs0', c'.code) @@ e.at]
-
     | Frame (n, frame', (vs', [])), vs ->
       vs' @ vs, []
 
@@ -737,7 +712,7 @@ let rec step (c : config) : config =
         let {locals; body; _} = func.it in
         let m = Lib.Promise.value inst' in
         let ts = List.map (fun t -> Types.sem_value_type m.types t.it) locals in
-        let locals' = List.rev (List.map Option.some args) @ List.map default_value ts in
+        let locals' = List.(rev (map Option.some args) @ map default_value ts) in
         let frame' = {inst = m; locals = List.map ref locals'} in
         let instr' = [Label (n2, [], ([], List.map plain body)) @@ func.at] in
         vs', [Frame (n2, frame', ([], instr')) @@ e.at]

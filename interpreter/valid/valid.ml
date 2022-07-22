@@ -359,17 +359,6 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
     check_block {c with labels = ts2 :: c.labels} es2 ft e.at;
     (ts1 @ [NumType I32Type]) --> ts2, []
 
-  | Let (bt, locals, es) ->
-    let FuncType (ts1, ts2) as ft = check_block_type c bt e.at in
-    let ts = List.map (check_local c false) locals in
-    let c' =
-      { c with
-        labels = ts2 :: c.labels;
-        locals = ts @ c.locals;
-      }
-    in check_block c' es ft e.at;
-    (ts1 @ List.map Source.it locals) --> ts2, []
-
   | Br x ->
     label c x -->... [], []
 
