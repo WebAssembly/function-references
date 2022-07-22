@@ -144,6 +144,17 @@ However, restrictions apply to most other types, such as <a class="reference int
   C \href{../valid/types.html#valid-heaptype}{\vdash} \href{../syntax/modules.html#syntax-typeidx}{\mathit{typeidx}} \mathrel{\mbox{ok}}
 }\]</div>
 </section>
+<section id="xref-syntax-types-syntax-valtype-mathsf-bot">
+<h3><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{bot}}\)</span><a class="headerlink" href="#xref-syntax-types-syntax-valtype-mathsf-bot" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>The heap type is valid.</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\frac{
+}{
+  C \href{../valid/types.html#valid-heaptype}{\vdash} \href{../syntax/types.html#syntax-valtype}{\mathsf{bot}} \mathrel{\mbox{ok}}
+}\]</div>
+</section>
 </section>
 <section id="reference-types">
 <span id="valid-reftype"></span><span id="index-3"></span><h2>Reference Types<a class="headerlink" href="#reference-types" title="Permalink to this headline">¶</a></h2>
@@ -165,8 +176,8 @@ However, restrictions apply to most other types, such as <a class="reference int
 <section id="value-types">
 <span id="valid-bottype"></span><span id="valid-valtype"></span><span id="index-4"></span><h2>Value Types<a class="headerlink" href="#value-types" title="Permalink to this headline">¶</a></h2>
 <p>Valid <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value types</span></a> are either valid <a class="reference internal" href="#valid-numtype"><span class="std std-ref">number type</span></a>,  <a class="reference internal" href="#valid-reftype"><span class="std std-ref">reference type</span></a>, or the <a class="reference internal" href="../syntax/types.html#syntax-bottype"><span class="std std-ref">bottom type</span></a>.</p>
-<section id="xref-syntax-types-syntax-valtype-mathsf-bot">
-<h3><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{bot}}\)</span><a class="headerlink" href="#xref-syntax-types-syntax-valtype-mathsf-bot" title="Permalink to this headline">¶</a></h3>
+<section id="id1">
+<h3><span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{bot}}\)</span><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>The value type is valid.</p></li>
 </ul>
@@ -180,8 +191,8 @@ However, restrictions apply to most other types, such as <a class="reference int
 <section id="block-types">
 <span id="valid-blocktype"></span><span id="index-5"></span><h2>Block Types<a class="headerlink" href="#block-types" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="../syntax/instructions.html#syntax-blocktype"><span class="std std-ref">Block types</span></a> may be expressed in one of two forms, both of which are converted to plain <a class="reference internal" href="../syntax/types.html#syntax-functype"><span class="std std-ref">function types</span></a> by the following rules.</p>
-<section id="id1">
-<h3><span class="math notranslate nohighlight">\(\href{../syntax/modules.html#syntax-typeidx}{\mathit{typeidx}}\)</span><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<section id="id2">
+<h3><span class="math notranslate nohighlight">\(\href{../syntax/modules.html#syntax-typeidx}{\mathit{typeidx}}\)</span><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>The type <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{types}}[\href{../syntax/modules.html#syntax-typeidx}{\mathit{typeidx}}]\)</span> must be defined in the context.</p></li>
 <li><p>Then the block type is valid as <a class="reference internal" href="../syntax/types.html#syntax-functype"><span class="std std-ref">function type</span></a> <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{types}}[\href{../syntax/modules.html#syntax-typeidx}{\mathit{typeidx}}]\)</span>.</p></li>
@@ -378,8 +389,8 @@ However, restrictions apply to most other types, such as <a class="reference int
 <section id="defaultable-types">
 <span id="valid-defaultable"></span><span id="index-13"></span><h2>Defaultable Types<a class="headerlink" href="#defaultable-types" title="Permalink to this headline">¶</a></h2>
 <p>A type is <em>defaultable</em> if it has a <a class="reference internal" href="../exec/runtime.html#default-val"><span class="std std-ref">default value</span></a> for initialization.</p>
-<section id="id2">
-<h3>Value Types<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<section id="id3">
+<h3>Value Types<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>A defaultable <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value type</span></a> <span class="math notranslate nohighlight">\(t\)</span> must be:</p>
 <ul>
@@ -405,8 +416,8 @@ However, restrictions apply to most other types, such as <a class="reference int
   C \href{../valid/types.html#valid-defaultable}{\vdash} (\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\href{../syntax/types.html#syntax-heaptype}{\mathit{heaptype}}) \href{../valid/types.html#valid-defaultable}{\mathrel{\mbox{defaultable}}}
 }\]</div>
 </section>
-<section id="id3">
-<h3>Table Types<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<section id="id4">
+<h3>Table Types<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>A defaultable <a class="reference internal" href="../syntax/types.html#syntax-tabletype"><span class="std std-ref">table type</span></a> must be:</p>
 <ul>

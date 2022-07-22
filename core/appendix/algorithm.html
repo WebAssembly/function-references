@@ -136,6 +136,7 @@ Consequently, it can be integrated directly into a decoder.</p>
 <span class="k">func</span> <span class="nf">matches</span>(<span class="nf">t1</span> : val_type, <span class="nf">t2</span> : val_type) : bool =
   <span class="k">return</span>
     (is_num t1 &amp;&amp; is_num t2 &amp;&amp; t1 = t2) ||
+    (is_vec t1 &amp;&amp; is_vec t2 &amp;&amp; t1 == t2) ||
     (is_ref t1 &amp;&amp; is_ref t2 &amp;&amp; matches_ref(t1, t2)) ||
     t1 = Bot
 </pre></div>
