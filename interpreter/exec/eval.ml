@@ -245,19 +245,6 @@ let rec step (c : config) : config =
         | _ -> assert false
         )
 
-      | FuncBind x, Ref (NullRef _) :: vs ->
-        vs, [Trapping "null function reference" @@ e.at]
-
-      | FuncBind x, Ref (FuncRef f) :: vs ->
-        let FuncType (ts, _) = Func.type_of f in
-        let FuncType (ts', _) = func_type c.frame.inst x in
-        let args, vs' =
-          try split (List.length ts - List.length ts') vs e.at
-          with Failure _ -> Crash.error e.at "type mismatch at function bind"
-        in
-        let f' = Func.alloc_closure (type_ c.frame.inst x) f args in
-        Ref (FuncRef f') :: vs', []
-
       | Drop, v :: vs' ->
         vs', []
 
@@ -720,9 +707,6 @@ let rec step (c : config) : config =
       | Func.HostFunc (_, f) ->
         (try List.rev (f (List.rev args)) @ vs', []
         with Crash (_, msg) -> Crash.error e.at msg)
-
-      | Func.ClosureFunc (_, f', args') ->
-        args @ args' @ vs', [Invoke f' @@ e.at]
       )
   in {c with code = vs', es' @ List.tl es}
 
@@ -741,10 +725,9 @@ let rec eval (c : config) : value stack =
 
 (* Functions & Constants *)
 
-let rec at_func = function
+let at_func = function
  | Func.AstFunc (_, _, f) -> f.at
  | Func.HostFunc _ -> no_region
- | Func.ClosureFunc (_, func, _) -> at_func func
 
 let invoke (func : func_inst) (vs : value list) : value list =
   let at = at_func func in
