@@ -237,6 +237,7 @@ type table = table' Source.phrase
 and table' =
 {
   ttype : table_type;
+  tinit : const;
 }
 
 type memory = memory' Source.phrase

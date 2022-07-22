@@ -281,6 +281,7 @@
 .. |FBODY| mathdef:: \xref{syntax/modules}{syntax-func}{\K{body}}
 
 .. |TTYPE| mathdef:: \xref{syntax/modules}{syntax-table}{\K{type}}
+.. |TINIT| mathdef:: \xref{syntax/modules}{syntax-table}{\K{init}}
 
 .. |MTYPE| mathdef:: \xref{syntax/modules}{syntax-mem}{\K{type}}
 
@@ -926,7 +927,6 @@
 .. |vdashexterntype| mathdef:: \xref{valid/types}{valid-externtype}{\vdash}
 
 .. |vdashvaltypedefaultable| mathdef:: \xref{valid/types}{valid-defaultable}{\vdash}
-.. |vdashtabletypedefaultable| mathdef:: \xref{valid/types}{valid-defaultable}{\vdash}
 
 .. |vdashnumtypematch| mathdef:: \xref{valid/matching}{match-numtype}{\vdash}
 .. |vdashheaptypematch| mathdef:: \xref{valid/matching}{match-heaptype}{\vdash}

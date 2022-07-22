@@ -915,8 +915,19 @@ let func_section s =
 (* Table section *)
 
 let table s =
-  let ttype = table_type s in
-  {ttype}
+  either [
+    (fun s ->
+      expect 0x40 s "";
+      let ttype = table_type s in
+      let tinit = const s in
+      {ttype; tinit}
+    );
+    (fun s ->
+      let at = region s (pos s) (pos s) in
+      let TableType (_, (_, ht)) as ttype = table_type s in
+      {ttype; tinit = [RefNull ht @@ at] @@ at}
+    );
+  ] s
 
 let table_section s =
   section `TableSection (vec (at table)) [] s

@@ -48,7 +48,7 @@ Functions :math:`\func` are classified by :ref:`function types <syntax-functype>
    }
 
 
-.. index:: table, table type, defaultable
+.. index:: table, table type, reference type, expression, constant
    pair: validation; table
    single: abstract syntax; table
 .. _valid-table:
@@ -58,10 +58,16 @@ Tables
 
 Tables :math:`\table` are classified by :ref:`table types <syntax-tabletype>`.
 
-:math:`\{ \TTYPE~\tabletype \}`
-...............................
+:math:`\{ \TTYPE~\tabletype, \TINIT~\expr \}`
+.............................................
 
 * The :ref:`table type <syntax-tabletype>` :math:`\tabletype` must be :ref:`valid <valid-tabletype>`.
+
+* Let :math:`t` be the element :ref:`reference type <syntax-reftype>` of :math:`\tabletype`.
+
+* The expression :math:`\expr` must be :ref:`valid <valid-expr>` with :ref:`result type <syntax-resulttype>` :math:`[t]`.
+
+* The expression :math:`\expr` must be :ref:`constant <valid-constant>`.
 
 * Then the table definition is valid with type :math:`\tabletype`.
 
@@ -69,9 +75,13 @@ Tables :math:`\table` are classified by :ref:`table types <syntax-tabletype>`.
    \frac{
      C \vdashtabletype \tabletype \ok
      \qquad
-     C \vdashtabletypedefaultable \tabletype \defaultable
+     \tabletype = \limits~t
+     \qquad
+     C \vdashexpr \expr : [t]
+     \qquad
+     C \vdashexprconst \expr \const
    }{
-     C \vdashtable \{ \TTYPE~\tabletype \} : \tabletype
+     C \vdashtable \{ \TTYPE~\tabletype, \TINIT~\expr \} : \tabletype
    }
 
 
@@ -100,7 +110,7 @@ Memories :math:`\mem` are classified by :ref:`memory types <syntax-memtype>`.
    }
 
 
-.. index:: global, global type, expression
+.. index:: global, global type, expression, constant
    pair: validation; global
    single: abstract syntax; global
 .. _valid-global:
@@ -134,7 +144,7 @@ Globals :math:`\global` are classified by :ref:`global types <syntax-globaltype>
    }
 
 
-.. index:: element, table, table index, expression, function index
+.. index:: element, table, table index, expression, constant, function index
    pair: validation; element
    single: abstract syntax; element
    single: table; element
@@ -235,7 +245,7 @@ Element segments :math:`\elem` are classified by the :ref:`reference type <synta
 
 
 
-.. index:: data, memory, memory index, expression, byte
+.. index:: data, memory, memory index, expression, constant, byte
    pair: validation; data
    single: abstract syntax; data
    single: memory; data
