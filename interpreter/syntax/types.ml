@@ -2,7 +2,7 @@
 
 type type_idx = int32
 type local_idx = int32
-type name = int list
+type name = Utf8.unicode
 
 and syn_var = type_idx
 and sem_var = def_type Lib.Promise.t
@@ -19,7 +19,7 @@ and value_type =
   NumType of num_type | VecType of vec_type | RefType of ref_type | BotType
 
 and result_type = value_type list
-and instr_type = result_type * local_idx list
+and instr_type = result_type * result_type * local_idx list
 and func_type = FuncType of result_type * result_type
 and def_type = FuncDefType of func_type
 
@@ -212,10 +212,12 @@ let string_of_name n =
   List.iter escape n;
   Buffer.contents b
 
+let string_of_idx x = I32.to_string_u x
+
 let rec string_of_var =
   let inner = ref false in
   function
-  | SynVar x -> I32.to_string_u x
+  | SynVar x -> string_of_idx x
   | SemVar x ->
     if !inner then "..." else
     ( inner := true;

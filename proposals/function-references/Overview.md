@@ -201,7 +201,7 @@ The following rules, now defined in terms of heap types, replace and extend the 
 
 #### Local Types
 
-* Locals are now types in the context with types of the following form:
+* Locals are now recorded in the context with types of the following form:
   - `localtype ::= set? <valtype>`
   - the flag `set` records that the local has been initialized
   - all locals with non-defaultable type start out unset
@@ -223,7 +223,7 @@ The following rules, now defined in terms of heap types, replace and extend the 
 
 * Block types are instruction types with empty index set.
 
-Note: Extending block types to with index sets is a possible extension.
+Note: Extending block types with index sets to allow initialization status to last beyond a block's end is a possible extension.
 
 
 ### Instructions
@@ -305,7 +305,7 @@ Like all other block instructions, `let` binds a label
 
 #### Locals
 
-Typing of local instructions is updated to account for uninitialized locals.
+Typing of local instructions is updated to account for the initialization status of locals.
 
 * `local.get $x`
   - `local.get $x : [] -> [t]`
@@ -319,21 +319,22 @@ Typing of local instructions is updated to account for uninitialized locals.
   - `local.tee $x : [t] -> [t] $x`
     - iff `$x : set? t`
 
-Note: These typing rules do not try to suppress indices for locals that have already been set, but an implementation could.
+Note: These typing rules do not try to exclude indices for locals that have already been set, but an implementation could.
 
 
-#### Instruction sequences
+#### Instruction Sequences
 
 Typing of instruction sequences is updated to account for initialization of locals.
 
-* `instr1 instr*`
+* `instr*`
   - `instr1 instr* : [t1*] -> [t3*] x1* x2*`
     - iff `instr1 : [t1*] -> [t2*] x1*`
     - and `instr* : [t2*] -> [t3*] x2*` under a context where `x1*` are changed to `set`
+  - `epsilon : [] -> [] epsilon`
 
-Note: This typing rules does not try to eliminate duplicate indices, but an implementation could.
-
-A weakening rule for instructions allows to go to a supertype:
+Note: These typing rules do not try to eliminate duplicate indices, but an implementation could.
+ 
+A subsumption rule allows to go to a supertype for any instruction:
 
 * `instr`
   - `instr : [t1*] -> [t2*] x*`

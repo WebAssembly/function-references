@@ -291,7 +291,7 @@ let check_memop (c : context) (memop : ('t, 's) memop) ty_size get_sz at =
  *   e  : instr
  *   es : instr list
  *   v  : value
- *   t  : value_type var
+ *   t  : value_type
  *   ts : result_type
  *   x  : variable
  *
@@ -467,7 +467,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
 
   | LocalGet x ->
     let LocalType (t, init) = local c x in
-    require (init = Initialized) x.at "local is uninitialized";
+    require (init = Initialized) x.at "uninitialized local";
     [] --> [t], []
 
   | LocalSet x ->

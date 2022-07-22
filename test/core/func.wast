@@ -661,7 +661,7 @@
     (type $t (func))
     (func $type-local-uninitialized (local $x (ref $t)) (drop (local.get $x)))
   )
-  "local is uninitialized"
+  "uninitialized local"
 )
 
 
@@ -961,22 +961,28 @@
 
 ;; Duplicate name errors
 
-(assert_malformed (module quote
-  "(func $foo)"
-  "(func $foo)")
-  "duplicate func")
-(assert_malformed (module quote
-  "(import \"\" \"\" (func $foo))"
-  "(func $foo)")
-  "duplicate func")
-(assert_malformed (module quote
-  "(import \"\" \"\" (func $foo))"
-  "(import \"\" \"\" (func $foo))")
-  "duplicate func")
+(assert_malformed
+  (module quote "(func $foo)" "(func $foo)")
+  "duplicate func"
+)
+(assert_malformed
+  (module quote "(import \"\" \"\" (func $foo))" "(func $foo)")
+  "duplicate func"
+)
+(assert_malformed
+  (module quote "(import \"\" \"\" (func $foo))" "(import \"\" \"\" (func $foo))")
+  "duplicate func"
+)
 
-(assert_malformed (module quote "(func (param $foo i32) (param $foo i32))")
-  "duplicate local")
-(assert_malformed (module quote "(func (param $foo i32) (local $foo i32))")
-  "duplicate local")
-(assert_malformed (module quote "(func (local $foo i32) (local $foo i32))")
-  "duplicate local")
+(assert_malformed
+  (module quote "(func (param $foo i32) (param $foo i32))")
+  "duplicate local"
+)
+(assert_malformed
+  (module quote "(func (param $foo i32) (local $foo i32))")
+  "duplicate local"
+)
+(assert_malformed
+  (module quote "(func (local $foo i32) (local $foo i32))")
+  "duplicate local"
+)
