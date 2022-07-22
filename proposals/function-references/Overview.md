@@ -284,20 +284,14 @@ The opcode for heap types is encoded as an `s33`.
 
 ### Tables
 
-In order to enable tables of non-nullable type, the table section is extended to allow an explicit initialization value for the table slots.
-
-| Section Code | Content |
-|--------------|---------|
-| ... | |
-| 0x04 | vec(tabledef) |
-| ... | |
+Entries to the table section are extended as follows:
 
 | Table Definition | Note |
 |------------------|------|
 | tabletype        | null-initialized table (as before) |
 | 0x40 tabletype constexpr | explicitly initialized table |
 
-The encoding of a table type starts with the encoding of a reference type, which cannot be 0x40 (this is the special type code reserved for the empty block type). Consequently, both forms can be distinguished by the first byte.
+The encoding of a table type starts with the encoding of a reference type, which cannot be 0x40 (since this is a pseudo type code otherwise only used in block types). Consequently, both forms can be distinguished on the first byte.
 
 
 ## JS API
