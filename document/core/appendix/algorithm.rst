@@ -201,6 +201,8 @@ When a local is set that was not set already,
 then its initialization status is updated and the change is recorded in the initialization stack.
 Thus, the initialization status of all locals can be reset to a previous state by denoting a specific height in the initialization stack.
 
+The size of the initialization stack is bounded by the number of (non-defaultable) locals in a function, so can be preallocated by an algorithm.
+
 The control stack is likewise manipulated through auxiliary functions:
 
 .. code-block:: pseudo
