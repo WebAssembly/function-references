@@ -918,6 +918,7 @@ let table s =
   either [
     (fun s ->
       expect 0x40 s "";
+      zero s;
       let ttype = table_type s in
       let tinit = const s in
       {ttype; tinit}
