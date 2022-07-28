@@ -289,9 +289,10 @@ Entries to the table section are extended as follows:
 | Table Definition | Note |
 |------------------|------|
 | tabletype        | null-initialized table (as before) |
-| 0x40 tabletype constexpr | explicitly initialized table |
+| 0x40 0x00 tabletype constexpr | explicitly initialized table |
 
-The encoding of a table type starts with the encoding of a reference type, which cannot be 0x40 (since this is a pseudo type code otherwise only used in block types). Consequently, both forms can be distinguished on the first byte.
+The encoding of a table type starts with the encoding of a reference type, which cannot be 0x40 (since this is a pseudo type code otherwise only used in block types). Consequently, both forms can be distinguished by the first byte.
+The second byte is reserved for possible future extensions.
 
 
 ## JS API
