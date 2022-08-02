@@ -1,5 +1,6 @@
 open Source
 open Ast
+open Pack
 open Script
 open Value
 open Types
@@ -59,23 +60,23 @@ let num_type t = string_of_num_type t
 let vec_type t = string_of_vec_type t
 let ref_type t = string_of_ref_type t
 let heap_type t = string_of_heap_type t
-let value_type t = string_of_value_type t
+let val_type t = string_of_val_type t
 
-let decls kind ts = tab kind (atom value_type) ts
+let decls kind ts = tab kind (atom val_type) ts
 
-let func_type (FuncType (ins, out)) =
-  Node ("func", decls "param" ins @ decls "result" out)
+let func_type (FuncT (ts1, ts2)) =
+  Node ("func", decls "param" ts1 @ decls "result" ts2)
 
 let def_type dt =
   match dt with
-  | FuncDefType ft -> func_type ft
+  | DefFuncT ft -> func_type ft
 
 let limits nat {min; max} =
   String.concat " " (nat min :: opt nat max)
 
 let global_type = function
-  | GlobalType (t, Immutable) -> atom string_of_value_type t
-  | GlobalType (t, Mutable) -> Node ("mut", [atom string_of_value_type t])
+  | GlobalT (Cons, t) -> atom string_of_val_type t
+  | GlobalT (Var, t) -> Node ("mut", [atom string_of_val_type t])
 
 let pack_size = function
   | Pack8 -> "8"
@@ -354,7 +355,7 @@ struct
 end
 
 let oper (iop, fop) op =
-  num_type (type_of_num op) ^ "." ^
+  Sem.string_of_num_type (type_of_num op) ^ "." ^
   (match op with
   | I32 o -> iop "32" o
   | I64 o -> iop "64" o
@@ -426,12 +427,11 @@ let vec_laneop instr (op, i) =
 let var x = nat32 x.it
 let num v = string_of_num v.it
 let vec v = string_of_vec v.it
-let constop v = num_type (type_of_num v) ^ ".const"
-let vec_constop v = vec_type (type_of_vec v) ^ ".const i32x4"
+let constop v = Sem.string_of_num_type (type_of_num v) ^ ".const"
+let vec_constop v = Sem.string_of_vec_type (type_of_vec v) ^ ".const i32x4"
 
 let block_type = function
-  | VarBlockType (SynVar x) -> [Node ("type " ^ nat32 x, [])]
-  | VarBlockType (SemVar _) -> assert false
+  | VarBlockType x -> [Node ("type " ^ nat32 x, [])]
   | ValBlockType ts -> decls "result" (list_of_opt ts)
 
 let rec instr e =
@@ -448,9 +448,6 @@ let rec instr e =
     | If (bt, es1, es2) ->
       "if", block_type bt @
         [Node ("then", list instr es1); Node ("else", list instr es2)]
-    | Let (bt, locals, es) ->
-      "let", block_type bt @ decls "local" (List.map Source.it locals) @
-        list instr es
     | Br x -> "br " ^ var x, []
     | BrIf x -> "br_if " ^ var x, []
     | BrTable (xs, x) ->
@@ -527,7 +524,7 @@ let func_with_name name f =
   let {ftype; locals; body} = f.it in
   Node ("func" ^ name,
     [Node ("type " ^ var ftype, [])] @
-    decls "local" (List.map Source.it locals) @
+    decls "local" (List.map (fun loc -> loc.it.ltype) locals) @
     list instr body
   )
 
@@ -541,21 +538,21 @@ let func f =
 (* Tables & memories *)
 
 let table off i tab =
-  let {ttype = TableType (lim, t)} = tab.it in
+  let {ttype = TableT (lim, t)} = tab.it in
   Node ("table $" ^ nat (off + i) ^ " " ^ limits nat32 lim,
     [atom ref_type t]
   )
 
 let memory off i mem =
-  let {mtype = MemoryType lim} = mem.it in
+  let {mtype = MemoryT lim} = mem.it in
   Node ("memory $" ^ nat (off + i) ^ " " ^ limits nat32 lim, [])
 
 let is_elem_kind = function
-  | (NonNullable, FuncHeapType) -> true
+  | (NoNull, FuncHT) -> true
   | _ -> false
 
 let elem_kind = function
-  | (NonNullable, FuncHeapType) -> "func"
+  | (NoNull, FuncHT) -> "func"
   | _ -> assert false
 
 let is_elem_index e =
@@ -672,7 +669,7 @@ let num mode = if mode = `Binary then hex_string_of_num else string_of_num
 let vec mode = if mode = `Binary then hex_string_of_vec else string_of_vec
 
 let ref_ = function
-  | NullRef t -> Node ("ref.null " ^ heap_type t, [])
+  | NullRef t -> Node ("ref.null " ^ Types.Sem.string_of_heap_type t, [])
   | Script.ExternRef n -> Node ("ref.extern " ^ nat32 n, [])
   | _ -> assert false
 
