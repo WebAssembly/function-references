@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Modules &#8212; WebAssembly 2.1 + function references (Draft 2022-07-28)</title>
+    <title>Modules &#8212; WebAssembly 2.1 + function references (Draft 2022-08-02)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -214,12 +214,12 @@ If no such index exists, then a new <a class="reference internal" href="types.ht
 \[\begin{split}\begin{array}{llclll}
 \def\mathdef3391#1{{}}\mathdef3391{function} &amp; \href{../text/modules.html#text-func}{\mathtt{func}}_I &amp;::=&amp;
   \def\mathdef3466#1{\mbox{‘}\mathtt{#1}\mbox{’}}\mathdef3466{(}~\def\mathdef3467#1{\mbox{‘}\mathtt{#1}\mbox{’}}\mathdef3467{func}~~\href{../text/values.html#text-id}{\mathtt{id}}^?~~x,I'{:}\href{../text/modules.html#text-typeuse}{\mathtt{typeuse}}_I~~
-  (t{:}\href{../text/modules.html#text-local}{\mathtt{local}}_I)^\ast~~(\mathit{in}{:}\href{../text/instructions.html#text-instr}{\mathtt{instr}}_{I''})^\ast~\def\mathdef3468#1{\mbox{‘}\mathtt{#1}\mbox{’}}\mathdef3468{)} \\ &amp;&amp;&amp; \qquad
-    \Rightarrow\quad \{ \href{../syntax/modules.html#syntax-func}{\mathsf{type}}~x, \href{../syntax/modules.html#syntax-func}{\mathsf{locals}}~t^\ast, \href{../syntax/modules.html#syntax-func}{\mathsf{body}}~\mathit{in}^\ast~\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{end}} \} \\ &amp;&amp;&amp; \qquad\qquad\qquad
+  (\mathit{loc}{:}\href{../text/modules.html#text-local}{\mathtt{local}}_I)^\ast~~(\mathit{in}{:}\href{../text/instructions.html#text-instr}{\mathtt{instr}}_{I''})^\ast~\def\mathdef3468#1{\mbox{‘}\mathtt{#1}\mbox{’}}\mathdef3468{)} \\ &amp;&amp;&amp; \qquad
+    \Rightarrow\quad \{ \href{../syntax/modules.html#syntax-func}{\mathsf{type}}~x, \href{../syntax/modules.html#syntax-func}{\mathsf{locals}}~\mathit{loc}^\ast, \href{../syntax/modules.html#syntax-func}{\mathsf{body}}~\mathit{in}^\ast~\href{../syntax/instructions.html#syntax-instr-control}{\mathsf{end}} \} \\ &amp;&amp;&amp; \qquad\qquad\qquad
     (\mathrel{\mbox{if}} I'' = I' \href{../syntax/conventions.html#notation-compose}{\oplus} \{\href{../text/conventions.html#text-context}{\mathsf{locals}}~\mathrm{id}(\href{../text/modules.html#text-local}{\mathtt{local}})^\ast\} ~\href{../text/conventions.html#text-context-wf}{\mbox{well-formed}}) \\[1ex]
 \def\mathdef3391#1{{}}\mathdef3391{local} &amp; \href{../text/modules.html#text-local}{\mathtt{local}}_I &amp;::=&amp;
   \def\mathdef3469#1{\mbox{‘}\mathtt{#1}\mbox{’}}\mathdef3469{(}~\def\mathdef3470#1{\mbox{‘}\mathtt{#1}\mbox{’}}\mathdef3470{local}~~\href{../text/values.html#text-id}{\mathtt{id}}^?~~t{:}\href{../text/types.html#text-valtype}{\mathtt{valtype}}_I~\def\mathdef3471#1{\mbox{‘}\mathtt{#1}\mbox{’}}\mathdef3471{)}
-    \quad\Rightarrow\quad t \\
+    \quad\Rightarrow\quad \{ \href{../syntax/modules.html#syntax-local}{\mathsf{type}}~t \} \\
 \end{array}\end{split}\]</div>
 <p>The definition of the local <a class="reference internal" href="conventions.html#text-context"><span class="std std-ref">identifier context</span></a> <span class="math notranslate nohighlight">\(I''\)</span> uses the following auxiliary function to extract optional identifiers from locals:</p>
 <div class="math notranslate nohighlight">

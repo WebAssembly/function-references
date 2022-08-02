@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Modules &#8212; WebAssembly 2.1 + function references (Draft 2022-07-28)</title>
+    <title>Modules &#8212; WebAssembly 2.1 + function references (Draft 2022-08-02)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -386,14 +386,14 @@ The <span class="math notranslate nohighlight">\(\href{../syntax/modules.html#sy
   \mathit{size}{:}\href{../binary/values.html#binary-int}{\def\mathdef1870#1{{\mathtt{u}#1}}\mathdef1870{\mathtt{32}}}~~\mathit{code}{:}\href{../binary/modules.html#binary-func}{\mathtt{func}}
     &amp;\Rightarrow&amp; \mathit{code} &amp; (\mathrel{\mbox{if}} \mathit{size} = ||\href{../binary/modules.html#binary-func}{\mathtt{func}}||) \\
 \def\mathdef1865#1{{}}\mathdef1865{function} &amp; \href{../binary/modules.html#binary-func}{\mathtt{func}} &amp;::=&amp;
-  (t^\ast)^\ast{:}\href{../binary/conventions.html#binary-vec}{\mathtt{vec}}(\href{../binary/modules.html#binary-local}{\mathtt{locals}})~~e{:}\href{../binary/instructions.html#binary-expr}{\mathtt{expr}}
-    &amp;\Rightarrow&amp; \href{../syntax/conventions.html#notation-concat}{\mathrm{concat}}((t^\ast)^\ast), e
-      &amp; (\mathrel{\mbox{if}} |\href{../syntax/conventions.html#notation-concat}{\mathrm{concat}}((t^\ast)^\ast)| &lt; 2^{32}) \\
+  (\href{../syntax/modules.html#syntax-local}{\mathit{local}}^\ast)^\ast{:}\href{../binary/conventions.html#binary-vec}{\mathtt{vec}}(\href{../binary/modules.html#binary-local}{\mathtt{locals}})~~e{:}\href{../binary/instructions.html#binary-expr}{\mathtt{expr}}
+    &amp;\Rightarrow&amp; \href{../syntax/conventions.html#notation-concat}{\mathrm{concat}}((\href{../syntax/modules.html#syntax-local}{\mathit{local}}^\ast)^\ast), e
+      &amp; (\mathrel{\mbox{if}} |\href{../syntax/conventions.html#notation-concat}{\mathrm{concat}}((\href{../syntax/modules.html#syntax-local}{\mathit{local}}^\ast)^\ast)| &lt; 2^{32}) \\
 \def\mathdef1865#1{{}}\mathdef1865{locals} &amp; \href{../binary/modules.html#binary-local}{\mathtt{locals}} &amp;::=&amp;
-  n{:}\href{../binary/values.html#binary-int}{\def\mathdef1870#1{{\mathtt{u}#1}}\mathdef1870{\mathtt{32}}}~~t{:}\href{../binary/types.html#binary-valtype}{\mathtt{valtype}} &amp;\Rightarrow&amp; t^n \\
+  n{:}\href{../binary/values.html#binary-int}{\def\mathdef1870#1{{\mathtt{u}#1}}\mathdef1870{\mathtt{32}}}~~t{:}\href{../binary/types.html#binary-valtype}{\mathtt{valtype}} &amp;\Rightarrow&amp; \{ \href{../syntax/modules.html#syntax-local}{\mathsf{type}}~t \}^n \\
 \end{array}\end{split}\]</div>
 <p>Here, <span class="math notranslate nohighlight">\(\mathit{code}\)</span> ranges over pairs <span class="math notranslate nohighlight">\((\href{../syntax/types.html#syntax-valtype}{\mathit{valtype}}^\ast, \href{../syntax/instructions.html#syntax-expr}{\mathit{expr}})\)</span>.
-The meta function <span class="math notranslate nohighlight">\(\href{../syntax/conventions.html#notation-concat}{\mathrm{concat}}((t^\ast)^\ast)\)</span> concatenates all sequences <span class="math notranslate nohighlight">\(t_i^\ast\)</span> in <span class="math notranslate nohighlight">\((t^\ast)^\ast\)</span>.
+The meta function <span class="math notranslate nohighlight">\(\href{../syntax/conventions.html#notation-concat}{\mathrm{concat}}((\href{../syntax/modules.html#syntax-local}{\mathit{local}}^\ast)^\ast)\)</span> concatenates all sequences <span class="math notranslate nohighlight">\(\href{../syntax/modules.html#syntax-local}{\mathit{local}}_i^\ast\)</span> in <span class="math notranslate nohighlight">\((\href{../syntax/modules.html#syntax-local}{\mathit{local}}^\ast)^\ast\)</span>.
 Any code for which the length of the resulting sequence is out of bounds of the maximum size of a <a class="reference internal" href="../syntax/conventions.html#syntax-vec"><span class="std std-ref">vector</span></a> is malformed.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
