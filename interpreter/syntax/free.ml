@@ -63,45 +63,43 @@ let opt free xo = Lib.Option.get (Option.map free xo) empty
 let list free xs = List.fold_left union empty (List.map free xs)
 
 let var_type = function
-  | SynVar x -> types (idx' x)
-  | SemVar _ -> assert false
+  | x -> types (idx' x)
 
 let num_type = function
-  | I32Type | I64Type | F32Type | F64Type -> empty
+  | I32T | I64T | F32T | F64T -> empty
 
 let vec_type = function
-  | V128Type -> empty
+  | V128T -> empty
 
 let heap_type = function
-  | FuncHeapType | ExternHeapType | BotHeapType -> empty
-  | DefHeapType x -> var_type x
+  | FuncHT | ExternHT | BotHT -> empty
+  | DefHT x -> var_type x
 
 let ref_type = function
   | (_, t) -> heap_type t
 
-let value_type = function
-  | NumType t -> num_type t
-  | VecType t -> vec_type t
-  | RefType t -> ref_type t
-  | BotType -> empty
+let val_type = function
+  | NumT t -> num_type t
+  | VecT t -> vec_type t
+  | RefT t -> ref_type t
+  | BotT -> empty
 
-let func_type (FuncType (ins, out)) =
-  list value_type ins ++ list value_type out
-let global_type (GlobalType (t, _mut)) = value_type t
-let table_type (TableType (_lim, t)) = ref_type t
-let memory_type (MemoryType (_lim)) = empty
+let func_type (FuncT (ins, out)) = list val_type ins ++ list val_type out
+let global_type (GlobalT (_mut, t)) = val_type t
+let table_type (TableT (_lim, t)) = ref_type t
+let memory_type (MemoryT (_lim)) = empty
 
 let def_type = function
-  | FuncDefType ft -> func_type ft
+  | DefFuncT ft -> func_type ft
 
 let block_type = function
   | VarBlockType x -> var_type x
-  | ValBlockType t -> opt value_type t
+  | ValBlockType t -> opt val_type t
 
 let rec instr (e : instr) =
   match e.it with
   | Unreachable | Nop | Drop -> empty
-  | Select tso -> list value_type (Lib.Option.get tso [])
+  | Select tso -> list val_type (Lib.Option.get tso [])
   | RefIsNull | RefAsNonNull -> empty
   | RefNull t -> heap_type t
   | RefFunc x -> funcs (idx x)

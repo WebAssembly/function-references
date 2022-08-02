@@ -356,7 +356,7 @@ Other instructions are checked in a similar manner.
          let rt = pop_ref()
          if (rt.heap =/= Bot)
            error_if(not is_def(rt.heap))
-           let ft = lookup_func_type(rt.heap.idx)  // TODO
+           let ft = funcs[rt.heap.idx]
            pop_vals(ft.params)
            push_vals(ft.results)
 
