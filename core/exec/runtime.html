@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Runtime Structure &#8212; WebAssembly 2.0 + function references (Draft 2022-08-02)</title>
+    <title>Runtime Structure &#8212; WebAssembly 2.0 + function references (Draft 2022-08-03)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -91,7 +91,7 @@
 <p>WebAssembly computations manipulate <em>values</em> of either the four basic <a class="reference internal" href="../syntax/types.html#syntax-numtype"><span class="std std-ref">number types</span></a>, i.e., <a class="reference internal" href="../syntax/values.html#syntax-int"><span class="std std-ref">integers</span></a> and <a class="reference internal" href="../syntax/values.html#syntax-float"><span class="std std-ref">floating-point data</span></a> of 32 or 64 bit width each, or <a class="reference internal" href="../syntax/values.html#syntax-vecnum"><span class="std std-ref">vectors</span></a> of 128 bit width, or of <a class="reference internal" href="../syntax/types.html#syntax-reftype"><span class="std std-ref">reference type</span></a>.</p>
 <p>In most places of the semantics, values of different types can occur.
 In order to avoid ambiguities, values are therefore represented with an abstract syntax that makes their type explicit.
-It is convenient to reuse the same notation as for the <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}\)</span> <a class="reference internal" href="../syntax/instructions.html#syntax-const"><span class="std std-ref">instructions</span></a> and <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}\)</span> producing them.</p>
+It is convenient to reuse the same notation as for the <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}\)</span> <a class="reference internal" href="../syntax/instructions.html#syntax-const"><span class="std std-ref">instructions</span></a> and <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.null}}\)</span> producing them.</p>
 <p>References other than null are represented with additional <a class="reference internal" href="#syntax-instr-admin"><span class="std std-ref">administrative instructions</span></a>.
 They either are <em>function references</em>, pointing to a specific <a class="reference internal" href="#syntax-funcaddr"><span class="std std-ref">function address</span></a>,
 or <em>external references</em> pointing to an uninterpreted form of <a class="reference internal" href="#syntax-externaddr"><span class="std std-ref">extern address</span></a> that can be defined by the <a class="reference internal" href="../intro/overview.html#embedder"><span class="std std-ref">embedder</span></a> to represent its own objects.</p>
@@ -105,7 +105,7 @@ or <em>external references</em> pointing to an uninterpreted form of <a class="r
 \def\mathdef2260#1{{}}\mathdef2260{(vector)} &amp; \href{../exec/runtime.html#syntax-vec}{\mathit{vec}} &amp;::=&amp;
   \href{../syntax/types.html#syntax-valtype}{\mathsf{v128}}.\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~\href{../syntax/values.html#syntax-int}{\mathit{i128}} \\
 \def\mathdef2260#1{{}}\mathdef2260{(reference)} &amp; \href{../exec/runtime.html#syntax-ref}{\mathit{ref}} &amp;::=&amp;
-  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t \\&amp;&amp;|&amp;
+  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.null}}~t \\&amp;&amp;|&amp;
   \href{../exec/runtime.html#syntax-ref}{\mathsf{ref}}~\href{../exec/runtime.html#syntax-funcaddr}{\mathit{funcaddr}} \\&amp;&amp;|&amp;
   \href{../exec/runtime.html#syntax-ref.extern}{\mathsf{ref{.}extern}}~\href{../exec/runtime.html#syntax-externaddr}{\mathit{externaddr}} \\
 \def\mathdef2260#1{{}}\mathdef2260{(value)} &amp; \href{../exec/runtime.html#syntax-val}{\mathit{val}} &amp;::=&amp;
@@ -122,7 +122,7 @@ For other references, no default value is defined, <span class="math notranslate
 \[\begin{split}\begin{array}{lcl&#64;{\qquad}l}
 \href{../exec/runtime.html#default-val}{\mathrm{default}}_t &amp;=&amp; t{.}\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~0 &amp; (\mathrel{\mbox{if}} t = \href{../syntax/types.html#syntax-numtype}{\mathit{numtype}}) \\
 \href{../exec/runtime.html#default-val}{\mathrm{default}}_t &amp;=&amp; t{.}\href{../syntax/instructions.html#syntax-instr-numeric}{\mathsf{const}}~0 &amp; (\mathrel{\mbox{if}} t = \href{../syntax/types.html#syntax-vectype}{\mathit{vectype}}) \\
-\href{../exec/runtime.html#default-val}{\mathrm{default}}_t &amp;=&amp; \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~t &amp; (\mathrel{\mbox{if}} t = (\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\href{../syntax/types.html#syntax-heaptype}{\mathit{heaptype}})) \\
+\href{../exec/runtime.html#default-val}{\mathrm{default}}_t &amp;=&amp; \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.null}}~t &amp; (\mathrel{\mbox{if}} t = (\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-reftype}{\mathsf{null}}~\href{../syntax/types.html#syntax-heaptype}{\mathit{heaptype}})) \\
 \href{../exec/runtime.html#default-val}{\mathrm{default}}_t &amp;=&amp; \epsilon &amp; (\mathrel{\mbox{if}} t = (\href{../syntax/types.html#syntax-reftype}{\mathsf{ref}}~\href{../syntax/types.html#syntax-heaptype}{\mathit{heaptype}})) \\
 \end{array}\end{split}\]</div>
 <section id="convention">

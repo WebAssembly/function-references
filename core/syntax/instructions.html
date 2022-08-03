@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Instructions &#8212; WebAssembly 2.0 + function references (Draft 2022-08-02)</title>
+    <title>Instructions &#8212; WebAssembly 2.0 + function references (Draft 2022-08-03)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -412,13 +412,13 @@ For the other vector instructions, the use of two’s complement for the signed 
 \[\begin{split}\begin{array}{llcl}
 \def\mathdef2533#1{{}}\mathdef2533{instruction} &amp; \href{../syntax/instructions.html#syntax-instr}{\mathit{instr}} &amp;::=&amp;
   \dots \\&amp;&amp;|&amp;
-  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}null}}~\href{../syntax/types.html#syntax-reftype}{\mathit{reftype}} \\&amp;&amp;|&amp;
-  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}func}}~\href{../syntax/modules.html#syntax-funcidx}{\mathit{funcidx}} \\&amp;&amp;|&amp;
-  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}is\_null}} \\&amp;&amp;|&amp;
-  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}as\_non\_null}} \\
+  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.null}}~\href{../syntax/types.html#syntax-reftype}{\mathit{reftype}} \\&amp;&amp;|&amp;
+  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.func}}~\href{../syntax/modules.html#syntax-funcidx}{\mathit{funcidx}} \\&amp;&amp;|&amp;
+  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.is\_null}} \\&amp;&amp;|&amp;
+  \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.as\_non\_null}} \\
 \end{array}\end{split}\]</div>
 <p>The first three of these instruction produce a <a class="reference internal" href="../exec/runtime.html#syntax-null"><span class="std std-ref">null</span></a> value, produce a reference to a given function, or check for a null value, respectively.
-The <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref{.}as\_non\_null}}\)</span> casts a <a class="reference internal" href="types.html#syntax-reftype"><span class="std std-ref">nullable</span></a> to a non-null one, and <a class="reference internal" href="../intro/overview.html#trap"><span class="std std-ref">traps</span></a> if it encounters null.</p>
+The <span class="math notranslate nohighlight">\(\href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.as\_non\_null}}\)</span> casts a <a class="reference internal" href="types.html#syntax-reftype"><span class="std std-ref">nullable</span></a> to a non-null one, and <a class="reference internal" href="../intro/overview.html#trap"><span class="std std-ref">traps</span></a> if it encounters null.</p>
 </section>
 <section id="parametric-instructions">
 <span id="syntax-instr-parametric"></span><span id="index-4"></span><h2>Parametric Instructions<a class="headerlink" href="#parametric-instructions" title="Permalink to this headline">¶</a></h2>
