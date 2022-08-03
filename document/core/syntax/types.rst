@@ -19,6 +19,8 @@ Types are checked during :ref:`validation <valid>`, :ref:`instantiation <exec-in
 Type Identifiers
 ~~~~~~~~~~~~~~~~
 
+.. todo:: rename syntactic/semantic types to static/dynamic types
+
 Defined types like :ref:`function types <syntax-functype>` are not embedded directly into other types, such as :ref:`reference types <syntax-reftype>`.
 Instead, they are referred to indirectly.
 

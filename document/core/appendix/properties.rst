@@ -216,7 +216,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Table Instances <syntax-tableinst>` :math:`\{ \TITYPE~(\limits~t), \TIELEM~\reff^\ast \}`
 ...............................................................................................
 
-* The :ref:`table type <syntax-tabletype>` :math:`\limits~t` must be :ref:`valid <valid-tabletype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`table type <syntax-tabletype>` :math:`\limits~t` must be :ref:`valid <valid-tabletype>`.
 
 * The length of :math:`\reff^\ast` must equal :math:`\limits.\LMIN`.
 
@@ -238,7 +238,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      \qquad
      (S \vdash \reff : t')^n
      \qquad
-     (C \vdashreftypematch t' \matchesvaltype t)^n
+     (S \vdashreftypematch t' \matchesvaltype t)^n
    }{
      S \vdashtableinst \{ \TITYPE~(\limits~t), \TIELEM~\reff^n \} : \limits~t
    }
@@ -250,7 +250,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Memory Instances <syntax-meminst>` :math:`\{ \MITYPE~\limits, \MIDATA~b^\ast \}`
 ......................................................................................
 
-* The :ref:`memory type <syntax-memtype>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-memtype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`memory type <syntax-memtype>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-memtype>`.
 
 * The length of :math:`b^\ast` must equal :math:`\limits.\LMIN` multiplied by the :ref:`page size <page-size>` :math:`64\,\F{Ki}`.
 
@@ -258,7 +258,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
 .. math::
    \frac{
-     \vdashmemtype \limits \ok
+     S \vdashmemtype \limits \ok
      \qquad
      n = \limits.\LMIN \cdot 64\,\F{Ki}
    }{
@@ -272,7 +272,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Global Instances <syntax-globalinst>` :math:`\{ \GITYPE~(\mut~t), \GIVALUE~\val \}`
 .........................................................................................
 
-* The :ref:`global type <syntax-globaltype>` :math:`\mut~t` must be :ref:`valid <valid-globaltype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`global type <syntax-globaltype>` :math:`\mut~t` must be :ref:`valid <valid-globaltype>`.
 
 * The :ref:`value <syntax-val>` :math:`\val` must be :ref:`valid <valid-val>` with some :ref:`value type <syntax-valtype>` :math:`t'`.
 
@@ -282,11 +282,11 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
 .. math::
    \frac{
-     \vdashglobaltype \mut~t \ok
+     S \vdashglobaltype \mut~t \ok
      \qquad
      S \vdashval \val : t'
      \qquad
-     \vdashvaltypematch t' \matchesvaltype t
+     S \vdashvaltypematch t' \matchesvaltype t
    }{
      S \vdashglobalinst \{ \GITYPE~(\mut~t), \GIVALUE~\val \} : \mut~t
    }
@@ -295,8 +295,10 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 .. index:: element instance, reference
 .. _valid-eleminst:
 
-:ref:`Element Instances <syntax-eleminst>` :math:`\{ \EIELEM~\X{fa}^\ast \}`
-............................................................................
+:ref:`Element Instances <syntax-eleminst>` :math:`\{ \EITYPE~t, \EIELEM~\X{fa}^\ast \}`
+.......................................................................................
+
+* The :ref:`semantic <syntax-type-sem>` :ref:`reference type <syntax-reftype>` :math:`t` must be :ref:`valid <valid-reftype>`.
 
 * For each :ref:`reference <syntax-ref>` :math:`\reff_i` in the elements :math:`\reff^n`:
 
@@ -310,9 +312,11 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
 .. math::
    \frac{
+     S \vdash t \ok
+     \qquad
      (S \vdash \reff : t')^\ast
      \qquad
-     (C \vdashreftypematch t' \matchesvaltype t)^\ast
+     (S \vdashreftypematch t' \matchesvaltype t)^\ast
    }{
      S \vdasheleminst \{ \EITYPE~t, \EIELEM~\reff^\ast \} \ok
    }
@@ -357,7 +361,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Module Instances <syntax-moduleinst>` :math:`\moduleinst`
 ...............................................................
 
-* Each :ref:`function type <syntax-functype>` :math:`\functype_i` in :math:`\moduleinst.\MITYPES` must be :ref:`valid <valid-functype>`.
+* Each :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype_i` in :math:`\moduleinst.\MITYPES` must be :ref:`valid <valid-functype>`.
 
 * For each :ref:`function address <syntax-funcaddr>` :math:`\funcaddr_i` in :math:`\moduleinst.\MIFUNCS`, the :ref:`external value <syntax-externval>` :math:`\EVFUNC~\funcaddr_i` must be :ref:`valid <valid-externval-func>` with some :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\functype'_i`.
 
@@ -499,8 +503,10 @@ Finally, :ref:`frames <syntax-frame>` are classified with *frame contexts*, whic
 .. index:: frame, local, module instance, value, value type, context
 .. _valid-frame:
 
-:ref:`Frames <syntax-frame>` :math:`\{\ALOCALS~\val^\ast, \AMODULE~\moduleinst\}`
-.................................................................................
+:ref:`Frames <syntax-frame>` :math:`\{\ALOCALS~(\val^?)^\ast, \AMODULE~\moduleinst\}`
+.....................................................................................
+
+.. todo:: handle uninitialised locals and their guessed type
 
 * The :ref:`module instance <syntax-moduleinst>` :math:`\moduleinst` must be :ref:`valid <valid-moduleinst>` with some :ref:`module context <module-context>` :math:`C`.
 
