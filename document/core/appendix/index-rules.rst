@@ -58,6 +58,7 @@ Construct                                        Judgement
 :ref:`Value <valid-val>`                         :math:`S \vdashval \val : \valtype`
 :ref:`Result <valid-result>`                     :math:`S \vdashresult \result : \resulttype`
 :ref:`External value <valid-externval>`          :math:`S \vdashexternval \externval : \externtype`
+:ref:`Type instance <valid-typeinst>`            :math:`S \vdashtypeinst \typeinst \ok`
 :ref:`Function instance <valid-funcinst>`        :math:`S \vdashfuncinst \funcinst : \functype`
 :ref:`Table instance <valid-tableinst>`          :math:`S \vdashtableinst \tableinst : \tabletype`
 :ref:`Memory instance <valid-meminst>`           :math:`S \vdashmeminst \meminst : \memtype`

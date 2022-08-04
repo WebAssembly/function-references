@@ -13,7 +13,7 @@ External Typing
 ~~~~~~~~~~~~~~~
 
 For the purpose of checking :ref:`external values <syntax-externval>` against :ref:`imports <syntax-import>`,
-such values are classified by :ref:`external types <syntax-externtype>`.
+such values are classified by :ref:`semantic <synax-type-sem>` :ref:`external types <syntax-externtype>`.
 The following auxiliary typing rules specify this typing relation relative to a :ref:`store <syntax-store>` :math:`S` in which the referenced instances live.
 
 
@@ -91,8 +91,10 @@ The following auxiliary typing rules specify this typing relation relative to a 
 Value Typing
 ~~~~~~~~~~~~
 
+.. todo:: move this to properties?
+
 For the purpose of checking argument :ref:`values <syntax-externval>` against the parameter types of exported :ref:`functions <syntax-func>`,
-values are classified by :ref:`value types <syntax-valtype>`.
+values are classified by :ref:`semantic <synax-type-sem>` :ref:`value types <syntax-valtype>`.
 The following auxiliary typing rules specify this typing relation relative to a :ref:`store <syntax-store>` :math:`S` in which possibly referenced addresses live.
 
 .. _valid-num:
@@ -108,44 +110,64 @@ The following auxiliary typing rules specify this typing relation relative to a 
      S \vdashval t.\CONST~c : t
    }
 
+.. _valid-vec:
+
+:ref:`Vector Values <syntax-val>` :math:`t.\CONST~c`
+....................................................
+
+* The value is valid with :ref:`vector type <syntax-vectype>` :math:`t`.
+
+.. math::
+   \frac{
+   }{
+     S \vdashval t.\CONST~c : t
+   }
+
 .. _valid-ref:
 
 :ref:`Null References <syntax-ref>` :math:`\REFNULL~t`
 ......................................................
 
-* The value is valid with :ref:`reference type <syntax-reftype>` :math:`t`.
+* The :ref:`semantic <synax-type-sem>` :ref:`heap type <syntax-heaptype>` must be :ref:`valid <valid-heaptype>`.
+
+* Then value is valid with :ref:`reference type <syntax-reftype>` :math:`(\REF~\NULL~t)`.
 
 .. math::
    \frac{
+     S \vdashheaptype t \ok
    }{
-     S \vdashval \REFNULL~t : t
+     S \vdashval \REFNULL~t : (\REF~\NULL~t)
    }
 
 
 :ref:`Function References <syntax-ref>` :math:`\REFFUNCADDR~a`
 ..............................................................
 
-* The :ref:`external value <syntax-externval>` :math:`\EVFUNC~a` must be :ref:`valid <valid-externval>`.
+* The :ref:`external value <syntax-externval>` :math:`\EVFUNC~a` must be :ref:`valid <valid-externval>` with :ref:`semantic <syntax-type-sem>` :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\functype`.
 
-* Then the value is valid with :ref:`reference type <syntax-reftype>` :math:`\FUNCREF`.
+* There exists a :ref:`type address <syntax-typeaddr>` :math:`a'` in the :ref:`store <syntax-store>` :math:`S`, such that :math:`S.\STYPES[a'] = \functype`.
+
+* Then the value is valid with :ref:`semantic <syntax-type-sem>` :ref:`reference type <syntax-reftype>` :math:`(\REF~a')`.
 
 .. math::
    \frac{
      S \vdashexternval \EVFUNC~a : \ETFUNC~\functype
+     \qquad
+     S.\STYPES[a'] = \functype
    }{
-     S \vdashval \REFFUNCADDR~a : \FUNCREF
+     S \vdashval \REFFUNCADDR~a : (\REF~a')
    }
 
 
 :ref:`External References <syntax-ref.extern>` :math:`\REFEXTERNADDR~a`
 .......................................................................
 
-* The value is valid with :ref:`reference type <syntax-reftype>` :math:`\EXTERNREF`.
+* The value is valid with :ref:`reference type <syntax-reftype>` :math:`(\REF~\EXTERN)`.
 
 .. math::
    \frac{
    }{
-     S \vdashval \REFEXTERNADDR~a : \EXTERNREF
+     S \vdashval \REFEXTERNADDR~a : (\REF~\EXTERN)
    }
 
 
@@ -838,7 +860,7 @@ The following steps are performed:
 
 2. Let :math:`\funcinst` be the :ref:`function instance <syntax-funcinst>` :math:`S.\SFUNCS[\funcaddr]`.
 
-3. Let :math:`[t_1^n] \to [t_2^m]` be the :ref:`function type <syntax-functype>` :math:`\funcinst.\FITYPE`.
+3. Let :math:`[t_1^n] \to [t_2^m]` be the :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\funcinst.\FITYPE`.
 
 4. If the length :math:`|\val^\ast|` of the provided argument values is different from the number :math:`n` of expected arguments, then:
 
