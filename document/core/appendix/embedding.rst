@@ -50,7 +50,7 @@ Some operations state *pre-conditions* about their arguments or *post-conditions
 It is the embedder's responsibility to meet the pre-conditions.
 If it does, the post conditions are guaranteed by the semantics.
 
-In addition to pre- and post-conditions explicitly stated with each operation, the specification adopts the following conventions for :ref:`runtime objects <syntax-runtime>` (:math:`store`, :math:`\moduleinst`, :math:`\externval`, :ref:`addresses <syntax-addr>`):
+In addition to pre- and post-conditions explicitly stated with each operation, the specification adopts the following conventions for :ref:`runtime objects <syntax-runtime>` (:math:`\store`, :math:`\moduleinst`, :math:`\externval`, :ref:`addresses <syntax-addr>`):
 
 * Every runtime object passed as a parameter must be :ref:`valid <valid-store>` per an implicit pre-condition.
 
