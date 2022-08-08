@@ -23,6 +23,7 @@ Defined types like :ref:`function types <syntax-functype>` are not embedded dire
 Instead, they are referred to indirectly.
 
 In a :ref:`module <syntax-module>` and during validation, this indirection is expressed through a :ref:`type index <syntax-typeidx>`, whose meaning is confined to one module.
+
 During instantiation and execution, where types from multiple modules may interact, it is expressed through :ref:`type addresses <syntax-typeaddr>` that refer to the global :ref:`store <store>`.
 
 The type grammar hence is conceptually parameterized by its interpretation of :ref:`type identifiers <syntax-typeid>`.

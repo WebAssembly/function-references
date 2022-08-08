@@ -5,8 +5,6 @@ Soundness
 ---------
 
 .. todo:: need to operate wrt semantic types
-.. _valid-typeinst:
-.. todo:: ensure wf of guessed valtypes
 
 The :ref:`type system <type-system>` of WebAssembly is *sound*, implying both *type safety* and *memory safety* with respect to the WebAssembly semantics. For example:
 
@@ -30,14 +28,14 @@ In order to state and prove soundness precisely, the typing rules must be extend
 Results
 ~~~~~~~
 
-:ref:`Results <syntax-result>` can be classified by :ref:`semantic <synax-type-sem>` :ref:`result types <syntax-resulttype>` as follows.
+:ref:`Results <syntax-result>` can be classified by :ref:`semantic <syntax-type-sem>` :ref:`result types <syntax-resulttype>` as follows.
 
 :ref:`Results <syntax-result>` :math:`\val^\ast`
 ................................................
 
 * For each :ref:`value <syntax-val>` :math:`\val_i` in :math:`\val^\ast`:
 
-  * The value :math:`\val_i` is :ref:`valid <valid-val>` with some :ref:`semantic <synax-type-sem>` :ref:`value type <syntax-valtype>` :math:`t_i`.
+  * The value :math:`\val_i` is :ref:`valid <valid-val>` with some :ref:`semantic <syntax-type-sem>` :ref:`value type <syntax-valtype>` :math:`t_i`.
 
 * Let :math:`t^\ast` be the concatenation of all :math:`t_i`.
 
@@ -119,36 +117,37 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      (S \vdashdatainst \datainst \ok)^\ast
      \\
      S = \{
+       \begin{array}[t]{@{}l@{}}
        \STYPES~\typeinst^\ast,
        \SFUNCS~\funcinst^\ast,
+       \SGLOBALS~\globalinst^\ast, \\
        \STABLES~\tableinst^\ast,
        \SMEMS~\meminst^\ast,
-       \SGLOBALS~\globalinst^\ast,
        \SELEMS~\eleminst^\ast,
        \SDATAS~\datainst^\ast \}
+       \end{array}
      \end{array}
    }{
      \vdashstore S \ok
    }
 
 
-.. scratch (redundant)
-    .. index:: function type, type instance
-    .. _valid-typeinst:
+.. index:: function type, type instance
+.. _valid-typeinst:
 
-    :ref:`Type Instances <syntax-typeinst>` :math:`\functype`
-    .........................................................
+:ref:`Type Instances <syntax-typeinst>` :math:`\functype`
+.........................................................
 
-    * The :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
 
-    * Then the type instance is valid.
+* Then it is valid as a type instance.
 
-    .. math::
-       \frac{
-         S \vdashfunctype \functype \ok
-       }{
-         S \vdashtypeinst \functype \ok
-       }
+.. math::
+   \frac{
+     S \vdashfunctype \functype \ok
+   }{
+     S \vdashtypeinst \functype \ok
+   }
 
 
 .. index:: function type, function instance
@@ -157,7 +156,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\functype, \FIMODULE~\moduleinst, \FICODE~\func\}`
 .......................................................................................................................
 
-* The :ref:`semantic <synax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
 
 * The :ref:`module instance <syntax-moduleinst>` :math:`\moduleinst` must be :ref:`valid <valid-moduleinst>` with some :ref:`context <context>` :math:`C`.
 
@@ -165,15 +164,19 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
 * The semantic function type obtained by instantiating the syntactic type :math:`\functype'` inside module instance :math:`\moduleinst` must :ref:`match <match-functype>` :math:`\functype`.
 
-* Then the function instance is valid with :ref:`semantic <synax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype`.
+* Then the function instance is valid with :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype`.
 
 .. math::
    \frac{
-     S \vdashmoduleinst \moduleinst : C
+     \begin{array}{@{}c@{}}
+     S \vdashfunctype \functype \ok
      \qquad
+     S \vdashmoduleinst \moduleinst : C
+     \\
      C \vdashfunc \func : \functype'
      \qquad
-     S \vdashmatchfunctype \sem_{\moduleinst}(\functype') \matchesfunctype \functype
+     S \vdashfunctypematch \sem_{\moduleinst}(\functype') \matchesfunctype \functype
+     \end{array}
    }{
      S \vdashfuncinst \{\FITYPE~\functype, \FIMODULE~\moduleinst, \FICODE~\func\} : \functype
    }
@@ -185,7 +188,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Host Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\functype, \FIHOSTCODE~\X{hf}\}`
 ..................................................................................................
 
-* The :ref:`semantic <synax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
 
 * Let :math:`[t_1^\ast] \to [t_2^\ast]` be the :ref:`function type <syntax-functype>` :math:`\functype`.
 
@@ -204,7 +207,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 .. math::
    \frac{
      \begin{array}[b]{@{}l@{}}
-     \vdashfunctype [t_1^\ast] \to [t_2^\ast] \ok \\
+     S \vdashfunctype [t_1^\ast] \to [t_2^\ast] \ok \\
      \end{array}
      \quad
      \begin{array}[b]{@{}l@{}}
@@ -240,7 +243,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Table Instances <syntax-tableinst>` :math:`\{ \TITYPE~(\limits~t), \TIELEM~\reff^\ast \}`
 ...............................................................................................
 
-* The :ref:`semantic <synax-type-sem>` :ref:`table type <syntax-tabletype>` :math:`\limits~t` must be :ref:`valid <valid-tabletype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`table type <syntax-tabletype>` :math:`\limits~t` must be :ref:`valid <valid-tabletype>`.
 
 * The length of :math:`\reff^\ast` must equal :math:`\limits.\LMIN`.
 
@@ -272,7 +275,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Memory Instances <syntax-meminst>` :math:`\{ \MITYPE~\limits, \MIDATA~b^\ast \}`
 ......................................................................................
 
-* The :ref:`semantic <synax-type-sem>` :ref:`memory type <syntax-memtype>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-memtype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`memory type <syntax-memtype>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-memtype>`.
 
 * The length of :math:`b^\ast` must equal :math:`\limits.\LMIN` multiplied by the :ref:`page size <page-size>` :math:`64\,\F{Ki}`.
 
@@ -294,7 +297,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Global Instances <syntax-globalinst>` :math:`\{ \GITYPE~(\mut~t), \GIVALUE~\val \}`
 .........................................................................................
 
-* The :ref:`semantic <synax-type-sem>` :ref:`global type <syntax-globaltype>` :math:`\mut~t` must be :ref:`valid <valid-globaltype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`global type <syntax-globaltype>` :math:`\mut~t` must be :ref:`valid <valid-globaltype>`.
 
 * The :ref:`value <syntax-val>` :math:`\val` must be :ref:`valid <valid-val>` with some :ref:`value type <syntax-valtype>` :math:`t'`.
 
@@ -320,7 +323,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Element Instances <syntax-eleminst>` :math:`\{ \EIELEM~\X{fa}^\ast \}`
 ............................................................................
 
-* The :ref:`semantic <synax-type-sem>` :ref:`reference type <syntax-reftype>` :math:`t` must be :ref:`valid <valid-reftype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`reference type <syntax-reftype>` :math:`t` must be :ref:`valid <valid-reftype>`.
 
 * For each :ref:`reference <syntax-ref>` :math:`\reff_i` in the elements :math:`\reff^n`:
 
@@ -381,7 +384,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Module Instances <syntax-moduleinst>` :math:`\moduleinst`
 ...............................................................
 
-* For each :ref:`type address <syntax-typeaddr>` :math:`\typeaddr_i` in :math:`\moduleinst.\MITYPES`, the :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr_i]` must be a :ref:`semantic <syntax-types-sem>` :ref:`function type <syntax-functype>` :math:`\functype_i`.
+* For each :ref:`type address <syntax-typeaddr>` :math:`\typeaddr_i` in :math:`\moduleinst.\MITYPES`, the :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr_i]` must be a :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype_i`.
 
 * Each :ref:`function type <syntax-functype>` :math:`\functype_i` in :math:`\moduleinst.\MITYPES` must be :ref:`valid <valid-functype>`.
 
@@ -569,9 +572,9 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
    \frac{
      C \vdashinstr \instr : \instrtype
      \qquad
-     C.\CTYPES = \functypes^\ast
+     C.\CTYPES = \functype^\ast
      \qquad
-     (S.\STYPES[\typeaddr] = \sem_{\moduleinst}(\functypes))^\ast
+     (S.\STYPES[\typeaddr] = \sem_{\moduleinst}(\functype))^\ast
      \qquad
      \moduleinst = \{\MITYPES~\typeaddr^\ast\}
    }{
@@ -845,13 +848,22 @@ a store state :math:`S'` extends state :math:`S`, written :math:`S \extendsto S'
 :ref:`Element Instance <syntax-eleminst>` :math:`\eleminst`
 ...........................................................
 
-* The vector :math:`\eleminst.\EIELEM` must either remain unchanged or shrink to length :math:`0`.
+* The vector :math:`\eleminst.\EIELEM` must:
+
+  * either remain unchanged,
+
+  * or shrink to length :math:`0`.
 
 .. math::
    \frac{
-     \X{fa}_1^\ast = \X{fa}_2^\ast \vee \X{fa}_2^\ast = \epsilon
    }{
-     \vdasheleminstextends \{\EIELEM~\X{fa}_1^\ast\} \extendsto \{\EIELEM~\X{fa}_2^\ast\}
+     \vdasheleminstextends \{\EIELEM~a^\ast\} \extendsto \{\EIELEM~a^\ast\}
+   }
+
+.. math::
+   \frac{
+   }{
+     \vdasheleminstextends \{\EIELEM~a^\ast\} \extendsto \{\EIELEM~\epsilon\}
    }
 
 
@@ -861,13 +873,22 @@ a store state :math:`S'` extends state :math:`S`, written :math:`S \extendsto S'
 :ref:`Data Instance <syntax-datainst>` :math:`\datainst`
 ........................................................
 
-* The vector :math:`\datainst.\DIDATA` must either remain unchanged or shrink to length :math:`0`.
+* The vector :math:`\datainst.\DIDATA` must:
+
+  * either remain unchanged,
+
+  * or shrink to length :math:`0`.
 
 .. math::
    \frac{
-     b_1^\ast = b_2^\ast \vee b_2^\ast = \epsilon
    }{
-     \vdashdatainstextends \{\DIDATA~b_1^\ast\} \extendsto \{\DIDATA~b_2^\ast\}
+     \vdashdatainstextends \{\DIDATA~b^\ast\} \extendsto \{\DIDATA~b^\ast\}
+   }
+
+.. math::
+   \frac{
+   }{
+     \vdashdatainstextends \{\DIDATA~b^\ast\} \extendsto \{\DIDATA~\epsilon\}
    }
 
 

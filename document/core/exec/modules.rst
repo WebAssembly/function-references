@@ -13,7 +13,7 @@ External Typing
 ~~~~~~~~~~~~~~~
 
 For the purpose of checking :ref:`external values <syntax-externval>` against :ref:`imports <syntax-import>`,
-such values are classified by :ref:`semantic <synax-type-sem>` :ref:`external types <syntax-externtype>`.
+such values are classified by :ref:`semantic <syntax-type-sem>` :ref:`external types <syntax-externtype>`.
 The following auxiliary typing rules specify this typing relation relative to a :ref:`store <syntax-store>` :math:`S` in which the referenced instances live.
 
 
@@ -94,7 +94,7 @@ Value Typing
 .. todo:: move this to properties?
 
 For the purpose of checking argument :ref:`values <syntax-externval>` against the parameter types of exported :ref:`functions <syntax-func>`,
-values are classified by :ref:`semantic <synax-type-sem>` :ref:`value types <syntax-valtype>`.
+values are classified by :ref:`semantic <syntax-type-sem>` :ref:`value types <syntax-valtype>`.
 The following auxiliary typing rules specify this typing relation relative to a :ref:`store <syntax-store>` :math:`S` in which possibly referenced addresses live.
 
 .. _valid-num:
@@ -128,7 +128,7 @@ The following auxiliary typing rules specify this typing relation relative to a 
 :ref:`Null References <syntax-ref>` :math:`\REFNULL~t`
 ......................................................
 
-* The :ref:`semantic <synax-type-sem>` :ref:`heap type <syntax-heaptype>` must be :ref:`valid <valid-heaptype>`.
+* The :ref:`semantic <syntax-type-sem>` :ref:`heap type <syntax-heaptype>` must be :ref:`valid <valid-heaptype>`.
 
 * Then value is valid with :ref:`reference type <syntax-reftype>` :math:`(\REF~\NULL~t)`.
 
