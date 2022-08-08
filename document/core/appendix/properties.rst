@@ -102,7 +102,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      \begin{array}{@{}c@{}}
      a^n = 0 \dots (n-1)
      \qquad
-     (\{\STYPES~\typeinst^\ast[0 \slice a]\} \vdashtypeinst \typeinst \ok)^n
+     (\{\STYPES~\typeinst^n[0 \slice a]\} \vdashtypeinst \typeinst \ok)^n
      \\
      (S \vdashfuncinst \funcinst : \functype)^\ast
      \qquad
@@ -481,8 +481,10 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
   .. math::
      \frac{
        \begin{array}{@{}c@{}}
-       (S; C \vdashfunctype \functype \ok)^\ast
+       x^n = 0 \dots (n-1)
        \qquad
+       (S; \{CTYPES~\functype^n[0 \slice x]\} \vdashfunctype \functype \ok)^n
+       \\
        (S; C \vdashfunctype \functype' \ok)^\ast
        \qquad
        (S; C \vdashtabletype \tabletype \ok)^\ast
@@ -495,7 +497,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
        \\
        C = \{
          \begin{array}[t]{@{}l@{~}l@{}}
-         \CTYPES & \functype^\ast, \\
+         \CTYPES & \functype^n, \\
          \CFUNCS & {\functype'}^\ast, \\
          \CTABLES & \tabletype^\ast, \\
          \CMEMS & \memtype^\ast, \\
