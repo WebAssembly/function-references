@@ -37,6 +37,8 @@ The type grammar hence allows multiple representations of type identifiers:
 Types represented with type indices are referred to as *syntactic types*,
 whereas types represented with type addresses are referred to as *semantic types*.
 
+.. todo:: rename to static vs dynamic types?
+
 Syntactic types are transformed into semantic types during module :ref:`instantiation <exec-instantiation>`.
 
 It is an invariant of the semantics that only syntactic types arise during :ref:`validation <valid>`, while only semantic types are used during :ref:`execution <exec>`.
