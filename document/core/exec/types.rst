@@ -34,7 +34,7 @@ During execution, :ref:`type identifiers <syntax-typeid>` are represented as :re
    \frac{
      S.\STYPES[\typeaddr] = \functype
    }{
-     S \vdashtypeid \typeaddr : \functype
+     S; C \vdashtypeid \typeaddr : \functype
    }
 
 .. note::
@@ -55,40 +55,18 @@ Any form of :ref:`syntactic <syntax-type-syn>` :ref:`type <syntax-type>` can be 
 
 
 .. index:: type, matching, store, semantic types, validity
-.. _exec-match:
 .. _exec-valid-type:
+.. _exec-match:
 
-Matching and Validity
-~~~~~~~~~~~~~~~~~~~~~
+Dynamic Typing
+~~~~~~~~~~~~~~
 
-For each *static* :ref:`matching relation <match>` on syntactic types, operating relative to a :ref:`context <context>`, an analogous *dynamic* validity or matching relation is defined, operating relative to a :ref:`store <syntax-store>`.
+To handle :ref:`semantic <syntax-type-sem>` types, all static judgements :math:`C \vdash \X{prop}` on types (such as :ref:`validity <valid-type>` and :ref:`matching <match>`) are generalized to include the store, as in :math:`S; C \vdash \X{prop}`, by implicitly adding a :ref:`store <syntax-store>` :math:`S` to all rules -- :math:`S` is never modified by the pre-existing rules, but it is accessed in the extra rule for :ref:`type addresses <syntax-typeaddr>` given :ref:`above <valid-typeaddr>`.
 
-Formally, for each judgement
-
-.. math:: C \vdash T_1 \matches T_2
-
-on syntactic types :math:`T_1` and :math:`T_2`, an analogous judgement
-
-.. math:: S \vdash T'_1 \matches T'_2
-
-on corresponding semantic types :math:`T'_1` and :math:`T'_2` is introduced. It is defined analogously, by replacing all occurrences of a :ref:`context <context>` :math:`C` in the associated rules with a :ref:`store <syntax-store>` :math:`S`.
+It is an invariant of the semantics that all types inspected by execution rules are semantic, i.e., the :ref:`context <context>` is always empty and never used.
+To avoid unnecessary clutter, empty contexts are omitted from the rules, writing just :math:`S \vdash \X{prop}`.
 
 .. note::
-   Where the static rules invoke :ref:`static lookup <valid-typeidx>` for :ref:`type indices <syntax-typeidx>` in the context, the dynamic rules thereby invoke :ref:`dynamic lookup <valid-typeaddr>` for :ref:`type addresses <syntax-typeaddr>` in the store.
-
-Likewise, for each *static* :ref:`validity rule <valid-type>` on syntactic types, operating relative to a :ref:`context <context>`, an analogous *dynamic* validity rule is defined, operating relative to a :ref:`store <syntax-store>`.
-
-Formally, for each judgement
-
-.. math:: C \vdash T \ok
-
-on syntactic type :math:`T`, an analogous judgement
-
-.. math:: S \vdash T' \ok
-
-on corresponding semantic types :math:`T'` is introduced. It is defined analogously, by replacing all occurrences of a :ref:`context <context>` :math:`C` in the associated rules with a :ref:`store <syntax-store>` :math:`S`.
-
-.. note::
-   Dynamic validity rules are not needed for the semantics,
-   but to prove :ref:`soundness <soundness-statement>`
+   Only matching rules are invoked during execution.
+   Dynamic validity is only needed to prove :ref:`type soundness <soundness>`
    and for specifying parts of the :ref:`embedder <embed>` interface.

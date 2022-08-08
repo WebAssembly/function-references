@@ -22,11 +22,11 @@ Type Identifiers
 Defined types like :ref:`function types <syntax-functype>` are not embedded directly into other types, such as :ref:`reference types <syntax-reftype>`.
 Instead, they are referred to indirectly.
 
-In a :ref:`module <syntax-module>` and during validation, this indirection is expressed through a :ref:`type index <syntax-typeidx>`, whose meaning is confined to one module.
+In a :ref:`module <syntax-module>` and during :ref:`validation <valid>`, this indirection is expressed through a :ref:`type index <syntax-typeidx>`, whose meaning is confined to one module.
 
-During instantiation and execution, where types from multiple modules may interact, it is expressed through :ref:`type addresses <syntax-typeaddr>` that refer to the global :ref:`store <store>`.
+During :ref:`execution <exec>`, where types from multiple modules may interact, it is expressed through :ref:`type addresses <syntax-typeaddr>` that refer to the global :ref:`store <store>`.
 
-The type grammar hence is conceptually parameterized by its interpretation of :ref:`type identifiers <syntax-typeid>`.
+The type grammar hence allows multiple representations of type identifiers:
 
 .. math::
    \begin{array}{llll}
@@ -37,8 +37,10 @@ The type grammar hence is conceptually parameterized by its interpretation of :r
 Types represented with type indices are referred to as *syntactic types*,
 whereas types represented with type addresses are referred to as *semantic types*.
 
-It is an invariant of the semantics that no syntactic type refers to a semantic type and vice versa, i.e., both universes are disjoint.
 Syntactic types are transformed into semantic types during module :ref:`instantiation <exec-instantiation>`.
+
+It is an invariant of the semantics that only syntactic types arise during :ref:`validation <valid>`, while only semantic types are used during :ref:`execution <exec>`.
+However, for the proof of :ref:`type soundness <soundness>`, both forms of types must be considered together, and syntactic types may refer to semantic types.
 
 .. _notation-subst:
 

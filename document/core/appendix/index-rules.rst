@@ -63,7 +63,7 @@ Construct                                        Judgement
 :ref:`Table instance <valid-tableinst>`          :math:`S \vdashtableinst \tableinst : \tabletype`
 :ref:`Memory instance <valid-meminst>`           :math:`S \vdashmeminst \meminst : \memtype`
 :ref:`Global instance <valid-globalinst>`        :math:`S \vdashglobalinst \globalinst : \globaltype`
-:ref:`Element instance <valid-eleminst>`         :math:`S \vdasheleminst \eleminst \ok`
+:ref:`Element instance <valid-eleminst>`         :math:`S \vdasheleminst \eleminst : t`
 :ref:`Data instance <valid-datainst>`            :math:`S \vdashdatainst \datainst \ok`
 :ref:`Export instance <valid-exportinst>`        :math:`S \vdashexportinst \exportinst \ok`
 :ref:`Module instance <valid-moduleinst>`        :math:`S \vdashmoduleinst \moduleinst : C`
@@ -121,6 +121,7 @@ Store Extension
 ===============================================  ===============================================================================
 Construct                                        Judgement
 ===============================================  ===============================================================================
+:ref:`Type instance <extend-typeinst>`           :math:`\vdashtypeinstextends \typeinst_1 \extendsto \typeinst_2`
 :ref:`Function instance <extend-funcinst>`       :math:`\vdashfuncinstextends \funcinst_1 \extendsto \funcinst_2`
 :ref:`Table instance <extend-tableinst>`         :math:`\vdashtableinstextends \tableinst_1 \extendsto \tableinst_2`
 :ref:`Memory instance <extend-meminst>`          :math:`\vdashmeminstextends \meminst_1 \extendsto \meminst_2`

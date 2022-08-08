@@ -200,6 +200,24 @@ even where this identity is not observable from within WebAssembly code itself
    hence logical addresses can be arbitrarily large natural numbers.
 
 
+.. _free-typeaddr:
+.. _free-funcaddr:
+.. _free-tableaddr:
+.. _free-memaddr:
+.. _free-globaladdr:
+.. _free-elemaddr:
+.. _free-dataaddr:
+.. _free-localaddr:
+.. _free-labeladdr:
+.. _free-addr:
+
+Conventions
+...........
+
+* The notation :math:`\F{addr}(A)` denotes the set of addresses from address space :math:`\X{addr}` occurring free in :math:`A`. We sometimes reinterpret this set as the :ref:`vector <syntax-vec>` of its elements.
+
+
+
 .. index:: ! instance, function type, type instance, function instance, table instance, memory instance, global instance, element instance, data instance, export instance, table address, memory address, global address, element address, data address, index, name
    pair: abstract syntax; module instance
    pair: module; instance
