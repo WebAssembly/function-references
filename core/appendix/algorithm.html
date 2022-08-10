@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Validation Algorithm &#8212; WebAssembly 2.0 + function references (Draft 2022-08-08)</title>
+    <title>Validation Algorithm &#8212; WebAssembly 2.0 + function references (Draft 2022-08-10)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -236,7 +236,7 @@ so that, e.g., <code class="code docutils literal notranslate"><span class="pre"
 </div>
 <p>The initialization stack and the initialization status of locals is manipulated through the following functions:</p>
 <div class="highlight-pseudo notranslate"><div class="highlight"><pre><span></span><span class="k">func</span> <span class="nf">get_local</span>(<span class="nf">idx</span> : u32) =
-  error_if(not (locals_init[idx] || ctrls[0].unreachable))
+  error_if(not locals_init[idx])
 
 <span class="k">func</span> <span class="nf">set_local</span>(<span class="nf">idx</span> : u32) =
   <span class="k">if</span> (not locals_init[idx])
@@ -248,7 +248,7 @@ so that, e.g., <code class="code docutils literal notranslate"><span class="pre"
     locals_init[inits.pop()] := false
 </pre></div>
 </div>
-<p>Getting a local verifies that it is either known to be initialized, or that that the operation is unreachable in the current stack frame.
+<p>Getting a local verifies that it is known to be initialized.
 When a local is set that was not set already,
 then its initialization status is updated and the change is recorded in the initialization stack.
 Thus, the initialization status of all locals can be reset to a previous state by denoting a specific height in the initialization stack.</p>
