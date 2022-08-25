@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Instructions &#8212; WebAssembly 2.0 + function references (Draft 2022-08-10)</title>
+    <title>Instructions &#8212; WebAssembly 2.0 + function references (Draft 2022-08-25)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -260,7 +260,7 @@ In contrast,</p>
 </section>
 <section id="vector-instructions">
 <span id="aux-unpacked"></span><span id="valid-instr-vec"></span><span id="index-3"></span><h2>Vector Instructions<a class="headerlink" href="#vector-instructions" title="Permalink to this headline">¶</a></h2>
-<p>Vector instructions can have a prefix to describe the <a class="reference internal" href="../syntax/instructions.html#syntax-vec-shape"><span class="std std-ref">shape</span></a> of the operand. Packed numeric types, <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-storagetype}{\mathsf{i8}}\)</span> and <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-storagetype}{\mathsf{i16}}\)</span>, are not <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value type</span></a>, we define an auxiliary function to map such packed types into value types:</p>
+<p>Vector instructions can have a prefix to describe the <a class="reference internal" href="../syntax/instructions.html#syntax-vec-shape"><span class="std std-ref">shape</span></a> of the operand. Packed numeric types, <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-storagetype}{\mathsf{i8}}\)</span> and <span class="math notranslate nohighlight">\(\href{../exec/runtime.html#syntax-storagetype}{\mathsf{i16}}\)</span>, are not <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value types</span></a>. An auxiliary function maps such packed types to value types:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{array}{lll&#64;{\qquad}l}
 \href{../valid/instructions.html#aux-unpacked}{\mathrm{unpacked}}(\mathsf{i8x16}) &amp;=&amp; \href{../syntax/types.html#syntax-valtype}{\mathsf{i32}} \\
@@ -537,7 +537,7 @@ In contrast,</p>
 <ul>
 <li><p>The <a class="reference internal" href="../syntax/types.html#syntax-resulttype"><span class="std std-ref">result type</span></a> <span class="math notranslate nohighlight">\([t^\ast]\)</span> must be <a class="reference internal" href="types.html#valid-resulttype"><span class="std std-ref">valid</span></a>.</p></li>
 <li><p>The length of <span class="math notranslate nohighlight">\(t^\ast\)</span> must be <span class="math notranslate nohighlight">\(1\)</span>.</p></li>
-<li><p>The instruction is valid with type <span class="math notranslate nohighlight">\([t^\ast~t^\ast~\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t^\ast]\)</span>.</p></li>
+<li><p>Then the instruction is valid with type <span class="math notranslate nohighlight">\([t^\ast~t^\ast~\href{../syntax/types.html#syntax-valtype}{\mathsf{i32}}] \href{../syntax/types.html#syntax-functype}{\rightarrow} [t^\ast]\)</span>.</p></li>
 </ul>
 </li>
 <li><p>Else:</p>
@@ -1152,7 +1152,7 @@ the instruction sequence <span class="math notranslate nohighlight">\(\href{../s
 <li><p>The label <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l_N]\)</span> must be defined in the context.</p></li>
 <li><p>For all <span class="math notranslate nohighlight">\(l_i\)</span> in <span class="math notranslate nohighlight">\(l^\ast\)</span>,
 the label <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l_i]\)</span> must be defined in the context.</p></li>
-<li><p>There must be a <a class="reference internal" href="../syntax/types.html#syntax-resulttype"><span class="std std-ref">result type</span></a> <span class="math notranslate nohighlight">\([t^\ast]\)</span>, such that:</p>
+<li><p>There must be a sequence <span class="math notranslate nohighlight">\(t^\ast\)</span> of <a class="reference internal" href="../syntax/types.html#syntax-valtype"><span class="std std-ref">value types</span></a>, such that:</p>
 <ul>
 <li><p>The result type <span class="math notranslate nohighlight">\([t^\ast]\)</span> <a class="reference internal" href="matching.html#match-resulttype"><span class="std std-ref">matches</span></a> <span class="math notranslate nohighlight">\(C.\href{../valid/conventions.html#context}{\mathsf{labels}}[l_N]\)</span>.</p></li>
 <li><p>For all <span class="math notranslate nohighlight">\(l_i\)</span> in <span class="math notranslate nohighlight">\(l^\ast\)</span>,
