@@ -122,9 +122,9 @@ The only exception are <a class="reference internal" href="#binary-instr-control
   \def\mathdef1424#1{\mathtt{0x#1}}\mathdef1424{0F} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{return}} \\ &amp;&amp;|&amp;
   \def\mathdef1425#1{\mathtt{0x#1}}\mathdef1425{10}~~x{:}\href{../binary/modules.html#binary-funcidx}{\mathtt{funcidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call}}~x \\ &amp;&amp;|&amp;
   \def\mathdef1426#1{\mathtt{0x#1}}\mathdef1426{11}~~y{:}\href{../binary/modules.html#binary-typeidx}{\mathtt{typeidx}}~~x{:}\href{../binary/modules.html#binary-tableidx}{\mathtt{tableidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_indirect}}~x~y \\ &amp;&amp;|&amp;
-  \def\mathdef1427#1{\mathtt{0x#1}}\mathdef1427{14} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_ref}} \\ &amp;&amp;|&amp;
-  \def\mathdef1428#1{\mathtt{0x#1}}\mathdef1428{D4}~~x{:}\href{../binary/modules.html#binary-funcidx}{\mathtt{funcidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}} \\ &amp;&amp;|&amp;
-  \def\mathdef1429#1{\mathtt{0x#1}}\mathdef1429{D6}~~x{:}\href{../binary/modules.html#binary-funcidx}{\mathtt{funcidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_non\_null}} \\
+  \def\mathdef1427#1{\mathtt{0x#1}}\mathdef1427{14}~~x{:}\href{../binary/modules.html#binary-typeidx}{\mathtt{typeidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_ref}}~x \\ &amp;&amp;|&amp;
+  \def\mathdef1428#1{\mathtt{0x#1}}\mathdef1428{D4}~~l{:}\href{../binary/modules.html#binary-labelidx}{\mathtt{labelidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}}~l \\ &amp;&amp;|&amp;
+  \def\mathdef1429#1{\mathtt{0x#1}}\mathdef1429{D6}~~l{:}\href{../binary/modules.html#binary-labelidx}{\mathtt{labelidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_non\_null}}~l \\
 \end{array}\end{split}\]</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
