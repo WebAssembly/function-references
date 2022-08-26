@@ -10,11 +10,11 @@ Types are checked during :ref:`validation <valid>`, :ref:`instantiation <exec-in
 
 
 
-.. index:: ! type identifier, type index, type address
+.. index:: ! type identifier, type index, type address, ! static type, ! dynamic type
    pair: abstract syntax; type identifier
 .. _syntax-typeid:
-.. _syntax-type-syn:
-.. _syntax-type-sem:
+.. _syntax-type-stat:
+.. _syntax-type-dyn:
 
 Type Identifiers
 ~~~~~~~~~~~~~~~~
@@ -34,22 +34,20 @@ The type grammar hence allows multiple representations of type identifiers:
      \typeidx ~|~ \typeaddr
    \end{array}
 
-Types represented with type indices are referred to as *syntactic types*,
-whereas types represented with type addresses are referred to as *semantic types*.
+Types represented with type indices are referred to as *static types*,
+whereas types represented with type addresses are referred to as *dynamic types*.
 
-.. todo:: rename to static vs dynamic types?
+Static types are transformed into dynamic types during module :ref:`instantiation <exec-instantiation>`.
 
-Syntactic types are transformed into semantic types during module :ref:`instantiation <exec-instantiation>`.
-
-It is an invariant of the semantics that only syntactic types arise during :ref:`validation <valid>`, while only semantic types are used during :ref:`execution <exec>`.
-However, for the proof of :ref:`type soundness <soundness>`, both forms of types must be considered together, and syntactic types may refer to semantic types.
+It is an invariant of the semantics that only static types arise during :ref:`validation <valid>`, while only dynamic types are used during :ref:`execution <exec>`.
+However, for the proof of :ref:`type soundness <soundness>`, both forms of types must be considered together, and static types may refer to dynamic types.
 
 .. _notation-subst:
 
 Convention
 ..........
 
-The following notation expresses conversion between syntactic and semantic types:
+The following notation expresses conversion between static and dynamic types:
 
 * :math:`t[x^\ast \subst a^\ast]` denotes the parallel substitution of :ref:`type indices <syntax-typeidx>` :math:`x^\ast` with :ref:`type addresses <syntax-typeaddr>` :math:`a^\ast`, provided :math:`|x^\ast| = |a^\ast|`.
 

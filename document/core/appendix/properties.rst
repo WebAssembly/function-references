@@ -26,14 +26,14 @@ In order to state and prove soundness precisely, the typing rules must be extend
 Results
 ~~~~~~~
 
-:ref:`Results <syntax-result>` can be classified by :ref:`semantic <syntax-type-sem>` :ref:`result types <syntax-resulttype>` as follows.
+:ref:`Results <syntax-result>` can be classified by :ref:`dynamic <syntax-type-dyn>` :ref:`result types <syntax-resulttype>` as follows.
 
 :ref:`Results <syntax-result>` :math:`\val^\ast`
 ................................................
 
 * For each :ref:`value <syntax-val>` :math:`\val_i` in :math:`\val^\ast`:
 
-  * The value :math:`\val_i` is :ref:`valid <valid-val>` with some :ref:`semantic <syntax-type-sem>` :ref:`value type <syntax-valtype>` :math:`t_i`.
+  * The value :math:`\val_i` is :ref:`valid <valid-val>` with some :ref:`dynamic <syntax-type-dyn>` :ref:`value type <syntax-valtype>` :math:`t_i`.
 
 * Let :math:`t^\ast` be the concatenation of all :math:`t_i`.
 
@@ -50,7 +50,7 @@ Results
 :ref:`Results <syntax-result>` :math:`\TRAP`
 ............................................
 
-* The result is valid with :ref:`result type <syntax-resulttype>` :math:`[t^\ast]`, for any :ref:`valid <valid-resulttype>` :ref:`semantic <syntax-type-sem>` :ref:`result types <syntax-resulttype>`.
+* The result is valid with :ref:`result type <syntax-resulttype>` :math:`[t^\ast]`, for any :ref:`valid <valid-resulttype>` :ref:`dynamic <syntax-type-dyn>` :ref:`result types <syntax-resulttype>`.
 
 .. math::
    \frac{
@@ -141,7 +141,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Type Instances <syntax-typeinst>` :math:`\functype`
 .........................................................
 
-* The :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
 
 * Then it is valid as a type instance.
 
@@ -159,15 +159,15 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\functype, \FIMODULE~\moduleinst, \FICODE~\func\}`
 .......................................................................................................................
 
-* The :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
 
 * The :ref:`module instance <syntax-moduleinst>` :math:`\moduleinst` must be :ref:`valid <valid-moduleinst>` with some :ref:`context <context>` :math:`C`.
 
-* Under :ref:`context <context>` :math:`C`, the :ref:`function <syntax-func>` :math:`\func` must be :ref:`valid <valid-func>` with :ref:`syntactic <syntax-type-syn>` :ref:`function type <syntax-functype>` :math:`\functype'`.
+* Under :ref:`context <context>` :math:`C`, the :ref:`function <syntax-func>` :math:`\func` must be :ref:`valid <valid-func>` with :ref:`static <syntax-type-stat>` :ref:`function type <syntax-functype>` :math:`\functype'`.
 
-* The semantic function type obtained by instantiating the syntactic type :math:`\functype'` inside module instance :math:`\moduleinst` must :ref:`match <match-functype>` :math:`\functype`.
+* The :ref:`dynamic <syntax-type-dyn>` function type obtained by instantiating the static type :math:`\functype'` inside module instance :math:`\moduleinst` must :ref:`match <match-functype>` :math:`\functype`.
 
-* Then the function instance is valid with :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype`.
+* Then the function instance is valid with :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype`.
 
 .. math::
    \frac{
@@ -178,7 +178,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      \\
      C \vdashfunc \func : \functype'
      \qquad
-     S \vdashfunctypematch \sem_{\moduleinst}(\functype') \matchesfunctype \functype
+     S \vdashfunctypematch \dyn_{\moduleinst}(\functype') \matchesfunctype \functype
      \end{array}
    }{
      S \vdashfuncinst \{\FITYPE~\functype, \FIMODULE~\moduleinst, \FICODE~\func\} : \functype
@@ -191,7 +191,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Host Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\functype, \FIHOSTCODE~\X{hf}\}`
 ..................................................................................................
 
-* The :ref:`semantic <syntax-type-sem>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
 
 * Let :math:`[t_1^\ast] \to [t_2^\ast]` be the :ref:`function type <syntax-functype>` :math:`\functype`.
 
@@ -246,7 +246,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Table Instances <syntax-tableinst>` :math:`\{ \TITYPE~(\limits~t), \TIELEM~\reff^\ast \}`
 ...............................................................................................
 
-* The :ref:`semantic <syntax-type-sem>` :ref:`table type <syntax-tabletype>` :math:`\limits~t` must be :ref:`valid <valid-tabletype>`.
+* The :ref:`dynamic <syntax-type-dyn>` :ref:`table type <syntax-tabletype>` :math:`\limits~t` must be :ref:`valid <valid-tabletype>`.
 
 * The length of :math:`\reff^\ast` must equal :math:`\limits.\LMIN`.
 
@@ -278,7 +278,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Memory Instances <syntax-meminst>` :math:`\{ \MITYPE~\limits, \MIDATA~b^\ast \}`
 ......................................................................................
 
-* The :ref:`semantic <syntax-type-sem>` :ref:`memory type <syntax-memtype>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-memtype>`.
+* The :ref:`dynamic <syntax-type-dyn>` :ref:`memory type <syntax-memtype>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-memtype>`.
 
 * The length of :math:`b^\ast` must equal :math:`\limits.\LMIN` multiplied by the :ref:`page size <page-size>` :math:`64\,\F{Ki}`.
 
@@ -300,7 +300,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Global Instances <syntax-globalinst>` :math:`\{ \GITYPE~(\mut~t), \GIVALUE~\val \}`
 .........................................................................................
 
-* The :ref:`semantic <syntax-type-sem>` :ref:`global type <syntax-globaltype>` :math:`\mut~t` must be :ref:`valid <valid-globaltype>`.
+* The :ref:`dynamic <syntax-type-dyn>` :ref:`global type <syntax-globaltype>` :math:`\mut~t` must be :ref:`valid <valid-globaltype>`.
 
 * The :ref:`value <syntax-val>` :math:`\val` must be :ref:`valid <valid-val>` with some :ref:`value type <syntax-valtype>` :math:`t'`.
 
@@ -326,7 +326,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Element Instances <syntax-eleminst>` :math:`\{ \EIELEM~\X{fa}^\ast \}`
 ............................................................................
 
-* The :ref:`semantic <syntax-type-sem>` :ref:`reference type <syntax-reftype>` :math:`t` must be :ref:`valid <valid-reftype>`.
+* The :ref:`dynamic <syntax-type-dyn>` :ref:`reference type <syntax-reftype>` :math:`t` must be :ref:`valid <valid-reftype>`.
 
 * For each :ref:`reference <syntax-ref>` :math:`\reff_i` in the elements :math:`\reff^n`:
 
@@ -466,7 +466,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
    }
 
 .. note::
-   The context derived for a module instance consists of :ref:`semantic types <syntax-type-sem>`.
+   The context derived for a module instance consists of :ref:`dynamic types <syntax-type-dyn>`.
 
 
 .. scratch
@@ -511,7 +511,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      }
 
   .. note::
-     It is an invariant of the semantics that every context either consists of only syntactic types or only semantic types.
+     It is an invariant of the semantics that every context either consists of only static types or only dynamic types.
 
 
 .. index:: configuration, administrative instruction, store, frame
@@ -586,7 +586,7 @@ Finally, :ref:`frames <syntax-frame>` are classified with *frame contexts*, whic
 :ref:`Frames <syntax-frame>` :math:`\{\ALOCALS~\val^\ast, \AMODULE~\moduleinst\}`
 .................................................................................
 
-* The :ref:`module instance <syntax-moduleinst>` :math:`\moduleinst` must be :ref:`valid <valid-moduleinst>` with some :ref:`semantic <syntax-type-sem>` :ref:`module context <module-context>` :math:`C`.
+* The :ref:`module instance <syntax-moduleinst>` :math:`\moduleinst` must be :ref:`valid <valid-moduleinst>` with some :ref:`dynamic <syntax-type-dyn>` :ref:`module context <module-context>` :math:`C`.
 
 * Each :ref:`value <syntax-val>` :math:`\val_i` in :math:`\val^\ast` must be :ref:`valid <valid-val>` with some :ref:`value type <syntax-valtype>` :math:`t_i`.
 
@@ -623,7 +623,7 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
 :math:`\TRAP`
 .............
 
-* The instruction is valid with any :ref:`valid <valid-instrtype>` :ref:`semantic <syntax-type-sem>` :ref:`instruction type <syntax-instrtype>` of the form :math:`[t_1^\ast] \to [t_2^\ast]`.
+* The instruction is valid with any :ref:`valid <valid-instrtype>` :ref:`dynamic <syntax-type-dyn>` :ref:`instruction type <syntax-instrtype>` of the form :math:`[t_1^\ast] \to [t_2^\ast]`.
 
 .. math::
    \frac{
@@ -652,7 +652,7 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
 :math:`\REFFUNCADDR~\funcaddr`
 ..............................
 
-* The :ref:`external function value <syntax-externval>` :math:`\EVFUNC~\funcaddr` must be :ref:`valid <valid-externval>` with :ref:`semantic <syntax-type-sem>` :ref:`external function type <syntax-externtype>` :math:`\ETFUNC~\functype`.
+* The :ref:`external function value <syntax-externval>` :math:`\EVFUNC~\funcaddr` must be :ref:`valid <valid-externval>` with :ref:`dynamic <syntax-type-dyn>` :ref:`external function type <syntax-externtype>` :math:`\ETFUNC~\functype`.
 
 * There exists a :ref:`type address <syntax-typeaddr>` :math:`a` in the :ref:`store <syntax-store>` :math:`S`, such that :math:`S.\STYPES[a] = \functype`.
 
@@ -668,7 +668,7 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
    }
 
 .. note::
-   This typing rule yields a :ref:`semantic <syntax-type-sem>` type.
+   This typing rule yields a :ref:`dynamic <syntax-type-dyn>` type.
    The function may originate from outside the current module,
    so that a definition for its type may not exist in context :math:`C`.
 
@@ -719,7 +719,7 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
 :math:`\FRAME_n\{F\}~\instr^\ast~\END`
 ...........................................
 
-* Under the :ref:`valid <valid-resulttype>` :ref:`semantic <syntax-type-sem>` return type :math:`[t^n]`,
+* Under the :ref:`valid <valid-resulttype>` :ref:`dynamic <syntax-type-dyn>` return type :math:`[t^n]`,
   the :ref:`thread <syntax-frame>` :math:`F; \instr^\ast` must be :ref:`valid <valid-frame>` with :ref:`result type <syntax-resulttype>` :math:`[t^n]`.
 
 * Then the compound instruction is valid with type :math:`[] \to [t^n]`.
@@ -734,7 +734,7 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
    }
 
 .. note::
-   This typing rule yields a :ref:`semantic <syntax-type-sem>` type.
+   This typing rule yields a :ref:`dynamic <syntax-type-dyn>` type.
    The frame's function may originate from outside the current module,
    so that the :math:`t^n` may reference type definitions that do not exist in context :math:`C`.
 

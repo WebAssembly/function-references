@@ -994,7 +994,7 @@
 
 .. Allocation
 
-.. |sem| mathdef:: \xref{exec/types}{sem}{\F{sem}}
+.. |dyn| mathdef:: \xref{exec/types}{dyn}{\F{dyn}}
 
 .. |alloctype| mathdef:: \xref{exec/modules}{alloc-type}{\F{alloctype}}
 .. |allocfunc| mathdef:: \xref{exec/modules}{alloc-func}{\F{allocfunc}}
