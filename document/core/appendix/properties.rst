@@ -159,28 +159,24 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\typeaddr, \FIMODULE~\moduleinst, \FICODE~\func\}`
 .......................................................................................................................
 
-* The :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr]` must exist.
-
-* Let the :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype` be the :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr]`.
-
 * The :ref:`module instance <syntax-moduleinst>` :math:`\moduleinst` must be :ref:`valid <valid-moduleinst>` with some :ref:`context <context>` :math:`C`.
 
-* Under :ref:`context <context>` :math:`C`, the :ref:`function <syntax-func>` :math:`\func` must be :ref:`valid <valid-func>` with :ref:`static <syntax-type-stat>` :ref:`function type <syntax-functype>` :math:`\functype'`.
+* Under :ref:`context <context>` :math:`C`:
 
-* The :ref:`dynamic <syntax-type-dyn>` function type obtained by instantiating the static type :math:`\functype'` inside module instance :math:`\moduleinst` must :ref:`match <match-functype>` :math:`\functype`.
+  * The :ref:`function <syntax-func>` :math:`\func` must be :ref:`valid <valid-func>` with :ref:`static <syntax-type-stat>` :ref:`type identifier <syntax-typeid>` :math:`\typeidx`.
+
+  * The :ref:`static <syntax-type-stat>` :ref:`heap type <syntax-heaptype>` :math:`\typeidx` must :ref:`match <match-heaptype>` the :ref:`dynamic <syntax-type-dyn>` :ref:`heap type <syntax-heaptype>` :math:`\typeaddr`.
 
 * Then the function instance is valid with :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype`.
 
 .. math::
    \frac{
      \begin{array}{@{}c@{}}
-     S.\STYPES[\typeaddr] = \functype
-     \qquad
      S \vdashmoduleinst \moduleinst : C
      \\
-     C \vdashfunc \func : \functype'
+     C \vdashfunc \func : \typeidx
      \qquad
-     S \vdashfunctypematch \dyn_{\moduleinst}(\functype') \matchesfunctype \functype
+     C; S \vdashheaptypematch \typeidx \matchesheaptype \typeaddr
      \end{array}
    }{
      S \vdashfuncinst \{\FITYPE~\typeaddr, \FIMODULE~\moduleinst, \FICODE~\func\} : \functype

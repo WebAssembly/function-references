@@ -29,7 +29,7 @@ Construct                                        Judgement
 :ref:`Instruction <valid-instr>`                 :math:`S;C \vdashinstr \instr : \functype`
 :ref:`Instruction sequence <valid-instr-seq>`    :math:`S;C \vdashinstrseq \instr^\ast : \functype`
 :ref:`Expression <valid-expr>`                   :math:`C \vdashexpr \expr : \resulttype`
-:ref:`Function <valid-func>`                     :math:`C \vdashfunc \func : \functype`
+:ref:`Function <valid-func>`                     :math:`C \vdashfunc \func : \typeid`
 :ref:`Local <valid-local>`                       :math:`C \vdashlocal \local : \localtype`
 :ref:`Table <valid-table>`                       :math:`C \vdashtable \table : \tabletype`
 :ref:`Memory <valid-mem>`                        :math:`C \vdashmem \mem : \memtype`
