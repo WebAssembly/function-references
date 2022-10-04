@@ -691,7 +691,7 @@ The following steps are performed:
 
 2. Let :math:`\funcinst` be the :ref:`function instance <syntax-funcinst>` :math:`S.\SFUNCS[\funcaddr]`.
 
-3. Let :math:`\typeaddr` be the :ref:`type address <sybtax-typeaddr>` :math:`\funcinst.\FITYPE`.
+3. Let :math:`\typeaddr` be the :ref:`type address <syntax-typeaddr>` :math:`\funcinst.\FITYPE`.
 
 4. Assert: :math:`S.\STYPES[\typeaddr]` exists.
 

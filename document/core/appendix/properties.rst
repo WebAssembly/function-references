@@ -391,7 +391,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
 * For each :ref:`type address <syntax-typeaddr>` :math:`\typeaddr_i` in :math:`\moduleinst.\MITYPES`, the :ref:`type instance <syntax-typeinst>` :math:`\typeinst_i` at :math:`S.\STYPES[\typeaddr_i]` must be :ref:`valid <valid-typeinst>`.
 
-* For each :ref:`function address <syntax-funcaddr>` :math:`\funcaddr_i` in :math:`\moduleinst.\MIFUNCS`, the :ref:`external value <syntax-externval>` :math:`\EVFUNC~\funcaddr_i` must be :ref:`valid <valid-externval-func>` with some :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\functype_i`.
+* For each :ref:`function address <syntax-funcaddr>` :math:`\funcaddr_i` in :math:`\moduleinst.\MIFUNCS`, the :ref:`external value <syntax-externval>` :math:`\EVFUNC~\funcaddr_i` must be :ref:`valid <valid-externval-func>` with some :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\typeaddr'_i`.
 
 * For each :ref:`table address <syntax-tableaddr>` :math:`\tableaddr_i` in :math:`\moduleinst.\MITABLES`, the :ref:`external value <syntax-externval>` :math:`\EVTABLE~\tableaddr_i` must be :ref:`valid <valid-externval-table>` with some :ref:`external type <syntax-externtype>` :math:`\ETTABLE~\tabletype_i`.
 
@@ -409,7 +409,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
 * Let :math:`\typeinst^\ast` be the concatenation of all :math:`\typeinst_i` in order.
 
-* Let :math:`\functype^\ast` be the concatenation of all :math:`\functype_i` in order.
+* Let :math:`\typeaddr'^\ast` be the concatenation of all :math:`\typeaddr'_i` in order.
 
 * Let :math:`\tabletype^\ast` be the concatenation of all :math:`\tabletype_i` in order.
 
@@ -422,7 +422,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 * Let :math:`n` be the length of :math:`\moduleinst.\MIDATAS`.
 
 * Then the module instance is valid with :ref:`context <context>`
-  :math:`\{\CTYPES~\typeinst^\ast,` :math:`\CFUNCS~\functype^\ast,` :math:`\CTABLES~\tabletype^\ast,` :math:`\CMEMS~\memtype^\ast,` :math:`\CGLOBALS~\globaltype^\ast,` :math:`\CELEMS~\reftype^\ast,` :math:`\CDATAS~{\ok}^n\}`.
+  :math:`\{\CTYPES~\typeinst^\ast,` :math:`\CFUNCS~{\typeaddr'}^\ast,` :math:`\CTABLES~\tabletype^\ast,` :math:`\CMEMS~\memtype^\ast,` :math:`\CGLOBALS~\globaltype^\ast,` :math:`\CELEMS~\reftype^\ast,` :math:`\CDATAS~{\ok}^n\}`.
 
 .. math::
    ~\\[-1ex]
@@ -430,7 +430,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      \begin{array}{@{}c@{}}
      (S \vdashtypeinst S.\STYPES[\typeaddr] \ok)^\ast
      \\
-     (S \vdashexternval \EVFUNC~\funcaddr : \ETFUNC~\functype)^\ast
+     (S \vdashexternval \EVFUNC~\funcaddr : \ETFUNC~\typeaddr')^\ast
      \qquad
      (S \vdashexternval \EVTABLE~\tableaddr : \ETTABLE~\tabletype)^\ast
      \\
@@ -459,7 +459,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
        \MIEXPORTS & \exportinst^\ast ~\} : \{
          \begin{array}[t]{@{}l@{~}l@{}}
          \CTYPES & S.\STYPES[\typeaddr]^\ast, \\
-         \CFUNCS & \functype^\ast, \\
+         \CFUNCS & {\typeaddr'}^\ast, \\
          \CTABLES & \tabletype^\ast, \\
          \CMEMS & \memtype^\ast, \\
          \CGLOBALS & \globaltype^\ast, \\
@@ -656,19 +656,15 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
 :math:`\REFFUNCADDR~\funcaddr`
 ..............................
 
-* The :ref:`external function value <syntax-externval>` :math:`\EVFUNC~\funcaddr` must be :ref:`valid <valid-externval>` with :ref:`dynamic <syntax-type-dyn>` :ref:`external function type <syntax-externtype>` :math:`\ETFUNC~\functype`.
-
-* Assert: :math:`S.\SFUNCS[a]` exists.
-
-* Let :math:`a'` be the :ref:`type address <syntax-typeaddr>` :math:`S.\SFUNCS[a].\FITYPE`.
+* The :ref:`external function value <syntax-externval>` :math:`\EVFUNC~\funcaddr` must be :ref:`valid <valid-externval>` with :ref:`dynamic <syntax-type-dyn>` :ref:`external function type <syntax-externtype>` :math:`\ETFUNC~a'`.
 
 * Then the instruction is valid with type :math:`[] \to [(\REF~a')]`.
 
 .. math::
    \frac{
-     S \vdashexternval \EVFUNC~a : \ETFUNC~\functype
+     S \vdashexternval \EVFUNC~a : \ETFUNC~a'
    }{
-     S; C \vdashadmininstr \REFFUNCADDR~a : [] \to [(\REF~S.\SFUNCS[a].\FITYPE)]
+     S; C \vdashadmininstr \REFFUNCADDR~a : [] \to [(\REF~a')]
    }
 
 .. note::
@@ -682,13 +678,19 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
 :math:`\INVOKE~\funcaddr`
 .........................
 
-* The :ref:`external function value <syntax-externval>` :math:`\EVFUNC~\funcaddr` must be :ref:`valid <valid-externval-func>` with :ref:`external function type <syntax-externtype>` :math:`\ETFUNC ([t_1^\ast] \to [t_2^\ast])`.
+* The :ref:`external function value <syntax-externval>` :math:`\EVFUNC~\funcaddr` must be :ref:`valid <valid-externval-func>` with :ref:`external function type <syntax-externtype>` :math:`\ETFUNC a'`.
+
+* Assert: The :ref:`type address <syntax-typeaddr>` :math:`S.\STYPES[a']` is defined in the store.
+
+* Let :math:`[t_1^\ast] \to [t_2^\ast])` be the :ref:`function type <syntax-functype>` :math:`S.\STYPES[a']`.
 
 * Then the instruction is valid with type :math:`[t_1^\ast] \to [t_2^\ast]`.
 
 .. math::
    \frac{
-     S \vdashexternval \EVFUNC~\funcaddr : \ETFUNC~[t_1^\ast] \to [t_2^\ast]
+     S \vdashexternval \EVFUNC~\funcaddr : \ETFUNC~a'
+     \qquad
+     S.\STYPES[a'] = [t_1^\ast] \to [t_2^\ast]
    }{
      S; C \vdashadmininstr \INVOKE~\funcaddr : [t_1^\ast] \to [t_2^\ast]
    }

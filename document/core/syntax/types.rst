@@ -380,7 +380,7 @@ External Types
 .. math::
    \begin{array}{llll}
    \production{external types} & \externtype &::=&
-     \ETFUNC~\functype ~|~
+     \ETFUNC~\typeid ~|~
      \ETTABLE~\tabletype ~|~
      \ETMEM~\memtype ~|~
      \ETGLOBAL~\globaltype \\
@@ -393,7 +393,7 @@ Conventions
 The following auxiliary notation is defined for sequences of external types.
 It filters out entries of a specific kind in an order-preserving fashion:
 
-* :math:`\etfuncs(\externtype^\ast) = [\functype ~|~ (\ETFUNC~\functype) \in \externtype^\ast]`
+* :math:`\etfuncs(\externtype^\ast) = [\typeid ~|~ (\ETFUNC~\typeid) \in \externtype^\ast]`
 
 * :math:`\ettables(\externtype^\ast) = [\tabletype ~|~ (\ETTABLE~\tabletype) \in \externtype^\ast]`
 

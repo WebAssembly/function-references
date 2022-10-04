@@ -417,18 +417,18 @@ Global Types
 External Types
 ~~~~~~~~~~~~~~
 
-:math:`\ETFUNC~\functype`
-.........................
+:math:`\ETFUNC~\typeidx`
+........................
 
-* The :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`function type <syntax-functype>` :math:`C.\CTYPES[x]` must be defined in the context.
 
 * Then the external type is valid.
 
 .. math::
    \frac{
-     C \vdashfunctype \functype \ok
+     C.\CTYPES[x] = \functype
    }{
-     C \vdashexterntype \ETFUNC~\functype \ok
+     C \vdashexterntype \ETFUNC~x
    }
 
 :math:`\ETTABLE~\tabletype`
