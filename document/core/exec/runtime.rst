@@ -285,8 +285,8 @@ The module instance is used to resolve references to other definitions during ex
 .. math::
    \begin{array}{llll}
    \production{(function instance)} & \funcinst &::=&
-     \{ \FITYPE~\functype, \FIMODULE~\moduleinst, \FICODE~\func \} \\ &&|&
-     \{ \FITYPE~\functype, \FIHOSTCODE~\hostfunc \} \\
+     \{ \FITYPE~\typeaddr, \FIMODULE~\moduleinst, \FICODE~\func \} \\ &&|&
+     \{ \FITYPE~\typeaddr, \FIHOSTCODE~\hostfunc \} \\
    \production{(host function)} & \hostfunc &::=& \dots \\
    \end{array}
 

@@ -62,17 +62,17 @@ The following auxiliary typing rules specify this typing relation relative to a 
 
 * The :ref:`external value <syntax-externval>` :math:`\EVFUNC~a` must be :ref:`valid <valid-externval>` with :ref:`dynamic <syntax-type-dyn>` :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\functype`.
 
-* There exists a :ref:`type address <syntax-typeaddr>` :math:`a'` in the :ref:`store <syntax-store>` :math:`S`, such that :math:`S.\STYPES[a'] = \functype`.
+* Assert: :math:`S.\SFUNCS[a]` exists.
+
+* Let :math:`a'` be the :ref:`type address <syntax-typeaddr>` :math:`S.\SFUNCS[a].\FITYPE`.
 
 * Then the value is valid with :ref:`dynamic <syntax-type-dyn>` :ref:`reference type <syntax-reftype>` :math:`(\REF~a')`.
 
 .. math::
    \frac{
      S \vdashexternval \EVFUNC~a : \ETFUNC~\functype
-     \qquad
-     S.\STYPES[a'] = \functype
    }{
-     S \vdashval \REFFUNCADDR~a : (\REF~a')
+     S \vdashval \REFFUNCADDR~a : (\REF~S.\SFUNCS[a].\FITYPE)
    }
 
 

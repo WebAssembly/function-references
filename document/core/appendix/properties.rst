@@ -156,10 +156,12 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 .. index:: function type, function instance
 .. _valid-funcinst:
 
-:ref:`Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\functype, \FIMODULE~\moduleinst, \FICODE~\func\}`
+:ref:`Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\typeaddr, \FIMODULE~\moduleinst, \FICODE~\func\}`
 .......................................................................................................................
 
-* The :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr]` must exist.
+
+* Let the :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype` be the :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr]`.
 
 * The :ref:`module instance <syntax-moduleinst>` :math:`\moduleinst` must be :ref:`valid <valid-moduleinst>` with some :ref:`context <context>` :math:`C`.
 
@@ -172,7 +174,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 .. math::
    \frac{
      \begin{array}{@{}c@{}}
-     S \vdashfunctype \functype \ok
+     S.\STYPES[\typeaddr] = \functype
      \qquad
      S \vdashmoduleinst \moduleinst : C
      \\
@@ -181,19 +183,19 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      S \vdashfunctypematch \dyn_{\moduleinst}(\functype') \matchesfunctype \functype
      \end{array}
    }{
-     S \vdashfuncinst \{\FITYPE~\functype, \FIMODULE~\moduleinst, \FICODE~\func\} : \functype
+     S \vdashfuncinst \{\FITYPE~\typeaddr, \FIMODULE~\moduleinst, \FICODE~\func\} : \functype
    }
 
 
 .. index:: function type, function instance, host function
 .. _valid-hostfuncinst:
 
-:ref:`Host Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\functype, \FIHOSTCODE~\X{hf}\}`
+:ref:`Host Function Instances <syntax-funcinst>` :math:`\{\FITYPE~\typeaddr, \FIHOSTCODE~\X{hf}\}`
 ..................................................................................................
 
-* The :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype` must be :ref:`valid <valid-functype>`.
+* The :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr]` must exist.
 
-* Let :math:`[t_1^\ast] \to [t_2^\ast]` be the :ref:`function type <syntax-functype>` :math:`\functype`.
+* Let the :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`[t_1^\ast] \to [t_2^\ast]` be the :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr]`.
 
 * For every :ref:`valid <valid-store>` :ref:`store <syntax-store>` :math:`S_1` :ref:`extending <extend-store>` :math:`S` and every sequence :math:`\val^\ast` of :ref:`values <syntax-val>` whose :ref:`types <valid-val>` coincide with :math:`t_1^\ast`:
 
@@ -210,7 +212,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 .. math::
    \frac{
      \begin{array}[b]{@{}l@{}}
-     S \vdashfunctype [t_1^\ast] \to [t_2^\ast] \ok \\
+     S.\STYPES[\typeaddr] = [t_1^\ast] \to [t_2^\ast] \\
      \end{array}
      \quad
      \begin{array}[b]{@{}l@{}}
@@ -229,7 +231,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
        R = (S_2; \result)
      \end{array}
    }{
-     S \vdashfuncinst \{\FITYPE~[t_1^\ast] \to [t_2^\ast], \FIHOSTCODE~\X{hf}\} : [t_1^\ast] \to [t_2^\ast]
+     S \vdashfuncinst \{\FITYPE~\typeaddr, \FIHOSTCODE~\X{hf}\} : [t_1^\ast] \to [t_2^\ast]
    }
 
 .. note::
@@ -387,7 +389,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Module Instances <syntax-moduleinst>` :math:`\moduleinst`
 ...............................................................
 
-* For each :ref:`type address <syntax-typeaddr>` :math:`\typeaddr_i` in :math:`\moduleinst.\MITYPES`, the :ref:`type instance <syntax-typeinst>` :math:`S.\STYPES[\typeaddr_i]` must be :ref:`valid <valid-typeinst>`.
+* For each :ref:`type address <syntax-typeaddr>` :math:`\typeaddr_i` in :math:`\moduleinst.\MITYPES`, the :ref:`type instance <syntax-typeinst>` :math:`\typeinst_i` at :math:`S.\STYPES[\typeaddr_i]` must be :ref:`valid <valid-typeinst>`.
 
 * For each :ref:`function address <syntax-funcaddr>` :math:`\funcaddr_i` in :math:`\moduleinst.\MIFUNCS`, the :ref:`external value <syntax-externval>` :math:`\EVFUNC~\funcaddr_i` must be :ref:`valid <valid-externval-func>` with some :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\functype_i`.
 
@@ -405,6 +407,8 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
 * For each :ref:`export instance <syntax-exportinst>` :math:`\exportinst_i` in :math:`\moduleinst.\MIEXPORTS`, the :ref:`name <syntax-name>` :math:`\exportinst_i.\EINAME` must be different from any other name occurring in :math:`\moduleinst.\MIEXPORTS`.
 
+* Let :math:`\typeinst^\ast` be the concatenation of all :math:`\typeinst_i` in order.
+
 * Let :math:`\functype^\ast` be the concatenation of all :math:`\functype_i` in order.
 
 * Let :math:`\tabletype^\ast` be the concatenation of all :math:`\tabletype_i` in order.
@@ -418,7 +422,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 * Let :math:`n` be the length of :math:`\moduleinst.\MIDATAS`.
 
 * Then the module instance is valid with :ref:`context <context>`
-  :math:`\{\CTYPES~S.\STYPES,` :math:`\CFUNCS~\functype^\ast,` :math:`\CTABLES~\tabletype^\ast,` :math:`\CMEMS~\memtype^\ast,` :math:`\CGLOBALS~\globaltype^\ast,` :math:`\CELEMS~\reftype^\ast,` :math:`\CDATAS~{\ok}^n\}`.
+  :math:`\{\CTYPES~\typeinst^\ast,` :math:`\CFUNCS~\functype^\ast,` :math:`\CTABLES~\tabletype^\ast,` :math:`\CMEMS~\memtype^\ast,` :math:`\CGLOBALS~\globaltype^\ast,` :math:`\CELEMS~\reftype^\ast,` :math:`\CDATAS~{\ok}^n\}`.
 
 .. math::
    ~\\[-1ex]
@@ -454,7 +458,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
        \MIDATAS & \dataaddr^n, \\
        \MIEXPORTS & \exportinst^\ast ~\} : \{
          \begin{array}[t]{@{}l@{~}l@{}}
-         \CTYPES & S.\STYPES, \\
+         \CTYPES & S.\STYPES[\typeaddr]^\ast, \\
          \CFUNCS & \functype^\ast, \\
          \CTABLES & \tabletype^\ast, \\
          \CMEMS & \memtype^\ast, \\
@@ -654,17 +658,17 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
 
 * The :ref:`external function value <syntax-externval>` :math:`\EVFUNC~\funcaddr` must be :ref:`valid <valid-externval>` with :ref:`dynamic <syntax-type-dyn>` :ref:`external function type <syntax-externtype>` :math:`\ETFUNC~\functype`.
 
-* There exists a :ref:`type address <syntax-typeaddr>` :math:`a` in the :ref:`store <syntax-store>` :math:`S`, such that :math:`S.\STYPES[a] = \functype`.
+* Assert: :math:`S.\SFUNCS[a]` exists.
+
+* Let :math:`a'` be the :ref:`type address <syntax-typeaddr>` :math:`S.\SFUNCS[a].\FITYPE`.
 
 * Then the instruction is valid with type :math:`[] \to [(\REF~a')]`.
 
 .. math::
    \frac{
      S \vdashexternval \EVFUNC~a : \ETFUNC~\functype
-     \qquad
-     S.\STYPES[a'] = \functype
    }{
-     S; C \vdashadmininstr \REFFUNCADDR~a : [] \to [(\REF~a')]
+     S; C \vdashadmininstr \REFFUNCADDR~a : [] \to [(\REF~S.\SFUNCS[a].\FITYPE)]
    }
 
 .. note::

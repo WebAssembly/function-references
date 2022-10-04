@@ -45,13 +45,11 @@ New instances of :ref:`types <syntax-typeinst>`, :ref:`functions <syntax-funcins
 
 1. Let :math:`\func` be the :ref:`function <syntax-func>` to allocate and :math:`\moduleinst` its :ref:`module instance <syntax-moduleinst>`.
 
-2. Let :math:`a` be the first free :ref:`function address <syntax-funcaddr>` in :math:`S`.
+2. Let :math:`\typeaddr` be the :ref:`type address <syntax-typeaddr>` :math:`\moduleinst.\MITYPES[\func.\FTYPE]`.
 
-3. Let :math:`\typeaddr` be the :ref:`type address <syntax-typeaddr>` :math:`\moduleinst.\MITYPES[\func.\FTYPE]`.
+3. Let :math:`a` be the first free :ref:`function address <syntax-funcaddr>` in :math:`S`.
 
-4. Let :math:`\functype` be the :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`S.\STYPES[\typeaddr]`.
-
-5. Let :math:`\funcinst` be the :ref:`function instance <syntax-funcinst>` :math:`\{ \FITYPE~\functype', \FIMODULE~\moduleinst, \FICODE~\func \}`.
+4. Let :math:`\funcinst` be the :ref:`function instance <syntax-funcinst>` :math:`\{ \FITYPE~\typeaddr', \FIMODULE~\moduleinst, \FICODE~\func \}`.
 
 6. Append :math:`\funcinst` to the |SFUNCS| of :math:`S`.
 
@@ -62,9 +60,9 @@ New instances of :ref:`types <syntax-typeinst>`, :ref:`functions <syntax-funcins
    \begin{array}{rlll}
    \allocfunc(S, \func, \moduleinst) &=& S', \funcaddr \\[1ex]
    \mbox{where:} \hfill \\
+   \typeaddr &=& \moduleinst.\MITYPES[\func.\FTYPE] \\
    \funcaddr &=& |S.\SFUNCS| \\
-   \functype &=& S.\STYPES[\moduleinst.\MITYPES[\func.\FTYPE]] \\
-   \funcinst &=& \{ \FITYPE~\functype, \FIMODULE~\moduleinst, \FICODE~\func \} \\
+   \funcinst &=& \{ \FITYPE~\typeaddr, \FIMODULE~\moduleinst, \FICODE~\func \} \\
    S' &=& S \compose \{\SFUNCS~\funcinst\} \\
    \end{array}
 
@@ -75,11 +73,11 @@ New instances of :ref:`types <syntax-typeinst>`, :ref:`functions <syntax-funcins
 :ref:`Host Functions <syntax-hostfunc>`
 .......................................
 
-1. Let :math:`\hostfunc` be the :ref:`host function <syntax-hostfunc>` to allocate and :math:`\functype` its :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>`.
+1. Let :math:`\hostfunc` be the :ref:`host function <syntax-hostfunc>` to allocate and :math:`\typeaddr` its :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>`.
 
 2. Let :math:`a` be the first free :ref:`function address <syntax-funcaddr>` in :math:`S`.
 
-3. Let :math:`\funcinst` be the :ref:`function instance <syntax-funcinst>` :math:`\{ \FITYPE~\functype, \FIHOSTCODE~\hostfunc \}`.
+3. Let :math:`\funcinst` be the :ref:`function instance <syntax-funcinst>` :math:`\{ \FITYPE~\typeaddr, \FIHOSTCODE~\hostfunc \}`.
 
 4. Append :math:`\funcinst` to the |SFUNCS| of :math:`S`.
 
@@ -88,10 +86,10 @@ New instances of :ref:`types <syntax-typeinst>`, :ref:`functions <syntax-funcins
 .. math::
    ~\\[-1ex]
    \begin{array}{rlll}
-   \allochostfunc(S, \functype, \hostfunc) &=& S', \funcaddr \\[1ex]
+   \allochostfunc(S, \typeaddr, \hostfunc) &=& S', \funcaddr \\[1ex]
    \mbox{where:} \hfill \\
    \funcaddr &=& |S.\SFUNCS| \\
-   \funcinst &=& \{ \FITYPE~\functype, \FIHOSTCODE~\hostfunc \} \\
+   \funcinst &=& \{ \FITYPE~\typeaddr, \FIHOSTCODE~\hostfunc \} \\
    S' &=& S \compose \{\SFUNCS~\funcinst\} \\
    \end{array}
 
@@ -693,25 +691,29 @@ The following steps are performed:
 
 2. Let :math:`\funcinst` be the :ref:`function instance <syntax-funcinst>` :math:`S.\SFUNCS[\funcaddr]`.
 
-3. Let :math:`[t_1^n] \to [t_2^m]` be the :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\funcinst.\FITYPE`.
+3. Let :math:`\typeaddr` be the :ref:`type address <sybtax-typeaddr>` :math:`\funcinst.\FITYPE`.
 
-4. If the length :math:`|\val^\ast|` of the provided argument values is different from the number :math:`n` of expected arguments, then:
+4. Assert: :math:`S.\STYPES[\typeaddr]` exists.
+
+5. Let :math:`[t_1^n] \to [t_2^m]` be the :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`S.\STYPES[\typeaddr]`.
+
+6. If the length :math:`|\val^\ast|` of the provided argument values is different from the number :math:`n` of expected arguments, then:
 
    a. Fail.
 
-5. For each :ref:`value type <syntax-valtype>` :math:`t_i` in :math:`t_1^n` and corresponding :ref:`value <syntax-val>` :math:`val_i` in :math:`\val^\ast`, do:
+7. For each :ref:`value type <syntax-valtype>` :math:`t_i` in :math:`t_1^n` and corresponding :ref:`value <syntax-val>` :math:`val_i` in :math:`\val^\ast`, do:
 
    a. If :math:`\val_i` is not :ref:`valid <valid-val>` with value type :math:`t_i`, then:
 
       i. Fail.
 
-6. Let :math:`F` be the dummy :ref:`frame <syntax-frame>` :math:`\{ \AMODULE~\{\}, \ALOCALS~\epsilon \}`.
+8. Let :math:`F` be the dummy :ref:`frame <syntax-frame>` :math:`\{ \AMODULE~\{\}, \ALOCALS~\epsilon \}`.
 
-7. Push the frame :math:`F` to the stack.
+9. Push the frame :math:`F` to the stack.
 
-8. Push the values :math:`\val^\ast` to the stack.
+10. Push the values :math:`\val^\ast` to the stack.
 
-9. :ref:`Invoke <exec-invoke>` the function instance at address :math:`\funcaddr`.
+11. :ref:`Invoke <exec-invoke>` the function instance at address :math:`\funcaddr`.
 
 Once the function has returned, the following steps are executed:
 
@@ -725,7 +727,7 @@ The values :math:`\val_{\F{res}}^m` are returned as the results of the invocatio
    ~\\[-1ex]
    \begin{array}{@{}lcl}
    \invoke(S, \funcaddr, \val^n) &=& S; F; \val^n~(\INVOKE~\funcaddr) \\
-     &(\iff & S.\SFUNCS[\funcaddr].\FITYPE = [t_1^n] \to [t_2^m] \\
+     &(\iff & S.\STYPES[S.\SFUNCS[\funcaddr].\FITYPE] = [t_1^n] \to [t_2^m] \\
      &\wedge& (S \vdashval \val : t_1)^n \\
      &\wedge& F = \{ \AMODULE~\{\}, \ALOCALS~\epsilon \}) \\
    \end{array}

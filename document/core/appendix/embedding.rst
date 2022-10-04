@@ -277,18 +277,18 @@ Functions
 
 .. _embed-func-alloc:
 
-:math:`\F{func\_alloc}(\store, \functype, \hostfunc) : (\store, \funcaddr)`
+:math:`\F{func\_alloc}(\store, \typeaddr, \hostfunc) : (\store, \funcaddr)`
 ...........................................................................
 
 1. Pre-condition: the :ref:`dynamic <syntax-type-dyn>` :math:`\functype` is :ref:`valid <valid-functype>`.
 
-2. Let :math:`\funcaddr` be the result of :ref:`allocating a host function <alloc-func>` in :math:`\store` with :ref:`function type <syntax-functype>` :math:`\functype` and host function code :math:`\hostfunc`.
+2. Let :math:`\funcaddr` be the result of :ref:`allocating a host function <alloc-func>` in :math:`\store` with :ref:`type address <syntax-typeaddr>` :math:`\typeaddr` and host function code :math:`\hostfunc`.
 
 3. Return the new store paired with :math:`\funcaddr`.
 
 .. math::
    \begin{array}{lclll}
-   \F{func\_alloc}(S, \X{ft}, \X{code}) &=& (S', \X{a}) && (\iff \allochostfunc(S, \X{ft}, \X{code}) = S', \X{a}) \\
+   \F{func\_alloc}(S, \X{ta}, \X{code}) &=& (S', \X{a}) && (\iff \allochostfunc(S, \X{ta}, \X{code}) = S', \X{a}) \\
    \end{array}
 
 .. note::
@@ -302,13 +302,15 @@ Functions
 :math:`\F{func\_type}(\store, \funcaddr) : \functype`
 .....................................................
 
-1. Return :math:`S.\SFUNCS[a].\FITYPE`.
+1. Let :math:`\typeaddr` be the :ref:`type address <syntax-typeaddr>` :math:`S.\SFUNCS[a].\FITYPE`.
 
-2. Post-condition: the returned :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` is :ref:`valid <valid-functype>`.
+2. Return :math:`S.\STYPES[\typeaddr]`.
+
+3. Post-condition: the returned :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` is :ref:`valid <valid-functype>`.
 
 .. math::
    \begin{array}{lclll}
-   \F{func\_type}(S, a) &=& S.\SFUNCS[a].\FITYPE \\
+   \F{func\_type}(S, a) &=& S.\STYPES[S.\SFUNCS[a].\FITYPE] \\
    \end{array}
 
 

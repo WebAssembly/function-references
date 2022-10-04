@@ -939,7 +939,7 @@
 .. |vdashglobaltype| mathdef:: \xref{valid/types}{valid-globaltype}{\vdash}
 .. |vdashexterntype| mathdef:: \xref{valid/types}{valid-externtype}{\vdash}
 
-.. |vdashinstrtype| mathdef:: \xref{valid/instructions}{valid-instrtype}{\vdash}
+.. |vdashinstrtype| mathdef:: \xref{valid/types}{valid-instrtype}{\vdash}
 
 .. |vdashvaltypedefaultable| mathdef:: \xref{valid/types}{valid-defaultable}{\vdash}
 
@@ -1284,7 +1284,7 @@
 
 .. Judgements
 
-.. |vdashexternval| mathdef:: \xref{exec/modules}{valid-externval}{\vdash}
+.. |vdashexternval| mathdef:: \xref{exec/values}{valid-externval}{\vdash}
 
 
 .. Soundness
