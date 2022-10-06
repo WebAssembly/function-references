@@ -179,7 +179,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      C; S \vdashheaptypematch \typeidx \matchesheaptype \typeaddr
      \end{array}
    }{
-     S \vdashfuncinst \{\FITYPE~\typeaddr, \FIMODULE~\moduleinst, \FICODE~\func\} : \functype
+     S \vdashfuncinst \{\FITYPE~\typeaddr, \FIMODULE~\moduleinst, \FICODE~\func\} : \typeaddr
    }
 
 
