@@ -82,7 +82,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
 * Each :ref:`type instance <syntax-typeinst>` :math:`\typeinst_i` in :math:`S.\STYPES` must be :ref:`valid <valid-functype>` in a store :math:`S'_i` only containing the sequence :math:`\typeinst_0 \dots \typeinst_{i-1}` of preceding type instances.
 
-* Each :ref:`function instance <syntax-funcinst>` :math:`\funcinst_i` in :math:`S.\SFUNCS` must be :ref:`valid <valid-funcinst>` with some :ref:`function type <syntax-functype>` :math:`\functype_i`.
+* Each :ref:`function instance <syntax-funcinst>` :math:`\funcinst_i` in :math:`S.\SFUNCS` must be :ref:`valid <valid-funcinst>` with some :ref:`type address <syntax-typeaddr>` :math:`\typeaddr_i`.
 
 * Each :ref:`table instance <syntax-tableinst>` :math:`\tableinst_i` in :math:`S.\STABLES` must be :ref:`valid <valid-tableinst>` with some :ref:`table type <syntax-tabletype>` :math:`\tabletype_i`.
 
@@ -104,7 +104,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
      \qquad
      (\{\STYPES~\typeinst^n[0 \slice a]\} \vdashtypeinst \typeinst \ok)^n
      \\
-     (S \vdashfuncinst \funcinst : \functype)^\ast
+     (S \vdashfuncinst \funcinst : \typeaddr)^\ast
      \qquad
      (S \vdashtableinst \tableinst : \tabletype)^\ast
      \\
@@ -167,7 +167,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
   * The :ref:`static <syntax-type-stat>` :ref:`heap type <syntax-heaptype>` :math:`\typeidx` must :ref:`match <match-heaptype>` the :ref:`dynamic <syntax-type-dyn>` :ref:`heap type <syntax-heaptype>` :math:`\typeaddr`.
 
-* Then the function instance is valid with :ref:`dynamic <syntax-type-dyn>` :ref:`function type <syntax-functype>` :math:`\functype`.
+* Then the function instance is valid with :ref:`type address <syntax-typeaddr>` :math:`\typeaddr`.
 
 .. math::
    \frac{
@@ -203,7 +203,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
     * Or :math:`R` consists of a :ref:`valid <valid-store>` :ref:`store <syntax-store>` :math:`S_2` :ref:`extending <extend-store>` :math:`S_1` and a :ref:`result <syntax-result>` :math:`\result` whose :ref:`type <valid-result>` coincides with :math:`[t_2^\ast]`.
 
-* Then the function instance is valid with :ref:`function type <syntax-functype>` :math:`\functype`.
+* Then the function instance is valid with :ref:`type address <syntax-typeaddr>` :math:`\typeaddr`.
 
 .. math::
    \frac{
@@ -227,7 +227,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
        R = (S_2; \result)
      \end{array}
    }{
-     S \vdashfuncinst \{\FITYPE~\typeaddr, \FIHOSTCODE~\X{hf}\} : [t_1^\ast] \to [t_2^\ast]
+     S \vdashfuncinst \{\FITYPE~\typeaddr, \FIHOSTCODE~\X{hf}\} : \typeaddr
    }
 
 .. note::
