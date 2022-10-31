@@ -71,4 +71,4 @@
   )
 )
 
-assert_return (invoke "tee-init" (ref.extern 1)) (ref.extern 1))
+(assert_return (invoke "tee-init" (ref.extern 1)) (ref.extern 1))
