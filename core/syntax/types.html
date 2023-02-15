@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Types &#8212; WebAssembly 2.0 + tail calls + function references (Draft 2023-01-30)</title>
+    <title>Types &#8212; WebAssembly 2.0 + tail calls + function references (Draft 2023-02-15)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -162,11 +162,14 @@ Values of vector type can be stored in <a class="reference internal" href="modul
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{array}{llll}
 \def\mathdef2694#1{{}}\mathdef2694{heap type} &amp; \href{../syntax/types.html#syntax-heaptype}{\mathit{heaptype}} &amp;::=&amp;
-  \href{../syntax/types.html#syntax-heaptype}{\mathsf{func}} ~|~ \href{../syntax/types.html#syntax-heaptype}{\mathsf{extern}} ~|~ \href{../syntax/types.html#syntax-typeid}{\mathit{typeid}} \\
+  \href{../syntax/types.html#syntax-heaptype}{\mathsf{func}} ~|~ \href{../syntax/types.html#syntax-heaptype}{\mathsf{extern}} ~|~ \href{../syntax/types.html#syntax-typeid}{\mathit{typeid}} ~|~ \href{../syntax/types.html#syntax-valtype}{\mathsf{bot}} \\
 \end{array}\end{split}\]</div>
 <p>The type <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-heaptype}{\mathsf{func}}\)</span> denotes the infinite union of all types of <a class="reference internal" href="modules.html#syntax-func"><span class="std std-ref">functions</span></a>, regardless of their concrete <a class="reference internal" href="#syntax-functype"><span class="std std-ref">function types</span></a>.</p>
 <p>The type <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-heaptype}{\mathsf{extern}}\)</span> denotes the infinite union of all objects owned by the <a class="reference internal" href="../intro/overview.html#embedder"><span class="std std-ref">embedder</span></a> and that can be passed into WebAssembly under this type.</p>
 <p>A <em>concrete</em> heap type consists of a <a class="reference internal" href="#syntax-typeid"><span class="std std-ref">type identifier</span></a> and classifies an object of the respective <a class="reference internal" href="#syntax-type"><span class="std std-ref">type</span></a> defined in some module.</p>
+<p>The type <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{bot}}\)</span> is a <a class="reference internal" href="../valid/matching.html#match-heaptype"><span class="std std-ref">subtype</span></a> of all other heap types.
+By virtue of being representable in neither the <a class="reference internal" href="../binary/types.html#binary-valtype"><span class="std std-ref">binary format</span></a> nor the <a class="reference internal" href="../text/types.html#text-valtype"><span class="std std-ref">text format</span></a>, it cannot be used in a program;
+it only occurs during <a class="reference internal" href="../valid/index.html#valid"><span class="std std-ref">validation</span></a>, as a part of a possible operand type for instructions.</p>
 </section>
 <section id="reference-types">
 <span id="syntax-nullable"></span><span id="syntax-reftype"></span><span id="index-5"></span><h2>Reference Types<a class="headerlink" href="#reference-types" title="Permalink to this heading">¶</a></h2>
@@ -186,7 +189,7 @@ Values of reference type can be stored in <a class="reference internal" href="mo
 <span id="syntax-bottype"></span><span id="syntax-valtype"></span><span id="index-6"></span><h2>Value Types<a class="headerlink" href="#value-types" title="Permalink to this heading">¶</a></h2>
 <p><em>Value types</em> classify the individual values that WebAssembly code can compute with and the values that a variable accepts.
 They are either <a class="reference internal" href="#syntax-numtype"><span class="std std-ref">number types</span></a>, <a class="reference internal" href="#syntax-vectype"><span class="std std-ref">vector types</span></a>, <a class="reference internal" href="#syntax-reftype"><span class="std std-ref">reference types</span></a>, or the unique <em>bottom type</em>, written <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{bot}}\)</span>.</p>
-<p>The type <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{bot}}\)</span> is a <a class="reference internal" href="../valid/matching.html#match-valtype"><span class="std std-ref">subtype</span></a> of all other types.
+<p>The type <span class="math notranslate nohighlight">\(\href{../syntax/types.html#syntax-valtype}{\mathsf{bot}}\)</span> is a <a class="reference internal" href="../valid/matching.html#match-valtype"><span class="std std-ref">subtype</span></a> of all other value types.
 By virtue of being representable in neither the <a class="reference internal" href="../binary/types.html#binary-valtype"><span class="std std-ref">binary format</span></a> nor the <a class="reference internal" href="../text/types.html#text-valtype"><span class="std std-ref">text format</span></a>, it cannot be used in a program;
 it only occurs during <a class="reference internal" href="../valid/index.html#valid"><span class="std std-ref">validation</span></a>, as a possible operand type for instructions.</p>
 <div class="math notranslate nohighlight">
