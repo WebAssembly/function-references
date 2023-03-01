@@ -180,7 +180,7 @@ If it does, the post conditions are guaranteed by the semantics.</p>
 </ol>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{array}{lclll}
-\mathrm{module\_validate}(m) &amp;=&amp; \epsilon &amp;&amp; (\mathrel{\mbox{if}} {} \href{../valid/modules.html#valid-module}{\vdash} m : \href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}^\ast \href{../syntax/types.html#syntax-functype}{\rightarrow} {\href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}'}^\ast) \\
+\mathrm{module\_validate}(m) &amp;=&amp; \epsilon &amp;&amp; (\mathrel{\mbox{if}} {} \href{../valid/modules.html#valid-module}{\vdash} m : \href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}^\ast \rightarrow {\href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}'}^\ast) \\
 \mathrm{module\_validate}(m) &amp;=&amp; \href{../appendix/embedding.html#embed-error}{\mathsf{error}} &amp;&amp; (\mathrel{\mbox{otherwise}}) \\
 \end{array}\end{split}\]</div>
 </section>
@@ -229,7 +229,7 @@ If it does, the post conditions are guaranteed by the semantics.</p>
 \[\begin{split}~ \\
 \begin{array}{lclll}
 \mathrm{module\_imports}(m) &amp;=&amp; (\mathit{im}.\href{../syntax/modules.html#syntax-import}{\mathsf{module}}, \mathit{im}.\href{../syntax/modules.html#syntax-import}{\mathsf{name}}, \href{../syntax/types.html#syntax-externtype}{\mathit{externtype}})^\ast \\
-  &amp;&amp; \qquad (\mathrel{\mbox{if}} \mathit{im}^\ast = m.\href{../syntax/modules.html#syntax-module}{\mathsf{imports}} \wedge {} \href{../valid/modules.html#valid-module}{\vdash} m : \href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}^\ast \href{../syntax/types.html#syntax-functype}{\rightarrow} {\href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}'}^\ast) \\
+  &amp;&amp; \qquad (\mathrel{\mbox{if}} \mathit{im}^\ast = m.\href{../syntax/modules.html#syntax-module}{\mathsf{imports}} \wedge {} \href{../valid/modules.html#valid-module}{\vdash} m : \href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}^\ast \rightarrow {\href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}'}^\ast) \\
 \end{array}\end{split}\]</div>
 </section>
 <section id="mathrm-module-exports-xref-syntax-modules-syntax-module-mathit-module-xref-syntax-values-syntax-name-mathit-name-xref-syntax-types-syntax-externtype-mathit-externtype-ast">
@@ -253,7 +253,7 @@ If it does, the post conditions are guaranteed by the semantics.</p>
 \[\begin{split}~ \\
 \begin{array}{lclll}
 \mathrm{module\_exports}(m) &amp;=&amp; (\mathit{ex}.\href{../syntax/modules.html#syntax-export}{\mathsf{name}}, \href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}')^\ast \\
-  &amp;&amp; \qquad (\mathrel{\mbox{if}} \mathit{ex}^\ast = m.\href{../syntax/modules.html#syntax-module}{\mathsf{exports}} \wedge {} \href{../valid/modules.html#valid-module}{\vdash} m : \href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}^\ast \href{../syntax/types.html#syntax-functype}{\rightarrow} {\href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}'}^\ast) \\
+  &amp;&amp; \qquad (\mathrel{\mbox{if}} \mathit{ex}^\ast = m.\href{../syntax/modules.html#syntax-module}{\mathsf{exports}} \wedge {} \href{../valid/modules.html#valid-module}{\vdash} m : \href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}^\ast \rightarrow {\href{../syntax/types.html#syntax-externtype}{\mathit{externtype}}'}^\ast) \\
 \end{array}\end{split}\]</div>
 </section>
 </section>

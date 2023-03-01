@@ -593,7 +593,7 @@ the segment <span class="math notranslate nohighlight">\(\href{../syntax/modules
 <li><p>Let <span class="math notranslate nohighlight">\(\mathit{rt}^\ast\)</span> be the concatenation of the <a class="reference internal" href="../syntax/types.html#syntax-reftype"><span class="std std-ref">reference types</span></a> <span class="math notranslate nohighlight">\(\mathit{rt}_i\)</span>, in index order.</p></li>
 <li><p>Let <span class="math notranslate nohighlight">\(\mathit{it}^\ast\)</span> be the concatenation of <a class="reference internal" href="../syntax/types.html#syntax-externtype"><span class="std std-ref">external types</span></a> <span class="math notranslate nohighlight">\(\mathit{it}_i\)</span> of the imports, in index order.</p></li>
 <li><p>Let <span class="math notranslate nohighlight">\(\mathit{et}^\ast\)</span> be the concatenation of <a class="reference internal" href="../syntax/types.html#syntax-externtype"><span class="std std-ref">external types</span></a> <span class="math notranslate nohighlight">\(\mathit{et}_i\)</span> of the exports, in index order.</p></li>
-<li><p>Then the module is valid with <a class="reference internal" href="../syntax/types.html#syntax-externtype"><span class="std std-ref">external types</span></a> <span class="math notranslate nohighlight">\(\mathit{it}^\ast \href{../syntax/types.html#syntax-functype}{\rightarrow} \mathit{et}^\ast\)</span>.</p></li>
+<li><p>Then the module is valid with <a class="reference internal" href="../syntax/types.html#syntax-externtype"><span class="std std-ref">external types</span></a> <span class="math notranslate nohighlight">\(\mathit{it}^\ast \href{../syntax/types.html#syntax-instrtype}{\rightarrow} \mathit{et}^\ast\)</span>.</p></li>
 </ul>
 <div class="math notranslate nohighlight">
 \[\begin{split}\frac{
@@ -651,7 +651,7 @@ the segment <span class="math notranslate nohighlight">\(\href{../syntax/modules
     \end{array}
   \end{array}
 }{
-  \href{../valid/modules.html#valid-module}{\vdash} \href{../syntax/modules.html#syntax-module}{\mathit{module}} : \mathit{it}^\ast \href{../syntax/types.html#syntax-functype}{\rightarrow} \mathit{et}^\ast
+  \href{../valid/modules.html#valid-module}{\vdash} \href{../syntax/modules.html#syntax-module}{\mathit{module}} : \mathit{it}^\ast \href{../syntax/types.html#syntax-instrtype}{\rightarrow} \mathit{et}^\ast
 }\end{split}\]</div>
 <p id="valid-types">where:</p>
 <div class="math notranslate nohighlight">
