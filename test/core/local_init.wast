@@ -16,11 +16,23 @@
     (local.set $x (local.get $p))
     (block (result (ref extern)) (local.get $x))
   )
+
+  (func (export "get-after-br")
+    (local $x (ref extern))
+    (br 0)
+    (drop (local.get $x))
+  )
+  (func (export "get-after-unreachable")
+    (local $x (ref extern))
+    (unreachable)
+    (drop (local.get $x))
+  )
 )
 
 (assert_return (invoke "get-after-set" (ref.extern 1)) (ref.extern 1))
 (assert_return (invoke "get-after-tee" (ref.extern 2)) (ref.extern 2))
 (assert_return (invoke "get-in-block-after-set" (ref.extern 3)) (ref.extern 3))
+(assert_return (invoke "get-after-br"))
 
 (assert_invalid
   (module (func $uninit (local $x (ref extern)) (drop (local.get $x))))

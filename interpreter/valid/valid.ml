@@ -73,6 +73,9 @@ let refer category (s : Free.Set.t) x =
 
 let refer_func (c : context) x = refer "function" c.refs.Free.funcs x
 
+let all_locals (c : context) =
+  Lib.List32.mapi (fun i _ -> i @@ no_region) c.locals
+
 
 (* Types *)
 
@@ -315,7 +318,7 @@ let check_block_type (c : context) (bt : block_type) at : instr_type =
 let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_instr_type =
   match e.it with
   | Unreachable ->
-    [] -->... [], []
+    [] -->... [], all_locals c
 
   | Nop ->
     [] --> [], []
@@ -353,7 +356,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
     (ts1 @ [NumT I32T]) --> ts2, List.map (fun x -> x @@ e.at) xs
 
   | Br x ->
-    label c x -->... [], []
+    label c x -->... [], all_locals c
 
   | BrIf x ->
     (label c x @ [NumT I32T]) --> label c x, []
@@ -363,7 +366,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
     let ts = List.init n (fun i -> peek (n - i) s) in
     check_stack c ts (label c x) x.at;
     List.iter (fun x' -> check_stack c ts (label c x') x'.at) xs;
-    (ts @ [NumT I32T]) -->... [], []
+    (ts @ [NumT I32T]) -->... [], all_locals c
 
   | BrOnNull x ->
     let (_, ht) = peek_ref 0 s e.at in
@@ -382,7 +385,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
     (ts0 @ [RefT (Null, ht)]) --> ts0, []
 
   | Return ->
-    c.results -->... [], []
+    c.results -->... [], all_locals c
 
   | Call x ->
     let FuncT (ts1, ts2) = func c x in
@@ -406,7 +409,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
       ("type mismatch: current function requires result type " ^
        string_of_result_type c.results ^
        " but callee returns " ^ string_of_result_type ts2);
-    ts1 -->... [], []
+    ts1 -->... [], all_locals c
 
   | ReturnCallRef x ->
     let FuncT (ts1, ts2) = func_type c x in
@@ -414,7 +417,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
       ("type mismatch: current function requires result type " ^
        string_of_result_type c.results ^
        " but callee returns " ^ string_of_result_type ts2);
-    (ts1 @ [RefT (Null, DefHT (Stat x.it))]) -->... [], []
+    (ts1 @ [RefT (Null, DefHT (Stat x.it))]) -->... [], all_locals c
 
   | ReturnCallIndirect (x, y) ->
     let TableT (_lim, t) = table c x in
@@ -423,7 +426,7 @@ let rec check_instr (c : context) (e : instr) (s : infer_result_type) : infer_in
       ("type mismatch: current function requires result type " ^
        string_of_result_type c.results ^
        " but callee returns " ^ string_of_result_type ts2);
-    (ts1 @ [NumT I32T]) -->... [], []
+    (ts1 @ [NumT I32T]) -->... [], all_locals c
 
   | LocalGet x ->
     let LocalT (init, t) = local c x in
