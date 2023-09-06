@@ -127,7 +127,7 @@ The only exception are <a class="reference internal" href="#binary-instr-control
   \def\mathdef1449#1{\mathtt{0x#1}}\mathdef1449{13}~~y{:}\href{../binary/modules.html#binary-typeidx}{\mathtt{typeidx}}~~x{:}\href{../binary/modules.html#binary-tableidx}{\mathtt{tableidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{return\_call\_indirect}}~x~y \\ &amp;&amp;|&amp;
   \def\mathdef1450#1{\mathtt{0x#1}}\mathdef1450{14}~~x{:}\href{../binary/modules.html#binary-typeidx}{\mathtt{typeidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{call\_ref}}~x \\ &amp;&amp;|&amp;
   \def\mathdef1451#1{\mathtt{0x#1}}\mathdef1451{15}~~x{:}\href{../binary/modules.html#binary-typeidx}{\mathtt{typeidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{return\_call\_ref}}~x \\ &amp;&amp;|&amp;
-  \def\mathdef1452#1{\mathtt{0x#1}}\mathdef1452{D4}~~l{:}\href{../binary/modules.html#binary-labelidx}{\mathtt{labelidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}}~l \\ &amp;&amp;|&amp;
+  \def\mathdef1452#1{\mathtt{0x#1}}\mathdef1452{D5}~~l{:}\href{../binary/modules.html#binary-labelidx}{\mathtt{labelidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_null}}~l \\ &amp;&amp;|&amp;
   \def\mathdef1453#1{\mathtt{0x#1}}\mathdef1453{D6}~~l{:}\href{../binary/modules.html#binary-labelidx}{\mathtt{labelidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-control}{\mathsf{br\_on\_non\_null}}~l \\
 \end{array}\end{split}\]</div>
 <div class="admonition note">
@@ -146,7 +146,7 @@ To avoid any loss in the range of allowed indices, it is treated as a 33 bit sig
   \def\mathdef1456#1{\mathtt{0x#1}}\mathdef1456{D0}~~t{:}\href{../binary/types.html#binary-heaptype}{\mathtt{heaptype}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.null}}~t \\ &amp;&amp;|&amp;
   \def\mathdef1457#1{\mathtt{0x#1}}\mathdef1457{D1} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.is\_null}} \\ &amp;&amp;|&amp;
   \def\mathdef1458#1{\mathtt{0x#1}}\mathdef1458{D2}~~x{:}\href{../binary/modules.html#binary-funcidx}{\mathtt{funcidx}} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.func}}~x \\ &amp;&amp;|&amp;
-  \def\mathdef1459#1{\mathtt{0x#1}}\mathdef1459{D3} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.as\_non\_null}} \\
+  \def\mathdef1459#1{\mathtt{0x#1}}\mathdef1459{D4} &amp;\Rightarrow&amp; \href{../syntax/instructions.html#syntax-instr-ref}{\mathsf{ref.as\_non\_null}} \\
 \end{array}\end{split}\]</div>
 </section>
 <section id="parametric-instructions">
