@@ -444,7 +444,7 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
          \CGLOBALS & \globaltype^\ast, \\
          \CELEMS & \reftype^\ast, \\
          \CDATAS & {\ok}^n, \\
-         \CREFS & 0 \dots |\funcaddr^\ast| ~\}
+         \CREFS & 0 \dots (|\funcaddr^\ast|-1) ~\}
          \end{array}
        \end{array}
    }
