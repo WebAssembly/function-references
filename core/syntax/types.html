@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Types &#8212; WebAssembly 2.0 + tail calls + function references (Draft 2024-04-23)</title>
+    <title>Types &#8212; WebAssembly 2.0 + tail calls + function references (Draft 2024-04-28)</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -153,8 +153,8 @@ i.e., all <a class="reference internal" href="modules.html#syntax-typeidx"><span
 <section id="convention">
 <span id="notation-subst"></span><h3>Convention<a class="headerlink" href="#convention" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(t[x^\ast \href{../syntax/conventions.html#notation-subst}{\mathrel{\mathbf{:=}}} \mathit{ft}^\ast]\)</span> denotes the parallel <em>substitution</em> of <a class="reference internal" href="modules.html#syntax-typeidx"><span class="std std-ref">type indices</span></a> <span class="math notranslate nohighlight">\(x^\ast\)</span> with <a class="reference internal" href="#syntax-functype"><span class="std std-ref">function types</span></a> <span class="math notranslate nohighlight">\(\mathit{ft}^\ast\)</span>, provided <span class="math notranslate nohighlight">\(|x^\ast| = |\mathit{ft}^\ast|\)</span> in type <span class="math notranslate nohighlight">\(t\)</span>.</p></li>
-<li><p><span class="math notranslate nohighlight">\(t[\href{../syntax/conventions.html#notation-subst}{\mathrel{\mathbf{:=}}} \mathit{ft}^\ast]\)</span> is shorthand for the substitution <span class="math notranslate nohighlight">\(t[x^\ast \href{../syntax/conventions.html#notation-subst}{\mathrel{\mathbf{:=}}} \mathit{ft}^\ast]\)</span> where <span class="math notranslate nohighlight">\(x^\ast = 0 \cdots (|\mathit{ft}^\ast| - 1)\)</span> in type <span class="math notranslate nohighlight">\(t\)</span>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(t[x^\ast \href{../syntax/types.html#notation-subst}{\mathrel{\mathbf{:=}}} \mathit{ft}^\ast]\)</span> denotes the parallel <em>substitution</em> of <a class="reference internal" href="modules.html#syntax-typeidx"><span class="std std-ref">type indices</span></a> <span class="math notranslate nohighlight">\(x^\ast\)</span> with <a class="reference internal" href="#syntax-functype"><span class="std std-ref">function types</span></a> <span class="math notranslate nohighlight">\(\mathit{ft}^\ast\)</span>, provided <span class="math notranslate nohighlight">\(|x^\ast| = |\mathit{ft}^\ast|\)</span> in type <span class="math notranslate nohighlight">\(t\)</span>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(t[\href{../syntax/types.html#notation-subst}{\mathrel{\mathbf{:=}}} \mathit{ft}^\ast]\)</span> is shorthand for the substitution <span class="math notranslate nohighlight">\(t[x^\ast \href{../syntax/types.html#notation-subst}{\mathrel{\mathbf{:=}}} \mathit{ft}^\ast]\)</span> where <span class="math notranslate nohighlight">\(x^\ast = 0 \cdots (|\mathit{ft}^\ast| - 1)\)</span> in type <span class="math notranslate nohighlight">\(t\)</span>.</p></li>
 </ul>
 </section>
 </section>
