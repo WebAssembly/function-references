@@ -262,6 +262,22 @@ Typing of local instructions is updated to account for the initialization status
 Note: These typing rules do not try to exclude indices for locals that have already been set, but an implementation could.
 
 
+#### Stack-polymorphic Instructions
+
+All *stack-polymorphic* instructions allow assuming an arbitrary initialization status for locals present in the current function:
+
+* `unreachable`
+  - `unreachable : [t1*] -> [t2*] x*`
+    - iff `(x : set? t)*`
+
+* `br <labelidx>`
+  - `br $l : [t1* t*] -> [t2*] x*`
+    - iff `$l : t*`
+    - and `(x : set? t)*`
+
+and so on.
+
+
 #### Instruction Sequences
 
 Typing of instruction sequences is updated to account for initialization of locals.
